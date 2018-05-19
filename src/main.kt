@@ -9,7 +9,14 @@ class MyView: View() {
     override val root = vbox {
         button("TestRun") {
             action {
-                EchoClient.main(arrayOf())
+                val midi = Push2Midi()
+                midi.x()
+                try {
+                    EchoClient.main(arrayOf())
+                }
+                catch (e: Exception) {
+                    println(e.message)
+                }
             }
         }
     }

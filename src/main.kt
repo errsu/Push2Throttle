@@ -10,7 +10,7 @@ class MyView: View() {
         button("TestRun") {
             action {
                 val midi = Push2Midi()
-                midi.x()
+                midi.test()
                 try {
                     EchoClient.main(arrayOf())
                 }

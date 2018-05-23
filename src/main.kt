@@ -1,15 +1,10 @@
 import tornadofx.*
-import java.util.*
-import kotlin.concurrent.scheduleAtFixedRate
-// import kotlin.concurrent.timer
 
 class MyApp: App(MyView::class)
 
 class MyView: View() {
 
     private val jmri = JmriWsClient()
-    private val ping_timer = Timer()
-    private var ping_timer_task : TimerTask? = null
 
     override val root = hbox {
         button("MIDI") {
@@ -19,17 +14,10 @@ class MyView: View() {
         }
         button("connect") {
             action {
-                println("connected before ${jmri.is_connected()}")
                 jmri.connect()
-                println("connected after ${jmri.is_connected()}")
                 // RSUMSG: {"type":"hello","data":{"JMRI":"4.10+R419243e","json":"4.0",
                 //          "heartbeat":13500,"railroad":"Meine JMRI Bahngesellschaft",
-                if (ping_timer_task == null) {
-                    ping_timer_task = ping_timer.scheduleAtFixedRate(5000, 5000) {
-                        println("pinging")
-                        jmri.sendTextMessage("""{"type":"ping"}""")
-                    }
-                }
+                println("connected: ${jmri.is_connected()}")
             }
         }
         button("ping") {
@@ -80,11 +68,8 @@ class MyView: View() {
         }
         button("disconnect") {
             action {
-                println("connected before ${jmri.is_connected()}")
-                ping_timer_task?.cancel()
-                ping_timer_task = null
                 jmri.disconnect()
-                println("connected after ${jmri.is_connected()}")
+                println("connected: ${jmri.is_connected()}")
             }
         }
     }

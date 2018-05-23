@@ -1,5 +1,7 @@
 import com.neovisionaries.ws.client.*
 import java.io.IOException
+import java.util.*
+import kotlin.concurrent.scheduleAtFixedRate
 
 // WebSocket client to JMRIs WebServer
 //
@@ -11,13 +13,23 @@ import java.io.IOException
 class JmriWsClient : WebSocketAdapter() {
     private val wsFactory = WebSocketFactory().setConnectionTimeout(5000) // in ms
     private var ws: WebSocket? = null
+    private val ping_timer = Timer()
+    private var ping_timer_task : TimerTask? = null
 
     fun connect() {
+        if (is_connected()) {
+            disconnect()
+        }
+
         try {
             ws = wsFactory.createSocket("ws://localhost:12080/json/")
                     .addListener(this)
                     .addExtension(WebSocketExtension.PERMESSAGE_DEFLATE)
                     .connect()
+
+            ping_timer_task = ping_timer.scheduleAtFixedRate(5000, 5000) {
+                sendTextMessage("""{"type":"ping"}""")
+            }
         }
         catch(e: IOException) {
             println("JmriWsClient.connect(): IOException ${e.message}")
@@ -34,6 +46,8 @@ class JmriWsClient : WebSocketAdapter() {
     }
 
     fun disconnect() {
+        ping_timer_task?.cancel()
+        ping_timer_task = null
         ws?.disconnect()
         ws?.removeListener(this)
         ws = null

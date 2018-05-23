@@ -12,7 +12,6 @@ class JmriWsClient : WebSocketAdapter() {
     private val wsFactory = WebSocketFactory().setConnectionTimeout(5000) // in ms
     private var ws: WebSocket? = null
 
-    @Throws(IOException::class, WebSocketException::class)
     fun connect() {
         try {
             ws = wsFactory.createSocket("ws://localhost:12080/json/")
@@ -28,6 +27,10 @@ class JmriWsClient : WebSocketAdapter() {
             println("JmriWsClient.connect(): WebSocketException ${e.message}")
             ws = null
         }
+    }
+
+    fun is_connected() : Boolean {
+        return ws?.isOpen() ?: false
     }
 
     fun disconnect() {

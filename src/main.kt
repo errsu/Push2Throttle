@@ -72,6 +72,10 @@ class MyView: View() {
                 println("connected: ${jmri.is_connected()}")
             }
         }
+        button("test JSMN") {
+            action {
+                testJsmn()
+            }
+        }
     }
 }
-

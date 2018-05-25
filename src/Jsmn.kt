@@ -132,7 +132,7 @@ class JsmnParser(private val num_tokens: Int) {
 
         var count = toknext // result to be returned
 
-        loop@ while (pos < js.length) {
+        while (pos < js.length) {
             when (js[pos]) {
                 '{', '[' -> {
 					count++

@@ -264,3 +264,58 @@ fun testCase(parser: JsmnParser, js: String) {
     }
     println("-----------------------------------------------------------------------------")
 }
+
+/******************************************************************************************
+Test results:
+
+{"type":"throttle","data":{"throttle":"L0","speed":-1.0}}
+tokens returned: 9
+-----------------------------------------------------------------------------
+{"a":"b","c":[ 1, 2, 3 ],"d": null}
+tokens returned: 10
+-----------------------------------------------------------------------------
+{"a"}
+tokens returned: 2
+-----------------------------------------------------------------------------
+{"a", "b", "c" : false}
+tokens returned: 5
+-----------------------------------------------------------------------------
+{"type":"throttle","data":{"throttle":"L0","speed":-1.0}}
+tokens returned: 9
+JsmnTok(type=OBJECT, start=0, end=57, size=2) '{"type":"throttle","data":{"throttle":"L0","speed":-1.0}}'
+JsmnTok(type=STRING, start=2, end=6, size=1) 'type'
+JsmnTok(type=STRING, start=9, end=17, size=0) 'throttle'
+JsmnTok(type=STRING, start=20, end=24, size=1) 'data'
+JsmnTok(type=OBJECT, start=26, end=56, size=2) '{"throttle":"L0","speed":-1.0}'
+JsmnTok(type=STRING, start=28, end=36, size=1) 'throttle'
+JsmnTok(type=STRING, start=39, end=41, size=0) 'L0'
+JsmnTok(type=STRING, start=44, end=49, size=1) 'speed'
+JsmnTok(type=PRIMITIVE, start=51, end=55, size=0) '-1.0'
+-----------------------------------------------------------------------------
+{"a":"b","c":[ 1, 2, 3 ],"d": null}
+tokens returned: 10
+JsmnTok(type=OBJECT, start=0, end=35, size=3) '{"a":"b","c":[ 1, 2, 3 ],"d": null}'
+JsmnTok(type=STRING, start=2, end=3, size=1) 'a'
+JsmnTok(type=STRING, start=6, end=7, size=0) 'b'
+JsmnTok(type=STRING, start=10, end=11, size=1) 'c'
+JsmnTok(type=ARRAY, start=13, end=24, size=3) '[ 1, 2, 3 ]'
+JsmnTok(type=PRIMITIVE, start=15, end=16, size=0) '1'
+JsmnTok(type=PRIMITIVE, start=18, end=19, size=0) '2'
+JsmnTok(type=PRIMITIVE, start=21, end=22, size=0) '3'
+JsmnTok(type=STRING, start=26, end=27, size=1) 'd'
+JsmnTok(type=PRIMITIVE, start=30, end=34, size=0) 'null'
+-----------------------------------------------------------------------------
+{"a"}
+tokens returned: 2
+JsmnTok(type=OBJECT, start=0, end=5, size=1) '{"a"}'
+JsmnTok(type=STRING, start=2, end=3, size=0) 'a'
+-----------------------------------------------------------------------------
+{"a", "b", "c" : false}
+tokens returned: 5
+JsmnTok(type=OBJECT, start=0, end=23, size=3) '{"a", "b", "c" : false}'
+JsmnTok(type=STRING, start=2, end=3, size=0) 'a'
+JsmnTok(type=STRING, start=7, end=8, size=0) 'b'
+JsmnTok(type=STRING, start=12, end=13, size=1) 'c'
+JsmnTok(type=PRIMITIVE, start=17, end=22, size=0) 'false'
+-----------------------------------------------------------------------------
+*/

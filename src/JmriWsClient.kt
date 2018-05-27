@@ -15,8 +15,9 @@ class JmriWsClient : WebSocketAdapter() {
     private var ws: WebSocket? = null
     private val ping_timer = Timer()
     private var ping_timer_task : TimerTask? = null
+    private var messageCallback: (Any?) -> Unit = {}
 
-    fun connect() {
+    fun connect(callback: (Any?) -> Unit ) {
         if (is_connected()) {
             disconnect()
         }
@@ -30,6 +31,8 @@ class JmriWsClient : WebSocketAdapter() {
             ping_timer_task = ping_timer.scheduleAtFixedRate(5000, 5000) {
                 sendTextMessage("""{"type":"ping"}""")
             }
+
+            messageCallback = callback
         }
         catch(e: IOException) {
             println("JmriWsClient.connect(): IOException ${e.message}")
@@ -46,6 +49,7 @@ class JmriWsClient : WebSocketAdapter() {
     }
 
     fun disconnect() {
+        messageCallback = {}
         ping_timer_task?.cancel()
         ping_timer_task = null
         ws?.disconnect()
@@ -83,17 +87,7 @@ class JmriWsClient : WebSocketAdapter() {
             {
                 val parser = JsmnParser(n)
                 val tree = parser.parseToTree(message)
-                if (tree == hashMapOf("type" to "pong")) {
-                    return // ignore pongs
-                }
-                if (tree is Map<*, *>) {
-                    if (tree["type"] == "hello") {
-                        println("""HELLO: ${tree["data"]}""")
-                    }
-                    if (tree["type"] == "throttle") {
-                        println("""THROTTLE: ${tree["data"]}""")
-                    }
-                }
+                messageCallback(tree)
             }
         }
     }

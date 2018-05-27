@@ -37,7 +37,7 @@ class Push2ThrottleController: Controller() {
     private val jmri = JmriWsClient()
 
     fun connectToJmri() {
-        jmri.connect()
+        jmri.connect(this::messageFromJmri)
         println("connected: ${jmri.is_connected()}")
         // declare address and listen to incoming changes:
         jmri.sendTextMessage("""{"type":"throttle","data":{"throttle":"L0","address":0}}""")
@@ -49,5 +49,27 @@ class Push2ThrottleController: Controller() {
 
     fun modifyThrottle() {
         jmri.sendTextMessage("""{"type":"throttle","data":{"throttle":"L0","speed":0.2}}""")
+    }
+
+    fun messageFromJmri(tree: Any?) {
+        if (tree == hashMapOf("type" to "pong")) {
+            return // ignore pongs
+        }
+        if (tree is Map<*, *>) {
+            if (tree["type"] == "hello") {
+                val data = tree["data"]
+                if (data is Map<*,*>) {
+                    println("""JMRI:    ${data["JMRI"]}""")
+                    println("""RR:      ${data["railroad"]}""")
+                    println("""Profile: ${data["activeProfile"]}""")
+                }
+            }
+            if (tree["type"] == "throttle") {
+                val data = tree["data"]
+                if (data is Map<*,*>) {
+                    println("""THROTTLE ${data["throttle"]}: speed -> ${data["speed"]}""")
+                }
+            }
+        }
     }
 }

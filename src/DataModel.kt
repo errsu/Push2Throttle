@@ -1,5 +1,5 @@
 class DataModel {
-    val throttleCount = 1
+    val throttleCount = 3
 
     data class ThrottleState(
             var address: Int = 0,
@@ -16,7 +16,7 @@ class DataModel {
             var speedSteps: Int = 126
     )
 
-    private var throttleStates: Array<ThrottleState> = Array(throttleCount) {ThrottleState()}
+    var throttleStates: Array<ThrottleState> = Array(throttleCount) {ThrottleState()}
 
     fun updateThrottle(num: Int, data: Map<String,Any?>) {
         val state = throttleStates[num]

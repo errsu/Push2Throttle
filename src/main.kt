@@ -35,13 +35,15 @@ class Push2ThrottleMainView: View() {
 
 class Push2ThrottleController: Controller() {
     private val jmri = JmriWsClient()
-    private val state = ThrottleState()
+    private val model = DataModel()
 
     fun connectToJmri() {
         jmri.connect(this::messageFromJmri)
         println("connected: ${jmri.is_connected()}")
         // declare address and listen to incoming changes:
-        jmri.sendTextMessage("""{"type":"throttle","data":{"throttle":"T0","address":0}}""")
+        for (num in 0 until model.throttleCount) {
+            jmri.sendTextMessage("""{"type":"throttle","data":{"throttle":"T$num","address":$num}}""")
+        }
     }
     fun disconnectFromJmri() {
         jmri.disconnect()
@@ -70,8 +72,12 @@ class Push2ThrottleController: Controller() {
                 if (data is Map<*,*>) {
                     @Suppress("UNCHECKED_CAST")
                     val properties = data as Map<String, Any?>
-                    if (properties["throttle"] == "T0") {
-                        state.update(properties)
+                    val name = properties["throttle"]
+                    if (name is String && name.startsWith("T")) {
+                        val num = name.substring(1).toInt()
+                        if (num in 0 until model.throttleCount) {
+                            model.updateThrottle(num, properties)
+                        }
                     }
                 }
             }

@@ -1,4 +1,15 @@
 class ThrottleState {
+    var speed: Float = 0.0f
+
+    fun update(data: Map<String,Any?>) {
+        val newSpeed = (data["speed"])
+        if (newSpeed is Float) {
+            speed = newSpeed
+        }
+        println("""ThrottleState speed -> $speed""")
+    }
+
+
     // Typical JMRI Responses
     // connect():
     // -> {"type":"hello","data":{"JMRI":"4.10+R419243e",

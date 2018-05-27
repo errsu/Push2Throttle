@@ -35,12 +35,13 @@ class Push2ThrottleMainView: View() {
 
 class Push2ThrottleController: Controller() {
     private val jmri = JmriWsClient()
+    private val state = ThrottleState()
 
     fun connectToJmri() {
         jmri.connect(this::messageFromJmri)
         println("connected: ${jmri.is_connected()}")
         // declare address and listen to incoming changes:
-        jmri.sendTextMessage("""{"type":"throttle","data":{"throttle":"L0","address":0}}""")
+        jmri.sendTextMessage("""{"type":"throttle","data":{"throttle":"T0","address":0}}""")
     }
     fun disconnectFromJmri() {
         jmri.disconnect()
@@ -48,7 +49,7 @@ class Push2ThrottleController: Controller() {
     }
 
     fun modifyThrottle() {
-        jmri.sendTextMessage("""{"type":"throttle","data":{"throttle":"L0","speed":0.2}}""")
+        jmri.sendTextMessage("""{"type":"throttle","data":{"throttle":"T0","speed":0.2}}""")
     }
 
     fun messageFromJmri(tree: Any?) {
@@ -67,7 +68,11 @@ class Push2ThrottleController: Controller() {
             if (tree["type"] == "throttle") {
                 val data = tree["data"]
                 if (data is Map<*,*>) {
-                    println("""THROTTLE ${data["throttle"]}: speed -> ${data["speed"]}""")
+                    @Suppress("UNCHECKED_CAST")
+                    val properties = data as Map<String, Any?>
+                    if (properties["throttle"] == "T0") {
+                        state.update(properties)
+                    }
                 }
             }
         }

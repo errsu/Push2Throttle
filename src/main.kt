@@ -3,14 +3,18 @@ import tornadofx.*
 class Push2ThrottleApp: App(Push2ThrottleMainView::class)
 
 class Push2ThrottleMainView: View() {
-    private val controllers: Array<ThrottleController> = Array(8) { ThrottleController("T$it", it) }
+    private val controllers: Array<ThrottleController> = Array(8) {
+        ThrottleController("T$it", it)
+    }
     private val midi = Push2Midi()
+    private val elements = Push2Elements()
 
     init {
         title = "Push 2 Throttle"
         for (ctrl in controllers) {
             ctrl.connectToJmri()
         }
+        elements.register(midi)
     }
 
     override val root = hbox {
@@ -22,8 +26,6 @@ class Push2ThrottleMainView: View() {
                 if (midi.isOpen) midi.close()
                 midi.open()
                 midi.test()
-                midi.registerElement("nn", 36) {
-                    nn, num, value -> println("lower left pad pressed ($nn, $num, $value)")}
             }
         }
         button("modify") {

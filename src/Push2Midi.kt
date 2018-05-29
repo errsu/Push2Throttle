@@ -74,13 +74,17 @@ class Push2Midi () : Receiver {
         }
     }
 
-    fun test () {
-        if (isOpen) {
-            val myMsg = ShortMessage()
-            val white = 122
-            myMsg.setMessage(ShortMessage.NOTE_ON, 0, 36, white)
-            val timeStamp: Long = -1
-            outgoingPortReceiver?.send(myMsg, timeStamp)
-        }
+    fun sendCC(channel: Int, number: Int, value: Int) {
+        val msg = ShortMessage()
+        msg.setMessage(ShortMessage.CONTROL_CHANGE, channel, number, value)
+        val timeStamp: Long = -1
+        outgoingPortReceiver?.send(msg, timeStamp)
+    }
+
+    fun sendNN(channel: Int, key: Int, velocity: Int) {
+        val msg = ShortMessage()
+        msg.setMessage(ShortMessage.NOTE_ON, channel, key, velocity)
+        val timeStamp: Long = -1
+        outgoingPortReceiver?.send(msg, timeStamp)
     }
 }

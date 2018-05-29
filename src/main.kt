@@ -14,6 +14,7 @@ class Push2ThrottleMainView: View() {
         for (ctrl in controllers) {
             ctrl.connectToJmri()
         }
+        midi.open()
         elements.register(midi)
     }
 
@@ -21,11 +22,10 @@ class Push2ThrottleMainView: View() {
         minWidth = 320.0
         minHeight = 80.0
 
-        button("MIDI") {
+        button("reconnect MIDI") {
             action {
                 if (midi.isOpen) midi.close()
                 midi.open()
-                midi.test()
             }
         }
         button("modify") {
@@ -42,7 +42,7 @@ class Push2ThrottleMainView: View() {
                 }
             }
         }
-        button("reconnect") {
+        button("reconnect JMRI") {
             action {
                 for (ctrl in controllers) {
                     ctrl.disconnectFromJmri()

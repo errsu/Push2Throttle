@@ -7,10 +7,10 @@ class Push2Midi () : Receiver {
     private var push2OutPort: MidiDevice? = null
     private var outgoingPortReceiver: Receiver? = null
 
-    private var nnCallbacks: Array<((String, Int, Int) -> Unit)?> = arrayOfNulls(128)
-    private var ccCallbacks: Array<((String, Int, Int) -> Unit)?> = arrayOfNulls(128)
+    private var nnCallbacks: Array<((Int) -> Unit)?> = arrayOfNulls(128)
+    private var ccCallbacks: Array<((Int) -> Unit)?> = arrayOfNulls(128)
 
-    fun registerElement(type: String, number: Int, callback: (String, Int, Int) -> Unit) {
+    fun registerElement(type: String, number: Int, callback: (Int) -> Unit) {
         when (type) {
             "nn" -> nnCallbacks[number] = callback
             "cc" -> ccCallbacks[number] = callback
@@ -19,7 +19,6 @@ class Push2Midi () : Receiver {
 
     override fun send(msg: MidiMessage, timeStamp: Long) {
         // this is where MIDI is coming in
-        println(msg.message.asList())
         val data = msg.message
         if (data.size == 3)
         {
@@ -28,10 +27,13 @@ class Push2Midi () : Receiver {
             val number: Int = data[1].toInt()
             val value:  Int = data[2].toInt()
             when (status and 0xF0) {
-                0x90 -> nnCallbacks[number]?.invoke("nn", number, value)
-                0x80 -> nnCallbacks[number]?.invoke("nn", number, 0)
-                0xB0 -> ccCallbacks[number]?.invoke("cc", number, value)
+                0x90 -> nnCallbacks[number]?.invoke(value) ?: println("unhandled note-on $number $value")
+                0x80 -> nnCallbacks[number]?.invoke(0)     ?: println("unhandled note-off $number $value")
+                0xB0 -> ccCallbacks[number]?.invoke(value) ?: println("unhandled cc $number $value")
+                else -> println("unhandled midi ${msg.message.asList()}")
             }
+        } else {
+            println("unhandled midi ${msg.message.asList()}")
         }
     }
 

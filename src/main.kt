@@ -4,6 +4,7 @@ class Push2ThrottleApp: App(Push2ThrottleMainView::class)
 
 class Push2ThrottleMainView: View() {
     private val controllers: Array<ThrottleController> = Array(8) { ThrottleController("T$it", it) }
+    private val midi = Push2Midi()
 
     init {
         title = "Push 2 Throttle"
@@ -18,7 +19,11 @@ class Push2ThrottleMainView: View() {
 
         button("MIDI") {
             action {
-                Push2Midi().test()
+                if (midi.isOpen) midi.close()
+                midi.open()
+                midi.test()
+                midi.registerElement("nn", 36) {
+                    nn, num, value -> println("lower left pad pressed ($nn, $num, $value)")}
             }
         }
         button("modify") {

@@ -1,22 +1,51 @@
 
 import javax.sound.midi.*
 
-
 class Push2Midi () : Receiver {
-    var push2Opened = false
-    var push2InPort: MidiDevice? = null
-    var push2OutPort: MidiDevice? = null
+    var isOpen = false
+    private var push2InPort: MidiDevice? = null
+    private var push2OutPort: MidiDevice? = null
+    private var outgoingPortReceiver: Receiver? = null
+
+    private var nnCallbacks: Array<((String, Int, Int) -> Unit)?> = arrayOfNulls(128)
+    private var ccCallbacks: Array<((String, Int, Int) -> Unit)?> = arrayOfNulls(128)
+
+    fun registerElement(type: String, number: Int, callback: (String, Int, Int) -> Unit) {
+        when (type) {
+            "nn" -> nnCallbacks[number] = callback
+            "cc" -> ccCallbacks[number] = callback
+        }
+    }
 
     override fun send(msg: MidiMessage, timeStamp: Long) {
-      println(msg.message.asList())
+        // this is where MIDI is coming in
+        println(msg.message.asList())
+        val data = msg.message
+        if (data.size == 3)
+        {
+            // using integers because of Kotlins issues with unsigned constants
+            val status: Int = data[0].toInt()
+            val number: Int = data[1].toInt()
+            val value:  Int = data[2].toInt()
+            when (status and 0xF0) {
+                0x90 -> nnCallbacks[number]?.invoke("nn", number, value)
+                0x80 -> nnCallbacks[number]?.invoke("nn", number, 0)
+                0xB0 -> ccCallbacks[number]?.invoke("cc", number, value)
+            }
+        }
     }
 
     override fun close() {
+        outgoingPortReceiver = null
+        push2OutPort?.close()
+        push2OutPort = null
 
+        push2InPort?.transmitter?.receiver = null
+        push2InPort?.close()
+        push2InPort = null
     }
 
-    fun test () {
-        println("looking for MIDI devices")
+    fun open () {
         val infos = MidiSystem.getMidiDeviceInfo()
         for (i in infos.indices) {
             try {
@@ -25,8 +54,7 @@ class Push2Midi () : Receiver {
                     if (device.maxTransmitters != 0) {
                         device.open()
                         push2InPort = device
-                    }
-                    else if (device.maxReceivers != 0) {
+                    } else if (device.maxReceivers != 0) {
                         device.open()
                         push2OutPort = device
                     }
@@ -35,29 +63,22 @@ class Push2Midi () : Receiver {
                 println(e.message)
             }
         }
+        isOpen = (push2OutPort?.isOpen ?: false )&& (push2InPort?.isOpen ?: false)
+        if (isOpen) {
+            outgoingPortReceiver = push2OutPort?.receiver
+            push2InPort?.transmitter?.receiver = this
+        } else {
+            close()
+        }
+    }
 
-        println("$push2OutPort open: ${push2OutPort?.isOpen}")
-        if (push2OutPort != null) {
-            println("push2InPort")
-            println("receivers: ${push2OutPort?.receivers?.size}")
-            println("transmitters: ${push2OutPort?.transmitters?.size}")
-            val rx = push2OutPort?.getReceiver()
-            println("rx: ${rx}")
+    fun test () {
+        if (isOpen) {
             val myMsg = ShortMessage()
             val white = 122
             myMsg.setMessage(ShortMessage.NOTE_ON, 0, 36, white)
             val timeStamp: Long = -1
-            rx?.send(myMsg, timeStamp)
-        }
-
-        println("$push2InPort open: ${push2InPort?.isOpen}")
-        if (push2InPort != null) {
-            println("push2OutPort")
-            println("receivers: ${push2InPort?.receivers?.size}")
-            println("transmitters: ${push2InPort?.transmitters?.size}")
-            val tx = push2InPort?.getTransmitter()
-            println("tx: ${tx}")
-            tx?.receiver = this
+            outgoingPortReceiver?.send(myMsg, timeStamp)
         }
     }
 }

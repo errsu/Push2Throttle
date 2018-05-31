@@ -3,11 +3,12 @@ import tornadofx.*
 class Push2ThrottleApp: App(Push2ThrottleMainView::class)
 
 class Push2ThrottleMainView: View() {
-    private val controllers: Array<ThrottleController> = Array(8) {
-        ThrottleController("T$it", it)
-    }
     private val midi = Push2Midi()
     private val elements = Push2Elements()
+    private val mapper: Push2Mapper = Push2Mapper(midi, elements)
+    private val controllers: Array<ThrottleController> = Array(8) {
+        ThrottleController("T$it", it, mapper)
+    }
 
     init {
         title = "Push 2 Throttle"
@@ -53,9 +54,13 @@ class Push2ThrottleMainView: View() {
     }
 }
 
-class ThrottleController(private val name: String, private val address: Int) : Controller() {
+class ThrottleController(
+        private val name: String,
+        private val address: Int,
+        mapper: Push2Mapper) : Controller() {
+
     private val jmri: JmriWsClient = JmriWsClient()
-    private val state: ThrottleState = ThrottleState(name)
+    private val state: ThrottleState = ThrottleState(name, mapper)
 
     fun connectToJmri() {
         jmri.connect(this::messageFromJmri)

@@ -1,20 +1,25 @@
-data class ThrottleState(
-            val name: String,
-            var address: Int = 0,
-            var speed: Float = 0.0f,
-            var forward: Boolean = true,
-            var f0: Boolean = false,
-            var f1: Boolean = false,
-            var f2: Boolean = false,
-            var f3: Boolean = false,
-            var f4: Boolean = false,
-            var f5: Boolean = false,
-            var f6: Boolean = false,
-            var f7: Boolean = false,
-            var speedSteps: Int = 126) {
+import kotlin.properties.Delegates
+import kotlin.reflect.KProperty
+
+class ThrottleState(val name: String, val mapper: Push2Mapper) {
+            var address: Int = 0
+            var speed: Float by Delegates.observable(0.0f, this::changed)
+            var forward: Boolean by Delegates.observable(true, this::changed)
+            var f0: Boolean by Delegates.observable(false, this::changed)
+            var f1: Boolean by Delegates.observable(false, this::changed)
+            var f2: Boolean by Delegates.observable(false, this::changed)
+            var f3: Boolean by Delegates.observable(false, this::changed)
+            var f4: Boolean by Delegates.observable(false, this::changed)
+            var f5: Boolean by Delegates.observable(false, this::changed)
+            var f6: Boolean by Delegates.observable(false, this::changed)
+            var f7: Boolean by Delegates.observable(false, this::changed)
+            var speedSteps: Int = 126
+
+    fun <T> changed(property: KProperty<*>, oldValue: T, newValue: T) {
+        mapper.changed(name, property, oldValue, newValue)
+    }
 
     fun update(data: Map<String,Any?>) {
-        val oldState = copy()
         for ((key, value) in data) {
             when (key) {
                 "address" -> if (value is Int) address = value
@@ -30,9 +35,6 @@ data class ThrottleState(
                 "F7"      -> if (value is Boolean) f7 = value
                 "speedSteps" -> if(value is Int) speedSteps = value
             }
-        }
-        if (this != oldState) {
-            println("$name: $this")
         }
     }
 }

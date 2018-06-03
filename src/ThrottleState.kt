@@ -15,8 +15,9 @@ class ThrottleState(private val name: String, private val mapper: Push2Mapper) {
             private var f7: Boolean by Delegates.observable(false, this::changed)
             private var speedSteps: Int = 126
 
+    @Suppress("UNUSED_PARAMETER")
     private fun <T> changed(property: KProperty<*>, oldValue: T, newValue: T) {
-        mapper.jmriThrottleStateChanged(name, property, oldValue, newValue)
+        mapper.jmriThrottleStateChanged(name, property, newValue)
     }
 
     fun updateFromJmri(data: Map<String,Any?>) {

@@ -6,7 +6,7 @@ class Push2Mapper(
         private val controllers: Map<String, ThrottleController>) {
 
     // TODO: what if an element controls more than one property, e.g. ERP(turn, touch)?
-    fun <T> jmriThrottleStateChanged(throttleName: String, property: KProperty<*>, oldValue: T, newValue: T) {
+    fun <T> jmriThrottleStateChanged(throttleName: String, property: KProperty<*>, newValue: T) {
         // println("State $throttleName jmriThrottleStateChanged: ${property.name} from $oldValue to $newValue")
         when (throttleName) {
             "T1" -> when (property.name) {

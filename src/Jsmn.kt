@@ -334,7 +334,7 @@ class JsmnParser(private val numTokens: Int) {
 }
 
 class JsmnFormatter {
-    fun formatMap(map: Map<*,*>) : String {
+    private fun formatMap(map: Map<*,*>) : String {
         val sb = StringBuilder()
         sb.append("{")
         var first = true
@@ -354,7 +354,7 @@ class JsmnFormatter {
         return sb.toString()
     }
 
-    fun formatList(list: List<*>) : String {
+    private fun formatList(list: List<*>) : String {
         val sb = StringBuilder()
         sb.append("[")
         var first = true

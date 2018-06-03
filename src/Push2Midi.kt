@@ -1,7 +1,7 @@
 
 import javax.sound.midi.*
 
-class Push2Midi () : Receiver {
+class Push2Midi : Receiver {
     var isOpen = false
     private var push2InPort: MidiDevice? = null
     private var push2OutPort: MidiDevice? = null

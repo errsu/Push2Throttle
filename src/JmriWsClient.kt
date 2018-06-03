@@ -13,12 +13,12 @@ import kotlin.concurrent.scheduleAtFixedRate
 class JmriWsClient : WebSocketAdapter() {
     private val wsFactory = WebSocketFactory().setConnectionTimeout(5000) // in ms
     private var ws: WebSocket? = null
-    private val ping_timer = Timer()
-    private var ping_timer_task : TimerTask? = null
+    private val pingTimer = Timer()
+    private var pingTimerTask : TimerTask? = null
     private var messageCallback: (Any?) -> Unit = {}
 
     fun connect(callback: (Any?) -> Unit ) {
-        if (is_connected()) {
+        if (isConnected()) {
             disconnect()
         }
 
@@ -28,7 +28,7 @@ class JmriWsClient : WebSocketAdapter() {
                     .addExtension(WebSocketExtension.PERMESSAGE_DEFLATE)
                     .connect()
 
-            ping_timer_task = ping_timer.scheduleAtFixedRate(5000, 5000) {
+            pingTimerTask = pingTimer.scheduleAtFixedRate(5000, 5000) {
                 sendTextMessage("""{"type":"ping"}""")
             }
 
@@ -44,14 +44,14 @@ class JmriWsClient : WebSocketAdapter() {
         }
     }
 
-    fun is_connected() : Boolean {
-        return ws?.isOpen() ?: false
+    fun isConnected() : Boolean {
+        return ws?.isOpen ?: false
     }
 
     fun disconnect() {
         messageCallback = {}
-        ping_timer_task?.cancel()
-        ping_timer_task = null
+        pingTimerTask?.cancel()
+        pingTimerTask = null
         ws?.disconnect()
         ws?.removeListener(this)
         ws = null

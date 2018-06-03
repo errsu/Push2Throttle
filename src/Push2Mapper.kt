@@ -1,9 +1,9 @@
 import kotlin.reflect.KProperty
 
 class Push2Mapper(
-    val midi: Push2Midi,
-    val elements: Push2Elements,
-    val controllers: Map<String, ThrottleController>) {
+        private val midi: Push2Midi,
+        private val elements: Push2Elements,
+        private val controllers: Map<String, ThrottleController>) {
 
     // TODO: what if an element controls more than one property, e.g. ERP(turn, touch)?
     fun <T> jmriThrottleStateChanged(throttleName: String, property: KProperty<*>, oldValue: T, newValue: T) {

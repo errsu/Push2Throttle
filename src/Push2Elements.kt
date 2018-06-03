@@ -9,15 +9,15 @@ abstract class MidiElement() {
     }
 }
 
-class Erp(val turn_cc_number: Int, val touch_nn_number: Int) : MidiElement() {
-    var state = 0.0f
-    var min = 0.0f
-    var max = 1.0f
-    var delta = 1.0f / 128.0f // clockwise == more
-    var touched = false
+class Erp(private val turnCcNumber: Int, private val touchNnNumber: Int) : MidiElement() {
+    private var state = 0.0f
+    private var min = 0.0f
+    private var max = 1.0f
+    private var delta = 1.0f / 128.0f // clockwise == more
+    private var touched = false
 
     override fun registerForMidi(midi: Push2Midi) {
-        midi.registerElement("cc", turn_cc_number) { value ->
+        midi.registerElement("cc", turnCcNumber) { value ->
             if (value < 64) { // turn right
                 state = minOf(state + delta * value, max)
             } else { // turn left
@@ -26,7 +26,7 @@ class Erp(val turn_cc_number: Int, val touch_nn_number: Int) : MidiElement() {
             updateJmri(state)
             updatePush2(midi)
         }
-        midi.registerElement("nn", touch_nn_number) { value ->
+        midi.registerElement("nn", touchNnNumber) { value ->
             touched = (value > 0)
             updatePush2(midi)
         }
@@ -45,7 +45,7 @@ class Erp(val turn_cc_number: Int, val touch_nn_number: Int) : MidiElement() {
 const val TOGGLE = true
 const val MOMENTARY = false
 
-abstract class Switch(val toggle: Boolean) : MidiElement() {
+abstract class Switch(private val toggle: Boolean) : MidiElement() {
     var state = false
     fun onMidi(midi: Push2Midi, value: Int) {
         var newState = state
@@ -68,7 +68,7 @@ abstract class Switch(val toggle: Boolean) : MidiElement() {
     }
 }
 
-class Pad(val number: Int, toggle: Boolean) : Switch(toggle) {
+class Pad(private val number: Int, toggle: Boolean) : Switch(toggle) {
     override fun registerForMidi(midi: Push2Midi) {
         midi.registerElement("nn", number) { value -> onMidi(midi, value) }
     }
@@ -78,7 +78,7 @@ class Pad(val number: Int, toggle: Boolean) : Switch(toggle) {
     }
 }
 
-class ButtonWhite(val number: Int, toggle: Boolean) : Switch(toggle) {
+class ButtonWhite(private val number: Int, toggle: Boolean) : Switch(toggle) {
     override fun registerForMidi(midi: Push2Midi) {
         midi.registerElement("cc", number) { value -> onMidi(midi, value) }
     }
@@ -88,7 +88,7 @@ class ButtonWhite(val number: Int, toggle: Boolean) : Switch(toggle) {
     }
 }
 
-class ButtonRgb(val number: Int, toggle: Boolean) : Switch(toggle) {
+class ButtonRgb(private val number: Int, toggle: Boolean) : Switch(toggle) {
     override fun registerForMidi(midi: Push2Midi) {
         midi.registerElement("cc", number) { value -> onMidi(midi, value) }
     }
@@ -117,6 +117,6 @@ class Push2Elements {
         }
     }
     fun getElement(name: String) : MidiElement? {
-        return elements.get(name)
+        return elements[name]
     }
 }

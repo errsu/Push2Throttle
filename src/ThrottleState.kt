@@ -1,25 +1,25 @@
 import kotlin.properties.Delegates
 import kotlin.reflect.KProperty
 
-class ThrottleState(val name: String, val mapper: Push2Mapper) {
-            var address: Int = 0
-            var speed: Float by Delegates.observable(0.0f, this::changed)
-            var forward: Boolean by Delegates.observable(true, this::changed)
-            var f0: Boolean by Delegates.observable(false, this::changed)
-            var f1: Boolean by Delegates.observable(false, this::changed)
-            var f2: Boolean by Delegates.observable(false, this::changed)
-            var f3: Boolean by Delegates.observable(false, this::changed)
-            var f4: Boolean by Delegates.observable(false, this::changed)
-            var f5: Boolean by Delegates.observable(false, this::changed)
-            var f6: Boolean by Delegates.observable(false, this::changed)
-            var f7: Boolean by Delegates.observable(false, this::changed)
-            var speedSteps: Int = 126
+class ThrottleState(private val name: String, private val mapper: Push2Mapper) {
+            private var address: Int = 0
+            private var speed: Float by Delegates.observable(0.0f, this::changed)
+            private var forward: Boolean by Delegates.observable(true, this::changed)
+            private var f0: Boolean by Delegates.observable(false, this::changed)
+            private var f1: Boolean by Delegates.observable(false, this::changed)
+            private var f2: Boolean by Delegates.observable(false, this::changed)
+            private var f3: Boolean by Delegates.observable(false, this::changed)
+            private var f4: Boolean by Delegates.observable(false, this::changed)
+            private var f5: Boolean by Delegates.observable(false, this::changed)
+            private var f6: Boolean by Delegates.observable(false, this::changed)
+            private var f7: Boolean by Delegates.observable(false, this::changed)
+            private var speedSteps: Int = 126
 
-    fun <T> changed(property: KProperty<*>, oldValue: T, newValue: T) {
+    private fun <T> changed(property: KProperty<*>, oldValue: T, newValue: T) {
         mapper.jmriThrottleStateChanged(name, property, oldValue, newValue)
     }
 
-    fun update(data: Map<String,Any?>) {
+    fun updateFromJmri(data: Map<String,Any?>) {
         for ((key, value) in data) {
             when (key) {
                 "address" -> if (value is Int) address = value

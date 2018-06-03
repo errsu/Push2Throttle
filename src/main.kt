@@ -5,8 +5,8 @@ class Push2ThrottleApp: App(Push2ThrottleMainView::class)
 class Push2ThrottleMainView: View() {
     private val midi = Push2Midi()
     private val elements = Push2Elements()
-    private val mapper: Push2Mapper = Push2Mapper(midi, elements)
     private var controllers: MutableMap<String, ThrottleController> = HashMap()
+    private val mapper: Push2Mapper = Push2Mapper(midi, elements, controllers)
 
     init {
         title = "Push 2 Throttle"
@@ -16,7 +16,7 @@ class Push2ThrottleMainView: View() {
             ctrl.connectToJmri()
         }
         midi.open()
-        elements.register(midi)
+        elements.register(midi, mapper)
     }
 
     override val root = hbox {
@@ -65,7 +65,7 @@ class ThrottleController(
         mapper: Push2Mapper) : Controller() {
 
     private val jmri: JmriWsClient = JmriWsClient()
-    private val state: ThrottleState = ThrottleState(name, mapper)
+    val state: ThrottleState = ThrottleState(name, mapper)
 
     fun connectToJmri() {
         jmri.connect(this::messageFromJmri)
@@ -112,5 +112,11 @@ class ThrottleController(
                 }
             }
         }
+    }
+
+    fun messageToJmri(propertyName: String, value: Any?) {
+        jmri.sendTree(mapOf("type" to "throttle",
+                            "data" to mapOf("throttle" to name,
+                                            propertyName to value)))
     }
 }

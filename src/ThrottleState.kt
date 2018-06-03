@@ -16,7 +16,7 @@ class ThrottleState(val name: String, val mapper: Push2Mapper) {
             var speedSteps: Int = 126
 
     fun <T> changed(property: KProperty<*>, oldValue: T, newValue: T) {
-        mapper.changed(name, property, oldValue, newValue)
+        mapper.jmriThrottleStateChanged(name, property, oldValue, newValue)
     }
 
     fun update(data: Map<String,Any?>) {

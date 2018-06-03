@@ -1,8 +1,12 @@
 abstract class MidiElement() {
     var name: String = "noname"
+    var mapper: Push2Mapper? = null
     abstract fun registerForMidi(midi: Push2Midi)
     abstract fun updatePush2(midi: Push2Midi)
     abstract fun updateState(value: Any, midi: Push2Midi)
+    fun updateJmri(newValue: Any) {
+        mapper?.push2ElementStateChanged(name, newValue)
+    }
 }
 
 class Erp(val turn_cc_number: Int, val touch_nn_number: Int) : MidiElement() {
@@ -19,6 +23,7 @@ class Erp(val turn_cc_number: Int, val touch_nn_number: Int) : MidiElement() {
             } else { // turn left
                 state = maxOf(state + delta * (value - 128), min)
             }
+            updateJmri(state)
             updatePush2(midi)
         }
         midi.registerElement("nn", touch_nn_number) { value ->
@@ -30,7 +35,7 @@ class Erp(val turn_cc_number: Int, val touch_nn_number: Int) : MidiElement() {
         println("pot $name state: $state touched: $touched")
     }
     override fun updateState(value: Any, midi: Push2Midi) {
-        if (value is Float) {
+        if (value is Float) { // TODO: how to update touch?
             state = value
             updatePush2(midi)
         }
@@ -51,6 +56,7 @@ abstract class Switch(val toggle: Boolean) : MidiElement() {
         }
         if (newState != state) {
             state = newState
+            updateJmri(state)
             updatePush2(midi)
         }
     }
@@ -102,9 +108,10 @@ class Push2Elements {
         "repeat" to ButtonWhite(56, TOGGLE),
         "select" to ButtonWhite(48, MOMENTARY)
     )
-    fun register(midi: Push2Midi) {
+    fun register(midi: Push2Midi, mapper: Push2Mapper) {
         for ((key, element) in elements.entries) {
             element.name = key
+            element.mapper = mapper
             element.updatePush2(midi)
             element.registerForMidi(midi)
         }

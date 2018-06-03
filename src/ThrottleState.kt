@@ -37,4 +37,9 @@ class ThrottleState(val name: String, val mapper: Push2Mapper) {
             }
         }
     }
+
+    override fun toString() : String {
+        return """$name {addr: $address, speed: $speed, fwd: $forward, """ +
+               """F0-F7: [$f0, $f1, $f2, $f3, $f4, $f5, $f6, $f7]}"""
+    }
 }

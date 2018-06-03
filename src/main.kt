@@ -38,8 +38,8 @@ class Push2ThrottleMainView: View() {
         }
         button("print states") {
             action {
-                for (ctrl in controllers.values) {
-                    ctrl.printStates()
+                for (throttleName in controllers.keys.sorted()) {
+                    controllers[throttleName]?.printStates()
                 }
             }
         }

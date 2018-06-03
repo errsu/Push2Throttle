@@ -333,6 +333,56 @@ class JsmnParser(private val numTokens: Int) {
     }
 }
 
+class JsmnFormatter {
+    fun formatMap(map: Map<*,*>) : String {
+        val sb = StringBuilder()
+        sb.append("{")
+        var first = true
+        for ((key, value) in map) {
+            if (first) {
+                first = false
+            } else {
+                sb.append(", ")
+            }
+            if (value == null) {
+                sb.append(""""$key"""")
+            } else {
+                sb.append(""""$key" : ${formatTree(value)}""")
+            }
+        }
+        sb.append("}")
+        return sb.toString()
+    }
+
+    fun formatList(list: List<*>) : String {
+        val sb = StringBuilder()
+        sb.append("[")
+        var first = true
+        for (value in list) {
+            if (first) {
+                first = false
+            } else {
+                sb.append(", ")
+            }
+            sb.append(formatTree(value))
+        }
+        sb.append("]")
+        return sb.toString()
+    }
+
+    fun formatTree(tree: Any?) : String {
+        return when(tree) {
+            null -> "null"
+            is Boolean -> if (tree) "true" else "false"
+            is Float, is Int -> tree.toString()
+            is String -> """"$tree""""
+            is Map<*,*> -> formatMap(tree)
+            is List<*> -> formatList(tree)
+            else -> """""""
+        }
+    }
+}
+
 fun testJsmn() {
     testCase("""{"type":"throttle","data":{"throttle":"L0","speed":-1.0}}""")
     testCase("""{"a":"b","c":[ 1, 2, 3 ],"d": null}""")
@@ -365,6 +415,8 @@ fun testCase(js: String) {
             }
             val tree = parser.parseToTree(js)
             println("Tree: $tree")
+            val formatter = JsmnFormatter()
+            println(formatter.formatTree(tree))
         }
     }
     println("-----------------------------------------------------------------------------")

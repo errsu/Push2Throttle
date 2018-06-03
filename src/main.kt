@@ -51,6 +51,11 @@ class Push2ThrottleMainView: View() {
                 }
             }
         }
+        button("test JSMN") {
+            action {
+                testJsmn()
+            }
+        }
     }
 }
 

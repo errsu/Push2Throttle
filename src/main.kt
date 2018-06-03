@@ -11,8 +11,8 @@ class Push2ThrottleMainView: View() {
     init {
         title = "Push 2 Throttle"
         repeat(8) {
-            val ctrl = ThrottleController("T$it", it, mapper)
-            controllers["T$it"] = ctrl
+            val ctrl = ThrottleController("T${it + 1}", it, mapper)
+            controllers["T${it + 1}"] = ctrl
             ctrl.connectToJmri()
         }
         midi.open()

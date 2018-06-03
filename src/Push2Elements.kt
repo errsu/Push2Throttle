@@ -111,13 +111,27 @@ class ButtonRgb(private val number: Int, toggle: Boolean) : Switch(toggle) {
 
 class Push2Elements {
     private val elements: Map<String, MidiElement> = mapOf(
-        "pad_t1_s7" to Pad(44, TOGGLE),
-        "pad_t1_s8" to Pad(36, MOMENTARY),
-        "pot_t1" to Erp(71, 0),
-        "dispa_t1" to ButtonRgb(102, MOMENTARY),
-        "dispb_t1" to ButtonRgb(20, TOGGLE),
-        "repeat" to ButtonWhite(56, TOGGLE),
-        "select" to ButtonWhite(48, MOMENTARY)
+            "pad_t1_s7" to Pad(44, TOGGLE),
+            "pad_t1_s8" to Pad(36, MOMENTARY),
+            "pot_t1" to Erp(71, 0),
+            "pot_t2" to Erp(72, 1),
+            "pot_t3" to Erp(73, 2),
+            "pot_t4" to Erp(74, 3),
+            "pot_t5" to Erp(75, 4),
+            "pot_t6" to Erp(76, 5),
+            "pot_t7" to Erp(77, 6),
+            "pot_t8" to Erp(78, 7),
+            "dispa_t1" to ButtonRgb(102, MOMENTARY),
+            "dispb_t1" to ButtonRgb(20, TOGGLE),
+            "dispb_t2" to ButtonRgb(21, TOGGLE),
+            "dispb_t3" to ButtonRgb(22, TOGGLE),
+            "dispb_t4" to ButtonRgb(23, TOGGLE),
+            "dispb_t5" to ButtonRgb(24, TOGGLE),
+            "dispb_t6" to ButtonRgb(25, TOGGLE),
+            "dispb_t7" to ButtonRgb(26, TOGGLE),
+            "dispb_t8" to ButtonRgb(27, TOGGLE),
+            "repeat" to ButtonWhite(56, TOGGLE),
+            "select" to ButtonWhite(48, MOMENTARY)
     )
     fun register(midi: Push2Midi, mapper: Push2Mapper) {
         for ((key, element) in elements.entries) {

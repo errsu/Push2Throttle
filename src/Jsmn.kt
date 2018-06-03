@@ -1,4 +1,5 @@
 import java.util.*
+import kotlin.math.min
 
 enum class JsmnType {
     UNDEFINED,
@@ -330,6 +331,16 @@ class JsmnParser(private val numTokens: Int) {
             println("Jsmn::parseToTree Error: ${e.message}")
             null
         }
+    }
+
+    fun printError(js: String, n: Int) {
+        println(when (n) {
+            0 -> "no content found"
+            JSMN_ERROR_NOMEM -> "Not enough tokens were provided"
+            JSMN_ERROR_INVAL -> "Invalid character inside JSON string: ${js.substring(pos, min(20, js.length - pos))}"
+            JSMN_ERROR_PART -> "The string is not a full JSON packet, more bytes expected"
+            else -> "unexpected JSON error: $n"
+        })
     }
 }
 

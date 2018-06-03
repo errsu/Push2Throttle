@@ -6,13 +6,13 @@ class Push2ThrottleMainView: View() {
     private val midi = Push2Midi()
     private val elements = Push2Elements()
     private val mapper: Push2Mapper = Push2Mapper(midi, elements)
-    private val controllers: Array<ThrottleController> = Array(8) {
-        ThrottleController("T$it", it, mapper)
-    }
+    private var controllers: MutableMap<String, ThrottleController> = HashMap()
 
     init {
         title = "Push 2 Throttle"
-        for (ctrl in controllers) {
+        repeat(8) {
+            val ctrl = ThrottleController("T$it", it, mapper)
+            controllers["T$it"] = ctrl
             ctrl.connectToJmri()
         }
         midi.open()
@@ -31,21 +31,21 @@ class Push2ThrottleMainView: View() {
         }
         button("modify") {
             action {
-                for (ctrl in controllers) {
+                for (ctrl in controllers.values) {
                     ctrl.modifyThrottle()
                 }
             }
         }
         button("print states") {
             action {
-                for (ctrl in controllers) {
+                for (ctrl in controllers.values) {
                     ctrl.printStates()
                 }
             }
         }
         button("reconnect JMRI") {
             action {
-                for (ctrl in controllers) {
+                for (ctrl in controllers.values) {
                     ctrl.disconnectFromJmri()
                     ctrl.connectToJmri()
                 }

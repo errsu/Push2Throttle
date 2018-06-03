@@ -108,7 +108,6 @@ class JmriWsClient : WebSocketAdapter() {
 
     fun sendTree(tree: Any?) {
         val text = JsmnFormatter().formatTree(tree)
-        println("sending to JMRI: $text")
         sendTextMessage(text)
     }
 }

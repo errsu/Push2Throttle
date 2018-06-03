@@ -1,9 +1,12 @@
+import java.util.*
+import kotlin.concurrent.schedule
+
 abstract class MidiElement() {
     var name: String = "noname"
     var mapper: Push2Mapper? = null
     abstract fun registerForMidi(midi: Push2Midi)
     abstract fun updatePush2(midi: Push2Midi)
-    abstract fun updateState(value: Any, midi: Push2Midi)
+    abstract fun updateStateByJmri(value: Any, midi: Push2Midi)
     fun updateJmri(newValue: Any) {
         mapper?.push2ElementStateChanged(name, newValue)
     }
@@ -15,6 +18,9 @@ class Erp(private val turnCcNumber: Int, private val touchNnNumber: Int) : MidiE
     private var max = 1.0f
     private var delta = 1.0f / 128.0f // clockwise == more
     private var touched = false
+    private var suppressEcho = false
+    private val resetTimer = Timer()
+    private var resetTimerTask : TimerTask? = null
 
     override fun registerForMidi(midi: Push2Midi) {
         midi.registerElement("cc", turnCcNumber) { value ->
@@ -22,6 +28,11 @@ class Erp(private val turnCcNumber: Int, private val touchNnNumber: Int) : MidiE
                 state = minOf(state + delta * value, max)
             } else { // turn left
                 state = maxOf(state + delta * (value - 128), min)
+            }
+            resetTimerTask?.cancel()
+            suppressEcho = true
+            resetTimerTask = resetTimer.schedule(10) {
+                suppressEcho = false
             }
             updateJmri(state)
             updatePush2(midi)
@@ -34,8 +45,8 @@ class Erp(private val turnCcNumber: Int, private val touchNnNumber: Int) : MidiE
     override fun updatePush2(midi: Push2Midi) {
         println("pot $name state: $state touched: $touched")
     }
-    override fun updateState(value: Any, midi: Push2Midi) {
-        if (value is Float) { // TODO: how to update touch?
+    override fun updateStateByJmri(value: Any, midi: Push2Midi) {
+        if (value is Float && !suppressEcho) { // TODO: how to update touch?
             state = value
             updatePush2(midi)
         }
@@ -60,7 +71,7 @@ abstract class Switch(private val toggle: Boolean) : MidiElement() {
             updatePush2(midi)
         }
     }
-    override fun updateState(value: Any, midi: Push2Midi) {
+    override fun updateStateByJmri(value: Any, midi: Push2Midi) {
         if (value is Boolean) {
             state = value
             updatePush2(midi)

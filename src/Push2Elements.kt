@@ -143,8 +143,14 @@ class ButtonRgb(private val number: Int) : Switch() {
 
 class Push2Elements {
     private val elements: Map<String, MidiElement> = mapOf(
-            "pad_t1_s7" to Pad(44),
-            "pad_t1_s8" to Pad(36),
+            "pad_11" to Pad(92), "pad_12" to Pad(93), "pad_13" to Pad(94), "pad_14" to Pad(95), "pad_15" to Pad(96), "pad_16" to Pad(97), "pad_17" to Pad(98), "pad_18" to Pad(99),
+            "pad_21" to Pad(84), "pad_22" to Pad(85), "pad_23" to Pad(86), "pad_24" to Pad(87), "pad_25" to Pad(88), "pad_26" to Pad(89), "pad_27" to Pad(90), "pad_28" to Pad(91),
+            "pad_31" to Pad(76), "pad_32" to Pad(77), "pad_33" to Pad(78), "pad_34" to Pad(79), "pad_35" to Pad(80), "pad_36" to Pad(81), "pad_37" to Pad(82), "pad_38" to Pad(83),
+            "pad_41" to Pad(68), "pad_42" to Pad(69), "pad_43" to Pad(70), "pad_44" to Pad(71), "pad_45" to Pad(72), "pad_46" to Pad(73), "pad_47" to Pad(74), "pad_48" to Pad(75),
+            "pad_51" to Pad(60), "pad_52" to Pad(61), "pad_53" to Pad(62), "pad_54" to Pad(63), "pad_55" to Pad(64), "pad_56" to Pad(65), "pad_57" to Pad(66), "pad_58" to Pad(67),
+            "pad_61" to Pad(52), "pad_62" to Pad(53), "pad_63" to Pad(54), "pad_64" to Pad(55), "pad_65" to Pad(56), "pad_66" to Pad(57), "pad_67" to Pad(58), "pad_68" to Pad(59),
+            "pad_71" to Pad(44), "pad_72" to Pad(45), "pad_73" to Pad(46), "pad_74" to Pad(47), "pad_75" to Pad(48), "pad_76" to Pad(49), "pad_77" to Pad(50), "pad_78" to Pad(51),
+            "pad_81" to Pad(36), "pad_82" to Pad(37), "pad_83" to Pad(38), "pad_84" to Pad(39), "pad_85" to Pad(40), "pad_86" to Pad(41), "pad_87" to Pad(42), "pad_88" to Pad(43),
             "pot_t1" to Erp(71, 0),
             "pot_t2" to Erp(72, 1),
             "pot_t3" to Erp(73, 2),

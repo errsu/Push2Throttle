@@ -41,6 +41,7 @@ class Push2Mapper(
                         inverseMappings.putIfAbsent(throttleName, HashMap())
                         inverseMappings[throttleName]?.put(propertyName, elementName)
                     }
+                    elements.getElement(elementName)?.setAttributes(mapping)
                 }
                 push2ToJmriMappings = mappings
                 jmriToPush2Mappings = inverseMappings

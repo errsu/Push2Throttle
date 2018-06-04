@@ -4,6 +4,8 @@ import kotlin.concurrent.schedule
 abstract class MidiElement() {
     var name: String = "noname"
     var mapper: Push2Mapper? = null
+    open fun setAttributes(mapping: Map<String,String>) {
+    }
     abstract fun registerForMidi(midi: Push2Midi)
     abstract fun updatePush2(midi: Push2Midi)
     abstract fun updateStateByJmri(value: Any, midi: Push2Midi)
@@ -58,6 +60,23 @@ const val MOMENTARY = false
 
 abstract class Switch(private val toggle: Boolean) : MidiElement() {
     var state = false
+
+    abstract fun isRgb() : Boolean
+    protected var onColor = if (isRgb()) 122 else 127
+    protected var offColor = 0
+
+    private fun colorIndex(color: Any?) : Int? {
+        return when (color) {
+            null -> null
+            "red" -> if (isRgb()) 127 else null
+            "green" -> if (isRgb()) 126 else null
+            "blue" -> if (isRgb()) 125 else null
+            "white" -> if (isRgb()) 122 else 127
+            "black" -> if (isRgb()) 0 else 0
+            is Int -> color
+            else -> null
+        }}
+
     fun onMidi(midi: Push2Midi, value: Int) {
         var newState = state
         if (toggle) {
@@ -71,6 +90,11 @@ abstract class Switch(private val toggle: Boolean) : MidiElement() {
             updatePush2(midi)
         }
     }
+    override fun setAttributes(mapping: Map<String,String>) {
+        onColor = colorIndex(mapping["onColor"]) ?: onColor
+        offColor = colorIndex(mapping["offColor"]) ?: offColor
+    }
+
     override fun updateStateByJmri(value: Any, midi: Push2Midi) {
         if (value is Boolean) {
             state = value
@@ -80,31 +104,37 @@ abstract class Switch(private val toggle: Boolean) : MidiElement() {
 }
 
 class Pad(private val number: Int, toggle: Boolean) : Switch(toggle) {
+    override fun isRgb() = true
+
     override fun registerForMidi(midi: Push2Midi) {
         midi.registerElement("nn", number) { value -> onMidi(midi, value) }
     }
     override fun updatePush2(midi: Push2Midi) {
-        midi.sendNN(0, number, if (state) 122 else 0)
+        midi.sendNN(0, number, if (state) onColor else offColor)
         println("pad $name state: $state")
     }
 }
 
 class ButtonWhite(private val number: Int, toggle: Boolean) : Switch(toggle) {
+    override fun isRgb() = false
+
     override fun registerForMidi(midi: Push2Midi) {
         midi.registerElement("cc", number) { value -> onMidi(midi, value) }
     }
     override fun updatePush2(midi: Push2Midi) {
-        midi.sendCC(0, number, if (state) 127 else 0)
+        midi.sendCC(0, number, if (state) onColor else offColor)
         println("white button $name state: $state")
     }
 }
 
 class ButtonRgb(private val number: Int, toggle: Boolean) : Switch(toggle) {
+    override fun isRgb() = true
+
     override fun registerForMidi(midi: Push2Midi) {
         midi.registerElement("cc", number) { value -> onMidi(midi, value) }
     }
     override fun updatePush2(midi: Push2Midi) {
-        midi.sendCC(0, number, if (state) 122 else 0)
+        midi.sendCC(0, number, if (state) onColor else offColor)
         println("rgb button $name state: $state")
     }
 }
@@ -121,16 +151,23 @@ class Push2Elements {
             "pot_t6" to Erp(76, 5),
             "pot_t7" to Erp(77, 6),
             "pot_t8" to Erp(78, 7),
-            "dispa_t1" to ButtonRgb(102, MOMENTARY),
-            "dispb_t1" to ButtonRgb(20, TOGGLE),
-            "dispb_t2" to ButtonRgb(21, TOGGLE),
-            "dispb_t3" to ButtonRgb(22, TOGGLE),
-            "dispb_t4" to ButtonRgb(23, TOGGLE),
-            "dispb_t5" to ButtonRgb(24, TOGGLE),
-            "dispb_t6" to ButtonRgb(25, TOGGLE),
-            "dispb_t7" to ButtonRgb(26, TOGGLE),
-            "dispb_t8" to ButtonRgb(27, TOGGLE),
-            "repeat" to ButtonWhite(56, TOGGLE),
+            "dispa_t1" to ButtonRgb(102, TOGGLE),
+            "dispa_t2" to ButtonRgb(103, TOGGLE),
+            "dispa_t3" to ButtonRgb(104, TOGGLE),
+            "dispa_t4" to ButtonRgb(105, TOGGLE),
+            "dispa_t5" to ButtonRgb(106, TOGGLE),
+            "dispa_t6" to ButtonRgb(107, TOGGLE),
+            "dispa_t7" to ButtonRgb(108, TOGGLE),
+            "dispa_t8" to ButtonRgb(109, TOGGLE),
+            "dispb_t1" to ButtonRgb(20, MOMENTARY),
+            "dispb_t2" to ButtonRgb(21, MOMENTARY),
+            "dispb_t3" to ButtonRgb(22, MOMENTARY),
+            "dispb_t4" to ButtonRgb(23, MOMENTARY),
+            "dispb_t5" to ButtonRgb(24, MOMENTARY),
+            "dispb_t6" to ButtonRgb(25, MOMENTARY),
+            "dispb_t7" to ButtonRgb(26, MOMENTARY),
+            "dispb_t8" to ButtonRgb(27, MOMENTARY),
+            "repeat" to ButtonWhite(56, MOMENTARY),
             "select" to ButtonWhite(48, MOMENTARY)
     )
     fun register(midi: Push2Midi, mapper: Push2Mapper) {

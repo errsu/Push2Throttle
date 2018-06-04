@@ -58,7 +58,8 @@ class Erp(private val turnCcNumber: Int, private val touchNnNumber: Int) : MidiE
 const val TOGGLE = true
 const val MOMENTARY = false
 
-abstract class Switch(private val toggle: Boolean) : MidiElement() {
+abstract class Switch : MidiElement() {
+    private var toggle = false
     var state = false
 
     abstract fun isRgb() : Boolean
@@ -93,6 +94,7 @@ abstract class Switch(private val toggle: Boolean) : MidiElement() {
     override fun setAttributes(mapping: Map<String,String>) {
         onColor = colorIndex(mapping["onColor"]) ?: onColor
         offColor = colorIndex(mapping["offColor"]) ?: offColor
+        if (mapping["type"] == "toggle") toggle = true
     }
 
     override fun updateStateByJmri(value: Any, midi: Push2Midi) {
@@ -103,7 +105,7 @@ abstract class Switch(private val toggle: Boolean) : MidiElement() {
     }
 }
 
-class Pad(private val number: Int, toggle: Boolean) : Switch(toggle) {
+class Pad(private val number: Int) : Switch() {
     override fun isRgb() = true
 
     override fun registerForMidi(midi: Push2Midi) {
@@ -115,7 +117,7 @@ class Pad(private val number: Int, toggle: Boolean) : Switch(toggle) {
     }
 }
 
-class ButtonWhite(private val number: Int, toggle: Boolean) : Switch(toggle) {
+class ButtonWhite(private val number: Int) : Switch() {
     override fun isRgb() = false
 
     override fun registerForMidi(midi: Push2Midi) {
@@ -127,7 +129,7 @@ class ButtonWhite(private val number: Int, toggle: Boolean) : Switch(toggle) {
     }
 }
 
-class ButtonRgb(private val number: Int, toggle: Boolean) : Switch(toggle) {
+class ButtonRgb(private val number: Int) : Switch() {
     override fun isRgb() = true
 
     override fun registerForMidi(midi: Push2Midi) {
@@ -141,8 +143,8 @@ class ButtonRgb(private val number: Int, toggle: Boolean) : Switch(toggle) {
 
 class Push2Elements {
     private val elements: Map<String, MidiElement> = mapOf(
-            "pad_t1_s7" to Pad(44, TOGGLE),
-            "pad_t1_s8" to Pad(36, MOMENTARY),
+            "pad_t1_s7" to Pad(44),
+            "pad_t1_s8" to Pad(36),
             "pot_t1" to Erp(71, 0),
             "pot_t2" to Erp(72, 1),
             "pot_t3" to Erp(73, 2),
@@ -151,24 +153,24 @@ class Push2Elements {
             "pot_t6" to Erp(76, 5),
             "pot_t7" to Erp(77, 6),
             "pot_t8" to Erp(78, 7),
-            "dispa_t1" to ButtonRgb(102, TOGGLE),
-            "dispa_t2" to ButtonRgb(103, TOGGLE),
-            "dispa_t3" to ButtonRgb(104, TOGGLE),
-            "dispa_t4" to ButtonRgb(105, TOGGLE),
-            "dispa_t5" to ButtonRgb(106, TOGGLE),
-            "dispa_t6" to ButtonRgb(107, TOGGLE),
-            "dispa_t7" to ButtonRgb(108, TOGGLE),
-            "dispa_t8" to ButtonRgb(109, TOGGLE),
-            "dispb_t1" to ButtonRgb(20, MOMENTARY),
-            "dispb_t2" to ButtonRgb(21, MOMENTARY),
-            "dispb_t3" to ButtonRgb(22, MOMENTARY),
-            "dispb_t4" to ButtonRgb(23, MOMENTARY),
-            "dispb_t5" to ButtonRgb(24, MOMENTARY),
-            "dispb_t6" to ButtonRgb(25, MOMENTARY),
-            "dispb_t7" to ButtonRgb(26, MOMENTARY),
-            "dispb_t8" to ButtonRgb(27, MOMENTARY),
-            "repeat" to ButtonWhite(56, MOMENTARY),
-            "select" to ButtonWhite(48, MOMENTARY)
+            "dispa_t1" to ButtonRgb(102),
+            "dispa_t2" to ButtonRgb(103),
+            "dispa_t3" to ButtonRgb(104),
+            "dispa_t4" to ButtonRgb(105),
+            "dispa_t5" to ButtonRgb(106),
+            "dispa_t6" to ButtonRgb(107),
+            "dispa_t7" to ButtonRgb(108),
+            "dispa_t8" to ButtonRgb(109),
+            "dispb_t1" to ButtonRgb(20),
+            "dispb_t2" to ButtonRgb(21),
+            "dispb_t3" to ButtonRgb(22),
+            "dispb_t4" to ButtonRgb(23),
+            "dispb_t5" to ButtonRgb(24),
+            "dispb_t6" to ButtonRgb(25),
+            "dispb_t7" to ButtonRgb(26),
+            "dispb_t8" to ButtonRgb(27),
+            "repeat" to ButtonWhite(56),
+            "select" to ButtonWhite(48)
     )
     fun register(midi: Push2Midi, mapper: Push2Mapper) {
         for ((key, element) in elements.entries) {

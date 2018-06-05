@@ -7,6 +7,9 @@
   "Disp A T6" : {"throttle" : "T6", "property": "forward", "onColor": "green", "offColor": "red", "type": "toggle"},
   "Disp A T7" : {"throttle" : "T7", "property": "forward", "onColor": "green", "offColor": "red", "type": "toggle"},
   "Disp A T8" : {"throttle" : "T8", "property": "forward", "onColor": "green", "offColor": "red", "type": "toggle"},
+
+  "Disp B T1" : {"onColor": 30, "offColor": 80},
+
   "Pot T1"   : {"throttle" : "T1", "property": "speed"},
   "Pot T2"   : {"throttle" : "T2", "property": "speed"},
   "Pot T3"   : {"throttle" : "T3", "property": "speed"},

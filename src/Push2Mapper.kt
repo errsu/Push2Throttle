@@ -7,14 +7,14 @@ class Push2Mapper(
         private val controllers: Map<String, ThrottleController>) {
 
     private var jmriToPush2Mappings: Map<String,Map<String,String>>? = null
-    private var push2ToJmriMappings: Map<String,Map<String,String>>? = null
+    private var push2ToJmriMappings: Map<String,Map<String,Any>>? = null
 
     private fun checkMappings(tree: Any?) : Boolean {
         if (tree !is Map<*,*> || tree.any{it.key !is String}) {
             return false
         }
         for (value in tree.values) {
-            if (value !is Map<*,*> || value.any{it.key !is String || it.value !is String}) {
+            if (value !is Map<*,*> || value.any{it.key !is String || (it.value !is String && it.value !is Int)}) {
                 return false
             }
         }
@@ -35,8 +35,8 @@ class Push2Mapper(
 
                 val inverseMappings:  MutableMap<String,MutableMap<String,String>> = HashMap()
                 for ((elementName, mapping) in mappings ?: emptyMap()) {
-                    val throttleName = mapping?.get("throttle")
-                    val propertyName = mapping?.get("property")
+                    val throttleName = mapping.get("throttle")
+                    val propertyName = mapping.get("property")
                     if (throttleName != null && propertyName != null) {
                         inverseMappings.putIfAbsent(throttleName, HashMap())
                         inverseMappings[throttleName]?.put(propertyName, elementName)
@@ -66,7 +66,7 @@ class Push2Mapper(
         // println("State $elementName push2ElementStateChanged from to $newValue")
         val throttleName = push2ToJmriMappings?.get(elementName)?.get("throttle")
         val propertyName = push2ToJmriMappings?.get(elementName)?.get("property")
-        if (throttleName != null && propertyName != null) {
+        if (throttleName is String && propertyName is String) {
             controllers[throttleName]?.messageToJmri(propertyName, newValue)
         }
     }

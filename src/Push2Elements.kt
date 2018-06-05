@@ -58,22 +58,21 @@ class Erp(private val turnCcNumber: Int, private val touchNnNumber: Int) : MidiE
 const val TOGGLE = true
 const val MOMENTARY = false
 
-abstract class Switch : MidiElement() {
+abstract class Switch(val isRgb: Boolean) : MidiElement() {
     private var toggle = false
     var state = false
 
-    abstract fun isRgb() : Boolean
-    protected var onColor = if (isRgb()) 122 else 127
-    protected var offColor = 0
+    protected var onColor = if (isRgb) 122 else 127
+    protected var offColor = if (isRgb) 124 else 6
 
     private fun colorIndex(color: Any?) : Int? {
         return when (color) {
             null -> null
-            "red" -> if (isRgb()) 127 else null
-            "green" -> if (isRgb()) 126 else null
-            "blue" -> if (isRgb()) 125 else null
-            "white" -> if (isRgb()) 122 else 127
-            "black" -> if (isRgb()) 0 else 0
+            "red" -> if (isRgb) 127 else null
+            "green" -> if (isRgb) 126 else null
+            "blue" -> if (isRgb) 125 else null
+            "white" -> if (isRgb) 122 else 127
+            "black" -> if (isRgb) 0 else 0
             is Int -> color
             else -> null
         }}
@@ -105,8 +104,7 @@ abstract class Switch : MidiElement() {
     }
 }
 
-class Pad(private val number: Int) : Switch() {
-    override fun isRgb() = true
+class Pad(private val number: Int) : Switch(true) {
 
     override fun registerForMidi(midi: Push2Midi) {
         midi.registerElement("nn", number) { value -> onMidi(midi, value) }
@@ -117,8 +115,7 @@ class Pad(private val number: Int) : Switch() {
     }
 }
 
-class ButtonWhite(private val number: Int) : Switch() {
-    override fun isRgb() = false
+class ButtonWhite(private val number: Int) : Switch(false) {
 
     override fun registerForMidi(midi: Push2Midi) {
         midi.registerElement("cc", number) { value -> onMidi(midi, value) }
@@ -129,8 +126,7 @@ class ButtonWhite(private val number: Int) : Switch() {
     }
 }
 
-class ButtonRgb(private val number: Int) : Switch() {
-    override fun isRgb() = true
+class ButtonRgb(private val number: Int) : Switch(true) {
 
     override fun registerForMidi(midi: Push2Midi) {
         midi.registerElement("cc", number) { value -> onMidi(midi, value) }

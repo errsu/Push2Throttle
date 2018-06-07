@@ -3,8 +3,10 @@ import tornadofx.*
 class Push2ThrottleApp: App(Push2ThrottleMainView::class)
 
 class Push2ThrottleMainView: View() {
+
     private val midi = Push2Midi()
-    private val display = Push2Display()
+    private val libUsbHelper = LibUsbHelper()
+    private val display = Push2Display(libUsbHelper)
     private val elements = Push2Elements()
     private var controllers: MutableMap<String, ThrottleController> = HashMap()
     private val mapper: Push2Mapper = Push2Mapper(midi, elements, controllers)
@@ -62,7 +64,7 @@ class Push2ThrottleMainView: View() {
         }
         button("test Display") {
             action {
-                Push2Display().listDevices()
+                libUsbHelper.listDevices()
             }
         }
     }

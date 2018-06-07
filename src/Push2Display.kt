@@ -1,42 +1,27 @@
 import org.usb4java.*
 import java.nio.ByteBuffer
 
-class Push2Display {
+class Push2Display(val libUsbHelper: LibUsbHelper) {
+
     var isOpen = false
     private val outEndpoint:   Byte  = 0x01.toByte()
     private val vendorAbleton: Short = 0x2982
     private val productPush2:  Short = 0x1967
 
-    private val context = Context()
     private var push2DeviceHandle: DeviceHandle? = null
 
-    private val frameHeaders = Array<ByteBuffer>(2) {
+    private val BUFFERCOUNT = 4
+    private val frameHeaders = Array<ByteBuffer>(BUFFERCOUNT) {
         BufferUtils.allocateByteBuffer(16)
     }
-    private val headerTransfers = Array<Transfer>(2) { LibUsb.allocTransfer() }
+    private val headerTransfers = Array<Transfer>(BUFFERCOUNT) { LibUsb.allocTransfer() }
 
-    private val frameBuffers = Array<ByteBuffer>(2) {
-        BufferUtils.allocateByteBuffer(960*160*2)
+    private val frameBuffers = Array<ByteBuffer>(BUFFERCOUNT) {
+        BufferUtils.allocateByteBuffer(1024*160*2)
     }
-    private val bufferTransfers = Array<Transfer>(2) { LibUsb.allocTransfer() }
-
-    private var abortHandlerThread: Boolean = false
-    private val usbHandlerThread = object : Thread() {
-        override fun run() {
-            while (!abortHandlerThread) {
-                val result = LibUsb.handleEventsTimeout(null, 500000)
-                if (result != LibUsb.SUCCESS)
-                    throw LibUsbException("Unable to handle events", result)
-            }
-        }
-    }
+    private val bufferTransfers = Array<Transfer>(BUFFERCOUNT) { LibUsb.allocTransfer() }
 
     init {
-        if (LibUsb.init(context) != LibUsb.SUCCESS) {
-            println("fatal error: can't initialize libusb")
-            System.exit(1)
-        }
-        println("LibUsb initialized")
         repeat(frameHeaders.size) {
             frameHeaders[it].asIntBuffer().put(intArrayOf(
                     0xFFCCAA88.toInt(),
@@ -44,25 +29,56 @@ class Push2Display {
                     0x00000000,
                     0x00000000))
         }
+        repeat(headerTransfers.size) {
+            headerTransfers[it] = LibUsb.allocTransfer()
+        }
+
+        repeat(bufferTransfers.size) {
+            bufferTransfers[it] = LibUsb.allocTransfer()
+        }
     }
 
     @Volatile
     private var frameCount = 0
+    private var startTime = System.currentTimeMillis()
 
     private val headerFinished = TransferCallback { transfer ->
         LibUsb.submitTransfer(transfer)
     }
 
-    private val bufferFinished = TransferCallback { transfer ->
-        val buffer = transfer.buffer().asShortBuffer()
-        repeat(buffer.remaining()) {
-            buffer.put((frameCount.and(0x0000FFFF).toShort()))
+    private val frameFinished = TransferCallback { transfer ->
+        if (transfer.status() == LibUsb.TRANSFER_COMPLETED) {
+            when (transfer.userData()) {
+                "header" -> LibUsb.submitTransfer(transfer)
+                "data" -> {
+                    val buffer = transfer.buffer().asIntBuffer()
+                    val color : Int = mapOf(
+                            0 to 0x00F800F8,
+                            1 to 0xE007E007.toInt(),
+                            2 to 0x1F001F00,
+                            3 to 0xFFFFFFFF.toInt())
+                            // .getOrDefault(2 + frameCount % 2, 0)
+                            .getOrDefault((frameCount / 60) % 4, 0)
+                            .xor(0xE7F3E7FF.toInt())
+                    repeat(buffer.remaining()) {
+                        buffer.put(color)
+                    }
+                    val bufferX = transfer.buffer().asShortBuffer()
+                    repeat(160) {
+                        bufferX.put(it * 1024 + frameCount % 960, if (frameCount % 2 == 0) 0xE7F3.toShort() else 0xE7FF.toShort())
+                    }
+                    LibUsb.submitTransfer(transfer)
+                    frameCount += 1
+                    if (frameCount % 600 == 0) {
+                        val now = System.currentTimeMillis()
+                        println("fps: ${600.0 * 1000.0 / (now - startTime).toFloat()}")
+                        startTime = now
+                    }
+                }
+            }
         }
-        LibUsb.submitTransfer(transfer)
-        frameCount += 1
-        if (frameCount == 600) {
-            frameCount = 0
-            println("fps")
+        else {
+            println("transfer failed: ${transfer.status()}")
         }
     }
 
@@ -72,32 +88,10 @@ class Push2Display {
         updateCount++
     }
 
-    fun listDevices() {
-        println("USB device listing")
-        val list = DeviceList()
-        val context = Context()
-        val result = LibUsb.getDeviceList(context, list)
-
-        if (result < 0) {
-            println("Unable to get device list: code $result")
-            return
-        }
-
-        for (device in list) {
-            val descriptor = DeviceDescriptor()
-            if (LibUsb.getDeviceDescriptor(device, descriptor) != LibUsb.SUCCESS) {
-                continue
-            }
-            println("vendor: 0x%04x  product: 0x%04x".format(descriptor.idVendor(), descriptor.idProduct()))
-        }
-
-        LibUsb.freeDeviceList(list, true)
-    }
-
     private fun openPush2Display(): Boolean {
 
         val list = DeviceList()
-        if (LibUsb.getDeviceList(context, list) > 0) {
+        if (LibUsb.getDeviceList(libUsbHelper.context, list) > 0) {
             for (device in list) {
                 val descriptor = DeviceDescriptor()
                 if (LibUsb.getDeviceDescriptor(device, descriptor) == LibUsb.SUCCESS) {
@@ -109,14 +103,13 @@ class Push2Display {
                             LibUsb.setInterfaceAltSetting(deviceHandle, 0, 0)
                             repeat (headerTransfers.size) {
                                 LibUsb.fillBulkTransfer(headerTransfers[it], deviceHandle, outEndpoint,
-                                        frameHeaders[it], headerFinished, null, 5000)
+                                        frameHeaders[it], frameFinished, "header", 1000)
                             }
                             repeat (bufferTransfers.size) {
                                 LibUsb.fillBulkTransfer(bufferTransfers[it], deviceHandle, outEndpoint,
-                                                        frameBuffers[it], bufferFinished, null, 5000)
+                                                        frameBuffers[it], frameFinished, "data", 1000)
                             }
                             push2DeviceHandle = deviceHandle
-                            usbHandlerThread.start()
                             break
                         }
                     }
@@ -136,20 +129,20 @@ class Push2Display {
             repeat(bufferTransfers.size) {
                 val buffer = bufferTransfers[it].buffer().asShortBuffer()
                 repeat(buffer.remaining()) {
-                    buffer.put((frameCount.and(0x0000FFFF).toShort()))
+                    buffer.put(0.toShort())
                 }
-                val success1 = LibUsb.submitTransfer(headerTransfers[it])
-                val success2 = LibUsb.submitTransfer(bufferTransfers[it])
-                println("submit: $success1 $success2")
+                LibUsb.submitTransfer(headerTransfers[it])
+                LibUsb.submitTransfer(bufferTransfers[it])
                 frameCount += 1
             }
+            startTime = System.currentTimeMillis()
         }
     }
 
     fun close() {
         if (push2DeviceHandle != null)
         {
-            abortHandlerThread = true
+            // abortHandlerThread = true
             // TODO: wait until aborted
             LibUsb.close(push2DeviceHandle)
         }

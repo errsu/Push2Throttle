@@ -4,6 +4,7 @@ class Push2ThrottleApp: App(Push2ThrottleMainView::class)
 
 class Push2ThrottleMainView: View() {
     private val midi = Push2Midi()
+    private val display = Push2Display()
     private val elements = Push2Elements()
     private var controllers: MutableMap<String, ThrottleController> = HashMap()
     private val mapper: Push2Mapper = Push2Mapper(midi, elements, controllers)
@@ -16,6 +17,7 @@ class Push2ThrottleMainView: View() {
             ctrl.connectToJmri()
         }
         midi.open()
+        display.open()
         elements.register(midi, mapper)
     }
 
@@ -23,10 +25,12 @@ class Push2ThrottleMainView: View() {
         minWidth = 320.0
         minHeight = 80.0
 
-        button("reconnect MIDI") {
+        button("reconnect Push2") {
             action {
                 if (midi.isOpen) midi.close()
                 midi.open()
+                if (display.isOpen) display.close()
+                display.open()
             }
         }
         button("modify") {
@@ -54,6 +58,11 @@ class Push2ThrottleMainView: View() {
         button("test JSMN") {
             action {
                 testJsmn()
+            }
+        }
+        button("test Display") {
+            action {
+                Push2Display().listDevices()
             }
         }
     }

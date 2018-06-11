@@ -67,6 +67,11 @@ class Push2ThrottleMainView: View() {
                 libUsbHelper.listDevices()
             }
         }
+        combobox(display.pattern.selectedPatternProperty, display.pattern.patterns) {
+            cellFormat {
+                text = it
+            }
+        }
     }
 }
 

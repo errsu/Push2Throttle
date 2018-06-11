@@ -20,6 +20,7 @@ class Push2Display(val libUsbHelper: LibUsbHelper) {
     }
 
     val pattern = Push2DisplayPattern()
+    val drawing = Push2DisplayDrawing()
 
     private val outEndpoint:   Byte  = 0x01.toByte()
     private val vendorAbleton: Short = 0x2982
@@ -86,7 +87,11 @@ class Push2Display(val libUsbHelper: LibUsbHelper) {
 
     private fun prepareAndSubmitNextSendRequest(transfer: Transfer) {
         val firstLine = indexOfBufferInFrame * linesPerBuffer
-        pattern.apply(transfer.buffer(), frame, firstLine, linesPerBuffer)
+        if (pattern.selectedPattern == "drawing") {
+            drawing.apply(transfer.buffer(), frame, firstLine, linesPerBuffer)
+        } else {
+            pattern.apply(transfer.buffer(), frame, firstLine, linesPerBuffer)
+        }
 
         val intBuffer = transfer.buffer().asIntBuffer()
         repeat(intBuffer.limit()) {

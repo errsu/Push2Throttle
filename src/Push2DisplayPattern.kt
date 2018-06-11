@@ -7,12 +7,12 @@ import java.nio.ByteBuffer
 class Push2DisplayPattern() {
 
     val patterns = listOf(
-            "black", "white", "red", "green", "blue",
+            "drawing", "black", "white", "red", "green", "blue",
             "moving black line", "scales", "moving picture",
             "chessboard", "frame", "pin stripes", "color")
 
     val selectedPatternProperty = SimpleStringProperty(this, "pattern", "moving black line")
-    private var selectedPattern by selectedPatternProperty
+    var selectedPattern by selectedPatternProperty
     private var patternNumber = patterns.indexOf(selectedPattern)
 
     init {
@@ -50,6 +50,10 @@ class Push2DisplayPattern() {
 
         gry(31), gry(30), gry(29), gry(28), gry(27), gry(26), gry(25), gry(24), gry(23), gry(22), gry(21), gry(20), gry(19), gry(18), gry(17), gry(16),
         gry(15), gry(14), gry(13), gry(12), gry(11), gry(10), gry( 9), gry( 8), gry( 7), gry( 6), gry( 5), gry( 4), gry( 3), gry( 2), gry( 1), gry( 0))
+
+    private fun patternNone(frame: Int, line: Int, pixel: Int) : Short {
+        return 0
+    }
 
     private fun patternBlack(frame: Int, line: Int, pixel: Int) : Short {
         return black
@@ -159,6 +163,7 @@ class Push2DisplayPattern() {
     }
 
     private val patternGenerators : Array<(Int, Int, Int) -> Short> = arrayOf(
+        ::patternNone,
         ::patternBlack,
         ::patternWhite,
         ::patternRed,

@@ -11,7 +11,7 @@ class Push2DisplayPattern() {
             "moving black line", "scales", "moving picture",
             "chessboard", "frame", "pin stripes", "color")
 
-    val selectedPatternProperty = SimpleStringProperty(this, "pattern", "moving black line")
+    val selectedPatternProperty = SimpleStringProperty(this, "pattern", "drawing")
     var selectedPattern by selectedPatternProperty
     private var patternNumber = patterns.indexOf(selectedPattern)
 

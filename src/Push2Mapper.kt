@@ -74,7 +74,6 @@ class Push2Mapper(
     }
     // TODO: what if an element controls more than one property, e.g. ERP(turn, touch)?
     fun <T> jmriThrottleStateChanged(throttleName: String, property: KProperty<*>, newValue: T) {
-        // println("State $throttleName jmriThrottleStateChanged: ${property.name} from $oldValue to $newValue")
         displayContent.updateState(throttleName, property.name, newValue as Any)
         val elementName = jmriToPush2Mappings?.get(throttleName)?.get(property.name)
         if (elementName != null) {
@@ -83,7 +82,6 @@ class Push2Mapper(
     }
 
     fun <T> push2ElementStateChanged(elementName: String, newValue: T) {
-        // println("State $elementName push2ElementStateChanged from to $newValue")
         val throttleName = push2ToJmriMappings?.get(elementName)?.get("throttle")
         val propertyName = push2ToJmriMappings?.get(elementName)?.get("property")
         if (throttleName is String && propertyName is String) {

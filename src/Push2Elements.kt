@@ -45,7 +45,6 @@ class Erp(private val turnCcNumber: Int, private val touchNnNumber: Int) : MidiE
         }
     }
     override fun updatePush2(midi: Push2Midi) {
-        // println("pot $name state: $state touched: $touched")
     }
     override fun updateStateByJmri(value: Any, midi: Push2Midi) {
         if (value is Float && !suppressEcho) { // TODO: how to update touch?
@@ -111,7 +110,6 @@ class Pad(private val number: Int) : Switch(true) {
     }
     override fun updatePush2(midi: Push2Midi) {
         midi.sendNN(0, number, if (state) onColor else offColor)
-        // println("pad $name state: $state")
     }
 }
 
@@ -122,7 +120,6 @@ class ButtonWhite(private val number: Int) : Switch(false) {
     }
     override fun updatePush2(midi: Push2Midi) {
         midi.sendCC(0, number, if (state) onColor else offColor)
-        // println("white button $name state: $state")
     }
 }
 
@@ -133,7 +130,6 @@ class ButtonRgb(private val number: Int) : Switch(true) {
     }
     override fun updatePush2(midi: Push2Midi) {
         midi.sendCC(0, number, if (state) onColor else offColor)
-        // println("rgb button $name state: $state")
     }
 }
 

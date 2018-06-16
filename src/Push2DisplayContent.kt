@@ -171,7 +171,6 @@ class Push2DisplayContent {
         val g = this.shr(5).and(0x000007E0)
         val b = this.shl(8).and(0x0000F800)
         val color = r.or(g).or(b)
-        // println("this: ${java.lang.Integer.toHexString(this)} color: ${java.lang.Integer.toHexString(color)}")
         return color.toShort()
     }
 
@@ -192,7 +191,6 @@ class Push2DisplayContent {
     }
 
     fun updateState(throttleName: String, propertyName: String, newValue: Any) {
-        println("$throttleName $propertyName $newValue ${newValue::class}")
         if (throttleName.startsWith("T")) {
             val index = throttleName.substring(1).toInt() - 1
             if (index !in 0..7) {

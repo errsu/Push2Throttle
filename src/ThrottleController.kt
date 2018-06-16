@@ -10,14 +10,11 @@ class ThrottleController(
 
     fun connectToJmri() {
         jmri.connect(this::messageFromJmri)
-        // println("$name connected: ${jmri.isConnected()}")
         // declare address and listen to incoming changes:
         jmri.sendTextMessage("""{"type":"throttle","data":{"throttle":"$name","address":$address}}""")
-        // println("$name connected now: ${jmri.isConnected()}")
     }
     fun disconnectFromJmri() {
         jmri.disconnect()
-        // println("$name disconnected: ${!jmri.isConnected()}")
     }
 
     fun modifyThrottle() {
@@ -33,14 +30,6 @@ class ThrottleController(
             return // ignore pongs
         }
         if (tree is Map<*, *>) {
-            if (tree["type"] == "hello") {
-                val data = tree["data"]
-                if (data is Map<*,*>) {
-//                    println("""JMRI:    ${data["JMRI"]}""")
-//                    println("""RR:      ${data["railroad"]}""")
-//                    println("""Profile: ${data["activeProfile"]}""")
-                }
-            }
             if (tree["type"] == "throttle") {
                 val data = tree["data"]
                 if (data is Map<*,*>) {

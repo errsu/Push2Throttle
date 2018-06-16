@@ -4,10 +4,29 @@ import kotlin.reflect.KProperty
 class Push2Mapper(
         private val midi: Push2Midi,
         private val elements: Push2Elements,
-        private val controllers: Map<String, ThrottleController>) {
+        private val controllers: Map<String, ThrottleController>,
+        private val displayContent: Push2DisplayContent) {
+
+    // mappings from mappings.json
+    // map of key: element name
+    //      value: map of key: attribute name
+    //                  value: attribute value
+    //
+    // attribute name   value
+    // "throttle"       "Tn"
+    // "property"       "speed"  | "forward"
+    // "onColor"        color name or number
+    // "offColor"       color name or number
+    // "type"           "toggle" | "momentary"
+
+    private var push2ToJmriMappings: Map<String,Map<String,Any>>? = null
+
+    // inverse mappings
+    // map of key: "Tn"
+    //      value: map of key: property ("speed" | "forward")
+    //                  value: element name
 
     private var jmriToPush2Mappings: Map<String,Map<String,String>>? = null
-    private var push2ToJmriMappings: Map<String,Map<String,Any>>? = null
 
     private fun checkMappings(tree: Any?) : Boolean {
         if (tree !is Map<*,*> || tree.any{it.key !is String}) {
@@ -56,6 +75,7 @@ class Push2Mapper(
     // TODO: what if an element controls more than one property, e.g. ERP(turn, touch)?
     fun <T> jmriThrottleStateChanged(throttleName: String, property: KProperty<*>, newValue: T) {
         // println("State $throttleName jmriThrottleStateChanged: ${property.name} from $oldValue to $newValue")
+        displayContent.updateState(throttleName, property.name, newValue as Any)
         val elementName = jmriToPush2Mappings?.get(throttleName)?.get(property.name)
         if (elementName != null) {
             elements.getElement(elementName)?.updateStateByJmri(newValue as Any, midi)

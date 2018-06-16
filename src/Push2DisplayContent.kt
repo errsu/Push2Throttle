@@ -3,7 +3,7 @@ import java.awt.image.BufferedImage
 import java.nio.ByteBuffer
 import kotlin.math.roundToInt
 
-class Push2DisplayDrawing() {
+class Push2DisplayContent {
 
     private val displayWidth       = 960
     private val displayHeight      = 160
@@ -61,14 +61,14 @@ class Push2DisplayDrawing() {
             "")
 
     private val trackSpeed = arrayListOf(
-            0.2,
-            0.4,
-            1.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0)
+            0.2f,
+            0.4f,
+            1.0f,
+            0.0f,
+            0.0f,
+            0.0f,
+            0.0f,
+            0.0f)
 
     private val forward = arrayListOf(
             true,
@@ -129,14 +129,14 @@ class Push2DisplayDrawing() {
                 triangle.addPoint(10, -5)
                 triangle.addPoint(10, 5)
                 val speedTriangleY = sliderRect.y + 1 +
-                        ((sliderRect.height - 2) * (1.0 - trackSpeed[n])).roundToInt()
+                        ((sliderRect.height - 2) * (1.0f - trackSpeed[n])).roundToInt()
                 val speedTriangleX = sliderRect.x + sliderRect.width + 2
                 triangle.translate(speedTriangleX, speedTriangleY)
                 g.fill(triangle)
 
                 g.font = font48
                 g.paint = Color.BLACK
-                val speed = (trackSpeed[n] * 120).roundToInt().toString()
+                val speed = (trackSpeed[n] * 120.0).roundToInt().toString()
                 val wSpeed = g.getFontMetrics(font48).stringWidth(speed)
                 g.drawString(speed, (n + 1) * tw - wSpeed - 10, 30 + (th - 30 - 10)/2)
 
@@ -188,6 +188,23 @@ class Push2DisplayDrawing() {
                 shortBuffer.put(bufferIndex++, image.getRGB(it, line).aRgbTo565bgr())
             }
             bufferIndex +=  lineFiller
+        }
+    }
+
+    fun updateState(throttleName: String, propertyName: String, newValue: Any) {
+        println("$throttleName $propertyName $newValue ${newValue::class}")
+        if (throttleName.startsWith("T")) {
+            val index = throttleName.substring(1).toInt() - 1
+            if (index !in 0..7) {
+                println("bad throttle index: $throttleName")
+                return
+            }
+            when (propertyName) {
+                "speed" -> if (newValue is Float) trackSpeed[index] = newValue.coerceIn(0.0f, 1.0f)
+                "forward" -> if (newValue is Boolean) forward[index] = newValue
+            }
+        } else {
+            println("bad throttle name: $throttleName")
         }
     }
 }

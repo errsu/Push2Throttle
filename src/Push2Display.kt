@@ -2,7 +2,7 @@ import org.usb4java.*
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
-class Push2Display(val libUsbHelper: LibUsbHelper) {
+class Push2Display(val libUsbHelper: LibUsbHelper, val content: Push2DisplayContent) {
 
     private var startTime: Long = 0
     private var framesCompleted = 0
@@ -18,9 +18,6 @@ class Push2Display(val libUsbHelper: LibUsbHelper) {
             startTime = now
         }
     }
-
-    val pattern = Push2DisplayPattern()
-    val drawing = Push2DisplayDrawing()
 
     private val outEndpoint:   Byte  = 0x01.toByte()
     private val vendorAbleton: Short = 0x2982
@@ -87,11 +84,7 @@ class Push2Display(val libUsbHelper: LibUsbHelper) {
 
     private fun prepareAndSubmitNextSendRequest(transfer: Transfer) {
         val firstLine = indexOfBufferInFrame * linesPerBuffer
-        if (pattern.selectedPattern == "drawing") {
-            drawing.apply(transfer.buffer(), frame, firstLine, linesPerBuffer)
-        } else {
-            pattern.apply(transfer.buffer(), frame, firstLine, linesPerBuffer)
-        }
+        content.apply(transfer.buffer(), frame, firstLine, linesPerBuffer)
 
         val intBuffer = transfer.buffer().asIntBuffer()
         repeat(intBuffer.limit()) {

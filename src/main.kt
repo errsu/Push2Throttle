@@ -6,10 +6,11 @@ class Push2ThrottleMainView: View() {
 
     private val midi = Push2Midi()
     private val libUsbHelper = LibUsbHelper()
-    private val display = Push2Display(libUsbHelper)
+    private val displayContent = Push2DisplayContent()
+    private val display = Push2Display(libUsbHelper, displayContent)
     private val elements = Push2Elements()
     private var controllers: MutableMap<String, ThrottleController> = HashMap()
-    private val mapper: Push2Mapper = Push2Mapper(midi, elements, controllers)
+    private val mapper: Push2Mapper = Push2Mapper(midi, elements, controllers, displayContent)
 
     init {
         title = "Push 2 Throttle"
@@ -62,14 +63,9 @@ class Push2ThrottleMainView: View() {
                 testJsmn()
             }
         }
-        button("test Display") {
+        button("list USB devices") {
             action {
                 libUsbHelper.listDevices()
-            }
-        }
-        combobox(display.pattern.selectedPatternProperty, display.pattern.patterns) {
-            cellFormat {
-                text = it
             }
         }
     }

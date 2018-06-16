@@ -1,7 +1,9 @@
 import kotlin.properties.Delegates
 import kotlin.reflect.KProperty
 
-class ThrottleState(private val name: String, private val mapper: Push2Mapper) {
+class ThrottleState(
+        private val name: String,
+        private val mapper: Push2Mapper) {
             private var address: Int = 0
             private var speed: Float by Delegates.observable(0.0f, this::changed)
             private var forward: Boolean by Delegates.observable(true, this::changed)

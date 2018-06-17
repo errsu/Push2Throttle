@@ -11,6 +11,7 @@ class Push2ThrottleMainView: View() {
     private val elements = Push2Elements()
     private var controllers: MutableMap<String, ThrottleController> = HashMap()
     private val mapper: Push2Mapper = Push2Mapper(midi, elements, controllers, displayContent)
+    private val roster = Roster(this::rosterCallback)
 
     init {
         title = "Push 2 Throttle"
@@ -19,9 +20,14 @@ class Push2ThrottleMainView: View() {
             controllers["T${it + 1}"] = ctrl
             ctrl.connectToJmri()
         }
+        roster.connectToJmri()
         midi.open()
         display.open()
         elements.register(midi, mapper)
+    }
+
+    private fun rosterCallback() {
+        displayContent.rosterChanged(roster)
     }
 
     override val root = hbox {
@@ -34,13 +40,6 @@ class Push2ThrottleMainView: View() {
                 midi.open()
                 if (display.isOpen) display.close()
                 display.open()
-            }
-        }
-        button("modify") {
-            action {
-                for (ctrl in controllers.values) {
-                    ctrl.modifyThrottle()
-                }
             }
         }
         button("print states") {
@@ -88,7 +87,6 @@ fun getMoreData() {
     // and choose the panels/tournouts xml file
     if (!jmri.isConnected()) jmri.connect(::jmriCallback)
     jmri.sendTextMessage("""{"type":"power","data":{}}""")
-    jmri.sendTextMessage("""{"list":"roster"}""")
     jmri.sendTextMessage("""{"list":"panels"}""")
     jmri.sendTextMessage("""{"type":"turnout","data":{"name":"NT1","state":4}}""")
     jmri.sendTextMessage("""{"type":"turnout","data":{"name":"NT22"}}""")
@@ -104,12 +102,6 @@ private fun jmriCallback(tree: Any?) {
         for (it in tree) {
             println("---------------")
             if (it is Map<*,*>) {
-                if (it["type"] == "rosterEntry") {
-                    val data = it["data"] as Map<*,*>
-                    println("name ${data["name"]}")
-                    println("address ${data["address"]}")
-                    println("maxSpeedPcct ${data["maxSpeedPct"]}")
-                }
                 if (it["type"] == "turnout") {
                     val data = it["data"] as Map<*,*>
                     println("$data")

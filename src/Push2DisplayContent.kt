@@ -50,37 +50,10 @@ class Push2DisplayContent {
     private val trackColor = arrayListOf(
             1, 13, 18, 8, 12, 22, 3, 25)
 
-    private val trackName = arrayListOf(
-            "TestLok33",
-            "Dampf22",
-            "ELok88",
-            "",
-            "",
-            "",
-            "",
-            "")
-
-    private val trackSpeed = arrayListOf(
-            0.2f,
-            0.4f,
-            1.0f,
-            0.0f,
-            0.0f,
-            0.0f,
-            0.0f,
-            0.0f)
-
-    private val forward = arrayListOf(
-            true,
-            false,
-            true,
-            true,
-            true,
-            false,
-            true,
-            true)
-
-    var first = true
+    private val trackName = arrayListOf("", "", "", "", "", "", "", "")
+    private val maxTrackSpeed = arrayListOf(80.0f, 80.0f, 80.0f, 80.0f, 80.0f, 80.0f, 80.0f, 80.0f)
+    private val trackSpeed = arrayListOf(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f)
+    private val forward = arrayListOf(true, true, true, true, true, true, true, true)
 
     private fun darkerColor(color: Color) : Color {
         val hsb = Color.RGBtoHSB(color.red, color.green, color.blue, null)
@@ -136,7 +109,7 @@ class Push2DisplayContent {
 
                 g.font = font48
                 g.paint = Color.BLACK
-                val speed = (trackSpeed[n] * 120.0).roundToInt().toString()
+                val speed = (trackSpeed[n] * maxTrackSpeed[n]).roundToInt().toString()
                 val wSpeed = g.getFontMetrics(font48).stringWidth(speed)
                 g.drawString(speed, (n + 1) * tw - wSpeed - 10, 30 + (th - 30 - 10)/2)
 
@@ -203,6 +176,13 @@ class Push2DisplayContent {
             }
         } else {
             println("bad throttle name: $throttleName")
+        }
+    }
+
+    fun rosterChanged(roster: Roster) {
+        repeat(8) {
+            trackName[it] = roster.name[it] ?: ""
+            maxTrackSpeed[it] = roster.maxSpeed[it]?.toFloat() ?: 80.0f
         }
     }
 }

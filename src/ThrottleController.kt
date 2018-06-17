@@ -17,10 +17,6 @@ class ThrottleController(
         jmri.disconnect()
     }
 
-    fun modifyThrottle() {
-        jmri.sendTextMessage("""{"type":"throttle","data":{"throttle":"$name","speed":0.2}}""")
-    }
-
     fun printStates() {
         println(state)
     }

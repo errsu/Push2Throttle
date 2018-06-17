@@ -41,6 +41,7 @@ class Push2Mapper(
     }
 
     init {
+        elements.getElement("Select")?.setAttributes(mapOf("type" to "toggle"))
         val file = File("mappings.json")
         val js = file.readText()
         val parserZ = JsmnParser(0)
@@ -86,6 +87,9 @@ class Push2Mapper(
         val propertyName = push2ToJmriMappings?.get(elementName)?.get("property")
         if (throttleName is String && propertyName is String) {
             controllers[throttleName]?.messageToJmri(propertyName, newValue)
+        }
+        if (elementName == "Select" && newValue is Boolean) {
+            displayContent.showPanel = newValue
         }
     }
 }

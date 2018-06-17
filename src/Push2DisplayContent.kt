@@ -12,8 +12,10 @@ class Push2DisplayContent {
     private val image = BufferedImage(displayWidth, displayHeight, BufferedImage.TYPE_INT_ARGB)
     private val g = image.createGraphics()
     private val throttleDisplay = ThrottleDisplay()
-
+    private val panelDisplay = PanelDisplay()
     private var lastFrame = -1
+
+    var showPanel = false
 
     val push2Colors = arrayListOf(
         Color(0x000000),  // 0
@@ -64,7 +66,11 @@ class Push2DisplayContent {
     private fun prepareFrame(frame: Int) {
         if (frame != lastFrame) {
             g.clearRect(0, 0, displayWidth, displayHeight)
-            throttleDisplay.drawFrame(g, frame, this)
+            if (showPanel) {
+                panelDisplay.drawFrame(g, frame, this)
+            } else {
+                throttleDisplay.drawFrame(g, frame, this)
+            }
             lastFrame = frame
         }
     }

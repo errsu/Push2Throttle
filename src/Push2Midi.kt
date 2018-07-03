@@ -49,14 +49,25 @@ class Push2Midi : Receiver {
 
     fun open () {
         val infos = MidiSystem.getMidiDeviceInfo()
+
+        // Windows: name "Ableton Push 2" for Live Ports
+        //               "MIDIIN2 (Ableton Push 2)"
+        //           and "MIDIOUT2 (Ableton Push 2)" for User Ports
+        // Ubuntu:  description is "Ableton Push 2, USB MIDI, Ableton Push 2"
+        //          name is "A2 [hw:1,0,0]" for Live Port
+        //                  "A2 [hw:1,0,1]" for User Port
+        val deviceName = "Ableton Push 2"
+        val ubuntuNameRegex = Regex("A2 \\[hw:.,0,0\\]")
+
         for (i in infos.indices) {
             try {
-                if (infos[i].name == "Ableton Push 2") {
+                if (infos[i].name == deviceName ||
+                        (infos[i].description.contains(deviceName) && infos[i].name.matches(ubuntuNameRegex))) {
                     val device = MidiSystem.getMidiDevice(infos[i])
-                    if (device.maxTransmitters != 0) {
+                    if (push2InPort == null && device.maxTransmitters != 0) {
                         device.open()
                         push2InPort = device
-                    } else if (device.maxReceivers != 0) {
+                    } else if (push2OutPort == null && device.maxReceivers != 0) {
                         device.open()
                         push2OutPort = device
                     }

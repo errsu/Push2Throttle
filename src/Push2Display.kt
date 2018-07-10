@@ -1,159 +1,132 @@
-import org.usb4java.*
+import java.awt.*
+import java.awt.image.BufferedImage
 import java.nio.ByteBuffer
-import java.nio.ByteOrder
 
-class Push2Display(val libUsbHelper: LibUsbHelper, val content: Push2DisplayContent) {
+abstract class Push2View(val rect: Rectangle) {
+    abstract fun draw(g: Graphics2D, frame: Int, display: Push2Display)
+}
 
-    private var startTime: Long = 0
-    private var framesCompleted = 0
+class Push2Display {
 
-    private fun initializeFpsMeasurement() {
-        startTime = System.currentTimeMillis()
+    val width       = 960
+    val height      = 160
+
+    private val lineFiller  = 64 // extra unused pixels per line
+    private val image = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
+    private val g = image.createGraphics()
+
+    private var lastFrame = -1
+
+    val push2Colors = mapOf(
+         0 to Color(0x000000),
+         1 to Color(0xed5938),
+         2 to Color(0xd1170a),
+         3 to Color(0xff6400),
+         4 to Color(0xff3200),
+         5 to Color(0x804713),
+         6 to Color(0x582307),
+         7 to Color(0xedda3c),
+         8 to Color(0xe4c200),
+         9 to Color(0x94ff18),
+        10 to Color(0x00e631),
+        11 to Color(0x009d32),
+        12 to Color(0x339e13),
+        13 to Color(0x00b955),
+        14 to Color(0x00714e),
+        15 to Color(0x00CC89),
+        16 to Color(0x00bbad),
+        17 to Color(0x0071a4),
+        18 to Color(0x006aca),
+        19 to Color(0x4932b3),
+        20 to Color(0x005a62),
+        21 to Color(0x5260dd),
+        22 to Color(0xab50ff),
+        23 to Color(0xe157e3),
+        24 to Color(0x88425b),
+        25 to Color(0xff1e32),
+        26 to Color(0xff4a96),
+       122 to Color(0xFFFFFF),
+       123 to Color(0x404040),
+       124 to Color(0x141414),
+       125 to Color(0x0000FF),
+       126 to Color(0x00FF00),
+       127 to Color(0xFF0000)
+    )
+
+    private val backgroundColor = Color(0x7070DF)
+
+    fun darkerColor(color: Color) : Color {
+        val hsb = Color.RGBtoHSB(color.red, color.green, color.blue, null)
+        return Color.getHSBColor(
+                hsb[0],
+                0.5f * (1.0f + hsb[1]),
+                hsb[2] / 4.0f)
     }
 
-    private fun onAfterFrameCompleted() {
-        if (++framesCompleted % 600 == 0) {
-            val now = System.currentTimeMillis()
-            println("fps: ${600.0 * 1000.0 / (now - startTime).toFloat()}")
-            startTime = now
+    fun invertedColor(color: Color) : Color {
+        val hsb = Color.RGBtoHSB(color.red, color.green, color.blue, null)
+        return Color.getHSBColor(
+                if (hsb[0] > 0.5f) hsb[0] - 0.5f else hsb[0] + 0.5f,
+                hsb[1] * 0.8f,
+                hsb[2])
+    }
+
+    private val viewList = mutableListOf<Push2View>()
+
+    @Synchronized
+    private fun drawFrame(frame: Int) {
+        g.paint = backgroundColor
+        g.fill(Rectangle(0, 0, width, height))
+
+        val iterator = viewList.iterator()
+        for (view in iterator) {
+            val gView = g.create() as Graphics2D
+            gView.translate(view.rect.x, view.rect.y)
+            view.draw(gView, frame, this)
         }
     }
 
-    private val outEndpoint:   Byte  = 0x01.toByte()
-    private val vendorAbleton: Short = 0x2982
-    private val productPush2:  Short = 0x1967
-
-    private var push2DeviceHandle: DeviceHandle? = null
-
-    private fun openPush2Display(): Boolean {
-
-        val list = DeviceList()
-        if (LibUsb.getDeviceList(libUsbHelper.context, list) > 0) {
-            for (device in list) {
-                val descriptor = DeviceDescriptor()
-                if (LibUsb.getDeviceDescriptor(device, descriptor) == LibUsb.SUCCESS) {
-                    if (descriptor.idVendor() == vendorAbleton && descriptor.idProduct() == productPush2) {
-                        val deviceHandle = DeviceHandle()
-                        if (LibUsb.open(device, deviceHandle) == LibUsb.SUCCESS) {
-                            LibUsb.setConfiguration(deviceHandle, 1)
-                            LibUsb.claimInterface(deviceHandle, 0)
-                            LibUsb.setInterfaceAltSetting(deviceHandle, 0, 0)
-                            push2DeviceHandle = deviceHandle
-                            break
-                        }
-                    }
-                }
-            }
-            LibUsb.freeDeviceList(list, true)
-        }
-        return push2DeviceHandle != null
+    @Synchronized
+    fun addView(view: Push2View) {
+        viewList.add(view)
     }
 
-    private fun closePush2Display()
+    @Synchronized
+    fun removeView(view: Push2View) {
+        viewList.remove(view)
+    }
+
+    private fun Int.aRgbTo565bgr() : Short {
+
+        // a a a a a a a a r r r r r r r r g g g g g g g g b b b b b b b b
+        //                 + + + + +       * * * * * *     # # # # #
+        //        |       |       |       |       |       |       |
+        //                                 # # # # # * * * * * * + + + + +
+        // 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 b b b b b g g g g g g r r r r r
+
+        val r = this.shr(19).and(0x0000001F)
+        val g = this.shr(5).and(0x000007E0)
+        val b = this.shl(8).and(0x0000F800)
+        val color = r.or(g).or(b)
+        return color.toShort()
+    }
+
+    fun fillBufferWithLines(buffer: ByteBuffer, frame: Int, firstLine: Int, lineCount: Int)
     {
-        if (push2DeviceHandle != null)
-        {
-            LibUsb.releaseInterface(push2DeviceHandle, 0)
-            LibUsb.close(push2DeviceHandle)
-        }
-    }
-
-    private val numBuffers           = 3
-    private val linesPerBuffer       = 8
-    private val bufferSizeInBytes    = 16 * 1024 // buffer length in bytes
-    private val buffersPerFrame      = 20
-
-    private fun b(x: Int) = x.toByte()
-    private fun i(x: Long) = x.toInt()
-
-    private val headerTransfer = LibUsb.allocTransfer()
-    private val frameHeader = BufferUtils.allocateByteBuffer(16).put(byteArrayOf(
-            b(0xFF), b(0xCC), b(0xAA), b(0x88),
-            0x00, 0x00, 0x00, 0x00,
-            0x00, 0x00, 0x00, 0x00,
-            0x00, 0x00, 0x00, 0x00))
-
-
-    private val bufferTransfers = Array<Transfer>(numBuffers) { LibUsb.allocTransfer() }
-    private val frameBuffers = Array<ByteBuffer>(numBuffers) {
-        BufferUtils.allocateByteBuffer(bufferSizeInBytes).order(ByteOrder.LITTLE_ENDIAN)
-    }
-
-    private var frame = 0
-    private var indexOfBufferInFrame = 0
-
-    private fun prepareAndSubmitNextSendRequest(transfer: Transfer) {
-        val firstLine = indexOfBufferInFrame * linesPerBuffer
-        content.apply(transfer.buffer(), frame, firstLine, linesPerBuffer)
-
-        val intBuffer = transfer.buffer().asIntBuffer()
-        repeat(intBuffer.limit()) {
-            intBuffer.put(it, intBuffer[it].xor(0xFFE7F3E7.toInt()))
+        if (frame != lastFrame) {
+            drawFrame(frame)
+            lastFrame = frame
         }
 
-        if (indexOfBufferInFrame == 0) {
-            LibUsb.submitTransfer(headerTransfer)
-        }
+        val shortBuffer = buffer.asShortBuffer()
+        var bufferIndex = 0
 
-        LibUsb.submitTransfer(transfer)
-
-        indexOfBufferInFrame++
-
-        if (indexOfBufferInFrame == buffersPerFrame) {
-            frame++
-            indexOfBufferInFrame = 0
-        }
-    }
-
-    private val transferFinished = TransferCallback { transfer ->
-        // TODO: check if we want to terminate on failure
-        when {
-            transfer.status() != LibUsb.TRANSFER_COMPLETED ->
-                println(when(transfer.status()) {
-                    LibUsb.TRANSFER_ERROR     -> "error: transfer failed"
-                    LibUsb.TRANSFER_TIMED_OUT -> "error: transfer timed out"
-                    LibUsb.TRANSFER_CANCELLED -> "error: transfer was cancelled"
-                    LibUsb.TRANSFER_STALL     -> "error: endpoint stalled/control request not supported"
-                    LibUsb.TRANSFER_NO_DEVICE -> "error: device was disconnected"
-                    LibUsb.TRANSFER_OVERFLOW  -> "error: device sent more data than requested"
-                    else -> "error: snd transfer failed with status ${transfer.status()}"
-                })
-            transfer.length() != transfer.actualLength() ->
-                println("error: only transferred ${transfer.actualLength()} of ${transfer.length()} bytes\n")
-            transfer == headerTransfer ->
-                onAfterFrameCompleted()
-            else ->
-                prepareAndSubmitNextSendRequest(transfer)
-        }
-    }
-
-    private fun submitInitialSendRequests() {
-        LibUsb.fillBulkTransfer(headerTransfer, push2DeviceHandle, outEndpoint,
-                frameHeader, transferFinished, null, 1000)
-
-        repeat(numBuffers) {
-            // the loop is endless, so requests are never released using libusb_free_transfer
-            LibUsb.fillBulkTransfer(bufferTransfers[it], push2DeviceHandle, outEndpoint,
-                    frameBuffers[it], transferFinished, null, 1000)
-            prepareAndSubmitNextSendRequest(bufferTransfers[it])
-        }
-    }
-
-    var isOpen = false
-
-    fun open() {
-        if (openPush2Display()) {
-            isOpen = true
-            println("Push2 display opened")
-            initializeFpsMeasurement()
-            submitInitialSendRequests()
-        }
-    }
-
-    fun close() {
-        if (isOpen) {
-            closePush2Display()
-            isOpen = false
+        repeat(lineCount) {
+            val line = firstLine + it
+            repeat(width) {
+                shortBuffer.put(bufferIndex++, image.getRGB(it, line).aRgbTo565bgr())
+            }
+            bufferIndex +=  lineFiller
         }
     }
 }

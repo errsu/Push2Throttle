@@ -1,11 +1,12 @@
 import java.awt.Graphics2D
+import java.awt.Rectangle
 import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
 
 data class TurnoutSymbol(val name: String, val x: Int, val y: Int, val hand: String, val face: String)
 
-class PanelDisplay {
+class PanelView(rect: Rectangle): Push2View(rect) {
 
     private val panelImage = ImageIO.read(File("Panel.png"))
 
@@ -30,7 +31,7 @@ class PanelDisplay {
 
     fun getTurnoutImage(hand: String, face: String, state: Boolean) : BufferedImage? {
         val handImages = turnoutImage[hand]
-        val faceImages = handImages?.get(face) ?: null
+        val faceImages = handImages?.get(face)
         return faceImages?.get(if (state) "Diverge" else "Straight")
     }
 
@@ -67,16 +68,16 @@ class PanelDisplay {
     private val displayHeight = 160
 
     @Suppress("UNUSED_PARAMETER")
-    fun drawFrame(g: Graphics2D, frame: Int, displayContent: Push2DisplayContent) {
-//        g.paint = displayContent.push2Colors[(frame / 60) % 27]
+    override fun draw(g: Graphics2D, frame: Int, display: Push2Display) {
+//        g.paint = display.push2Colors[(frame / 60) % 27]
 //        g.fillRect(0, 0, displayWidth, displayHeight)
         g.drawImage(panelImage, 0, 0, null)
         for (name in turnoutSymbol.keys) {
 //            val state = turnoutState[name] ?: false
             val state = (((frame / 60) % 2) == 1)
             val symbol = turnoutSymbol[name]
-            val image = getTurnoutImage(symbol!!.hand, symbol!!.face, state)
-            g.drawImage(image, symbol!!.x, symbol!!.y, null)
+            val image = getTurnoutImage(symbol!!.hand, symbol.face, state)
+            g.drawImage(image, symbol.x, symbol.y, null)
         }
     }
 }

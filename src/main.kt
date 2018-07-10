@@ -4,30 +4,22 @@ class Push2ThrottleApp: App(Push2ThrottleMainView::class)
 
 class Push2ThrottleMainView: View() {
 
-    private val midi = Push2Midi()
+    private val midi = Push2MidiDriver()
     private val libUsbHelper = LibUsbHelper()
-    private val displayContent = Push2DisplayContent()
-    private val display = Push2Display(libUsbHelper, displayContent)
-    private val elements = Push2Elements()
-    private var controllers: MutableMap<String, ThrottleController> = HashMap()
-    private val mapper: Push2Mapper = Push2Mapper(midi, elements, controllers, displayContent)
-    private val roster = Roster(this::rosterCallback)
+    private val display = Push2Display()
+    private val displayDriver = Push2DisplayDriver(libUsbHelper, display)
+    private val elements = Push2Elements(midi)
+    private val throttleManager = ThrottleManager()
+    private val sceneManager = SceneManager(display, elements, throttleManager)
 
     init {
         title = "Push 2 Throttle"
-        repeat(8) {
-            val ctrl = ThrottleController("T${it + 1}", it, mapper)
-            controllers["T${it + 1}"] = ctrl
-            ctrl.connectToJmri()
-        }
-        roster.connectToJmri()
         midi.open()
-        display.open()
-        elements.register(midi, mapper)
-    }
-
-    private fun rosterCallback() {
-        displayContent.rosterChanged(roster)
+        displayDriver.open()
+        elements.register()
+        throttleManager.roster.connectToJmri()
+        sceneManager.gotoScene("throttles")
+        throttleManager.throttlesReassigned = sceneManager::throttlesReassigned
     }
 
     override val root = hbox {
@@ -38,23 +30,22 @@ class Push2ThrottleMainView: View() {
             action {
                 if (midi.isOpen) midi.close()
                 midi.open()
-                if (display.isOpen) display.close()
-                display.open()
+                if (displayDriver.isOpen) displayDriver.close()
+                displayDriver.open()
+                sceneManager.gotoScene("throttles")
             }
         }
         button("print states") {
             action {
-                for (throttleName in controllers.keys.sorted()) {
-                    controllers[throttleName]?.printStates()
+                for (loco in throttleManager.roster.locos) {
+                    println(loco)
                 }
             }
         }
         button("reconnect JMRI") {
             action {
-                for (ctrl in controllers.values) {
-                    ctrl.disconnectFromJmri()
-                    ctrl.connectToJmri()
-                }
+                throttleManager.roster.disconnectFromJmri()
+                throttleManager.roster.connectToJmri() // will call rosterChangedCallback
             }
         }
         button("test JSMN") {
@@ -95,6 +86,7 @@ fun getMoreData() {
     // {name=IT1, comment=null, state=0, userName=WI0, inverted=false}
     // {name=NT1, comment=null, state=4, userName=W0, inverted=false}
 }
+
 private fun jmriCallback(tree: Any?) {
     println("$tree")
     if (tree is Map<*,*> && tree["type"] != "pong") println("> $tree")

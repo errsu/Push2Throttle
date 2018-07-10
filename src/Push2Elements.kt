@@ -1,30 +1,42 @@
 import java.util.*
 import kotlin.concurrent.schedule
 
-abstract class MidiElement() {
+interface MidiController {
+    fun <T : Any> elementStateChanged(element: MidiElement, newValue: T)
+}
+
+abstract class MidiElement {
     var name: String = "noname"
-    var mapper: Push2Mapper? = null
-    open fun setAttributes(mapping: Map<String,String>) {
-    }
-    abstract fun registerForMidi(midi: Push2Midi)
-    abstract fun updatePush2(midi: Push2Midi)
-    abstract fun updateStateByJmri(value: Any, midi: Push2Midi)
+    var controller: MidiController? = null
+    open fun setAttributes(mapping: Map<String,Any?>) {}
+    abstract fun reset()
+    abstract fun registerForMidi(midi: Push2MidiDriver)
+    abstract fun updatePush2(midi: Push2MidiDriver)
+    abstract fun updateStateByJmri(value: Any?, midi: Push2MidiDriver)
     fun updateJmri(newValue: Any) {
-        mapper?.push2ElementStateChanged(name, newValue)
+        controller?.elementStateChanged(this, newValue)
     }
 }
 
 class Erp(private val turnCcNumber: Int, private val touchNnNumber: Int) : MidiElement() {
     private var state = 0.0f
-    private var min = 0.0f
-    private var max = 1.0f
-    private var delta = 1.0f / 128.0f // clockwise == more
+    private val min = 0.0f
+    private val max = 1.0f
+    private val delta = 1.0f / 128.0f // clockwise == more
     private var touched = false
     private var suppressEcho = false
     private val resetTimer = Timer()
     private var resetTimerTask : TimerTask? = null
 
-    override fun registerForMidi(midi: Push2Midi) {
+    override fun reset() {
+        state = 0.0f
+        touched = false
+        suppressEcho = false
+        resetTimerTask?.cancel()
+        resetTimerTask = null
+    }
+
+    override fun registerForMidi(midi: Push2MidiDriver) {
         midi.registerElement("cc", turnCcNumber) { value ->
             state = if (value < 64) { // turn right
                 minOf(state + delta * value, max)
@@ -44,9 +56,9 @@ class Erp(private val turnCcNumber: Int, private val touchNnNumber: Int) : MidiE
             updatePush2(midi)
         }
     }
-    override fun updatePush2(midi: Push2Midi) {
+    override fun updatePush2(midi: Push2MidiDriver) {
     }
-    override fun updateStateByJmri(value: Any, midi: Push2Midi) {
+    override fun updateStateByJmri(value: Any?, midi: Push2MidiDriver) {
         if (value is Float && !suppressEcho) { // TODO: how to update touch?
             state = value
             updatePush2(midi)
@@ -62,7 +74,14 @@ abstract class Switch(val isRgb: Boolean) : MidiElement() {
     var state = false
 
     protected var onColor = if (isRgb) 122 else 127
-    protected var offColor = if (isRgb) 124 else 6
+    protected var offColor = if (isRgb) 0 else 0
+
+    override fun reset() {
+        toggle = false
+        state = false
+        onColor = if (isRgb) 122 else 127
+        offColor = if (isRgb) 124 else 6
+    }
 
     private fun colorIndex(color: Any?) : Int? {
         return when (color) {
@@ -76,7 +95,7 @@ abstract class Switch(val isRgb: Boolean) : MidiElement() {
             else -> null
         }}
 
-    fun onMidi(midi: Push2Midi, value: Int) {
+    fun onMidi(midi: Push2MidiDriver, value: Int) {
         var newState = state
         if (toggle) {
             if (value > 0) newState = !state
@@ -86,16 +105,19 @@ abstract class Switch(val isRgb: Boolean) : MidiElement() {
         if (newState != state) {
             state = newState
             updateJmri(state)
+            // TODO: for each Element, have a flag if it is reflecting a jmri state
+            // if the flag is true, don't call updatePush2 here
             updatePush2(midi)
         }
     }
-    override fun setAttributes(mapping: Map<String,String>) {
+
+    override fun setAttributes(mapping: Map<String,Any?>) {
         onColor = colorIndex(mapping["onColor"]) ?: onColor
         offColor = colorIndex(mapping["offColor"]) ?: offColor
         if (mapping["type"] == "toggle") toggle = true
     }
 
-    override fun updateStateByJmri(value: Any, midi: Push2Midi) {
+    override fun updateStateByJmri(value: Any?, midi: Push2MidiDriver) {
         if (value is Boolean) {
             state = value
             updatePush2(midi)
@@ -105,44 +127,54 @@ abstract class Switch(val isRgb: Boolean) : MidiElement() {
 
 class Pad(private val number: Int) : Switch(true) {
 
-    override fun registerForMidi(midi: Push2Midi) {
+    override fun registerForMidi(midi: Push2MidiDriver) {
         midi.registerElement("nn", number) { value -> onMidi(midi, value) }
     }
-    override fun updatePush2(midi: Push2Midi) {
+    override fun updatePush2(midi: Push2MidiDriver) {
         midi.sendNN(0, number, if (state) onColor else offColor)
     }
 }
 
 class ButtonWhite(private val number: Int) : Switch(false) {
 
-    override fun registerForMidi(midi: Push2Midi) {
+    override fun registerForMidi(midi: Push2MidiDriver) {
         midi.registerElement("cc", number) { value -> onMidi(midi, value) }
     }
-    override fun updatePush2(midi: Push2Midi) {
+    override fun updatePush2(midi: Push2MidiDriver) {
         midi.sendCC(0, number, if (state) onColor else offColor)
     }
 }
 
 class ButtonRgb(private val number: Int) : Switch(true) {
 
-    override fun registerForMidi(midi: Push2Midi) {
+    override fun registerForMidi(midi: Push2MidiDriver) {
         midi.registerElement("cc", number) { value -> onMidi(midi, value) }
     }
-    override fun updatePush2(midi: Push2Midi) {
+    override fun updatePush2(midi: Push2MidiDriver) {
         midi.sendCC(0, number, if (state) onColor else offColor)
     }
 }
 
-class Push2Elements {
+class Push2Elements(val midi: Push2MidiDriver) {
+    // TODO: use members (see Loco)
+
     private val elements: Map<String, MidiElement> = mapOf(
-        "Pad 11" to Pad(92), "Pad 12" to Pad(93), "Pad 13" to Pad(94), "Pad 14" to Pad(95), "Pad 15" to Pad(96), "Pad 16" to Pad(97), "Pad 17" to Pad(98), "Pad 18" to Pad(99),
-        "Pad 21" to Pad(84), "Pad 22" to Pad(85), "Pad 23" to Pad(86), "Pad 24" to Pad(87), "Pad 25" to Pad(88), "Pad 26" to Pad(89), "Pad 27" to Pad(90), "Pad 28" to Pad(91),
-        "Pad 31" to Pad(76), "Pad 32" to Pad(77), "Pad 33" to Pad(78), "Pad 34" to Pad(79), "Pad 35" to Pad(80), "Pad 36" to Pad(81), "Pad 37" to Pad(82), "Pad 38" to Pad(83),
-        "Pad 41" to Pad(68), "Pad 42" to Pad(69), "Pad 43" to Pad(70), "Pad 44" to Pad(71), "Pad 45" to Pad(72), "Pad 46" to Pad(73), "Pad 47" to Pad(74), "Pad 48" to Pad(75),
-        "Pad 51" to Pad(60), "Pad 52" to Pad(61), "Pad 53" to Pad(62), "Pad 54" to Pad(63), "Pad 55" to Pad(64), "Pad 56" to Pad(65), "Pad 57" to Pad(66), "Pad 58" to Pad(67),
-        "Pad 61" to Pad(52), "Pad 62" to Pad(53), "Pad 63" to Pad(54), "Pad 64" to Pad(55), "Pad 65" to Pad(56), "Pad 66" to Pad(57), "Pad 67" to Pad(58), "Pad 68" to Pad(59),
-        "Pad 71" to Pad(44), "Pad 72" to Pad(45), "Pad 73" to Pad(46), "Pad 74" to Pad(47), "Pad 75" to Pad(48), "Pad 76" to Pad(49), "Pad 77" to Pad(50), "Pad 78" to Pad(51),
-        "Pad 81" to Pad(36), "Pad 82" to Pad(37), "Pad 83" to Pad(38), "Pad 84" to Pad(39), "Pad 85" to Pad(40), "Pad 86" to Pad(41), "Pad 87" to Pad(42), "Pad 88" to Pad(43),
+        "Pad S8 T1" to Pad(36), "Pad S8 T2" to Pad(37), "Pad S8 T3" to Pad(38), "Pad S8 T4" to Pad(39),
+        "Pad S8 T5" to Pad(40), "Pad S8 T6" to Pad(41), "Pad S8 T7" to Pad(42), "Pad S8 T8" to Pad(43),
+        "Pad S7 T1" to Pad(44), "Pad S7 T2" to Pad(45), "Pad S7 T3" to Pad(46), "Pad S7 T4" to Pad(47),
+        "Pad S7 T5" to Pad(48), "Pad S7 T6" to Pad(49), "Pad S7 T7" to Pad(50), "Pad S7 T8" to Pad(51),
+        "Pad S6 T1" to Pad(52), "Pad S6 T2" to Pad(53), "Pad S6 T3" to Pad(54), "Pad S6 T4" to Pad(55),
+        "Pad S6 T5" to Pad(56), "Pad S6 T6" to Pad(57), "Pad S6 T7" to Pad(58), "Pad S6 T8" to Pad(59),
+        "Pad S5 T1" to Pad(60), "Pad S5 T2" to Pad(61), "Pad S5 T3" to Pad(62), "Pad S5 T4" to Pad(63),
+        "Pad S5 T5" to Pad(64), "Pad S5 T6" to Pad(65), "Pad S5 T7" to Pad(66), "Pad S5 T8" to Pad(67),
+        "Pad S4 T1" to Pad(68), "Pad S4 T2" to Pad(69), "Pad S4 T3" to Pad(70), "Pad S4 T4" to Pad(71),
+        "Pad S4 T5" to Pad(72), "Pad S4 T6" to Pad(73), "Pad S4 T7" to Pad(74), "Pad S4 T8" to Pad(75),
+        "Pad S3 T1" to Pad(76), "Pad S3 T2" to Pad(77), "Pad S3 T3" to Pad(78), "Pad S3 T4" to Pad(79),
+        "Pad S3 T5" to Pad(80), "Pad S3 T6" to Pad(81), "Pad S3 T7" to Pad(82), "Pad S3 T8" to Pad(83),
+        "Pad S2 T1" to Pad(84), "Pad S2 T2" to Pad(85), "Pad S2 T3" to Pad(86), "Pad S2 T4" to Pad(87),
+        "Pad S2 T5" to Pad(88), "Pad S2 T6" to Pad(89), "Pad S2 T7" to Pad(90), "Pad S2 T8" to Pad(91),
+        "Pad S1 T1" to Pad(92), "Pad S1 T2" to Pad(93), "Pad S1 T3" to Pad(94), "Pad S1 T4" to Pad(95),
+        "Pad S1 T5" to Pad(96), "Pad S1 T6" to Pad(97), "Pad S1 T7" to Pad(98), "Pad S1 T8" to Pad(99),
 
         "Pot T1"     to Erp(71, 0),
         "Pot T2"     to Erp(72, 1),
@@ -225,15 +257,32 @@ class Push2Elements {
         "Shift"        to ButtonWhite(49),
         "Select"       to ButtonWhite(48))
 
-    fun register(midi: Push2Midi, mapper: Push2Mapper) {
+    fun register() {
         for ((key, element) in elements.entries) {
             element.name = key
-            element.mapper = mapper
             element.updatePush2(midi)
             element.registerForMidi(midi)
         }
     }
     fun getElement(name: String) : MidiElement? {
         return elements[name]
+    }
+    fun updateElementStateByJmri(element: MidiElement, value: Any?) {
+        element.updateStateByJmri(value, midi)
+    }
+
+    fun connect(element: MidiElement,
+                controller: MidiController,
+                attributes: Map<String, Any?>,
+                value: Any?) {
+        element.setAttributes(attributes)
+        element.controller = controller
+        element.updateStateByJmri(value, midi)
+    }
+
+    fun disconnect(element: MidiElement) {
+        element.controller = null
+        element.reset()
+        element.updatePush2(midi)
     }
 }

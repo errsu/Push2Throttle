@@ -87,7 +87,10 @@ class JmriWsClient : WebSocketAdapter() {
             {
                 val parser = JsmnParser(n)
                 val tree = parser.parseToTree(message)
-                messageCallback(tree)
+                val isPong = (tree is Map<*,*> && tree["type"] == "pong")
+                if (!isPong) {
+                    messageCallback(tree)
+                }
             }
         }
     }

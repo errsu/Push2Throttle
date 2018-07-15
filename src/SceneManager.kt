@@ -8,10 +8,18 @@ class SceneManager(private val display: Push2Display,
     private val panelScene = PanelScene(display)
     private var currentScene: Scene? = null
     private val select = elements.getElement("Select")
+    private val pageLeft = elements.getElement("Page Left")
+    private val pageRight = elements.getElement("Page Right")
 
     init {
         elements.connect(select!!, this,
                 mapOf("onColor" to 124, "offColor" to 6, "type" to "toggle"),
+                false)
+        elements.connect(pageLeft!!, this,
+                mapOf("onColor" to 124, "offColor" to 6, "type" to "momentary"),
+                false)
+        elements.connect(pageRight!!, this,
+                mapOf("onColor" to 124, "offColor" to 6, "type" to "momentary"),
                 false)
     }
 
@@ -33,7 +41,9 @@ class SceneManager(private val display: Push2Display,
 
     override fun <T : Any> elementStateChanged(element: MidiElement, newValue: T) {
         when (element) {
-            select -> gotoScene(if (newValue == true) "panel" else "throttles")
+            select    -> gotoScene(if (newValue == true) "panel" else "throttles")
+            pageLeft  -> if (newValue == true) currentScene?.gotoPreviousPage()
+            pageRight -> if (newValue == true) currentScene?.gotoNextPage()
         }
     }
 }
@@ -41,6 +51,8 @@ class SceneManager(private val display: Push2Display,
 interface Scene {
     fun build()
     fun destroy()
+    fun gotoPreviousPage()
+    fun gotoNextPage()
 }
 
 class ThrottleScene(private val display: Push2Display,
@@ -51,6 +63,8 @@ class ThrottleScene(private val display: Push2Display,
     // which continously record the loco data (if a loco is assigned).
     // The controllers also know their elements, but are not
     // connected to them until the scene is established.
+
+    private var page = 0
 
     private val controllers = Array(24) {
         val throttle = throttleManager.throttleAtSlot(it)
@@ -74,17 +88,33 @@ class ThrottleScene(private val display: Push2Display,
 
     override fun build() {
         repeat(8) {
-            controllers[it].connectToElements()
-            throttleViews[it].throttle = throttleManager.throttleAtSlot(it)
+            val slot = page * 8 + it
+            controllers[slot].connectToElements()
+            throttleViews[it].throttle = throttleManager.throttleAtSlot(slot)
             display.addView(throttleViews[it])
         }
     }
 
     override fun destroy() {
         repeat(8) {
-            controllers[it].disconnectFromElements()
+            val slot = page * 8 + it
+            controllers[slot].disconnectFromElements()
             throttleViews[it].throttle = null
             display.removeView(throttleViews[it])
+        }
+    }
+    override fun gotoPreviousPage() {
+        if (page > 0) {
+            destroy()
+            page--
+            build()
+        }
+    }
+    override fun gotoNextPage() {
+        if (page < 2) {
+            destroy()
+            page++
+            build()
         }
     }
 }
@@ -98,5 +128,9 @@ class PanelScene(private val display: Push2Display) : Scene {
 
     override fun destroy() {
         display.removeView(panelView)
+    }
+    override fun gotoPreviousPage() {
+    }
+    override fun gotoNextPage() {
     }
 }

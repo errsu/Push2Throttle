@@ -5,9 +5,10 @@ class ThrottleView(rect: Rectangle): Push2View(rect) {
 
     var throttle: JmriThrottle? = null
 
-    private val font18 = Font("SansSerif", Font.BOLD, 18)
-    private val font24 = Font("SansSerif", Font.PLAIN, 24)
-    private val font48 = Font("SansSerif", Font.PLAIN, 48)
+    private val font18  = Font("SansSerif", Font.PLAIN, 18)
+    private val font18b = Font("SansSerif", Font.BOLD,  18)
+    private val font24  = Font("SansSerif", Font.PLAIN, 24)
+    private val font48  = Font("SansSerif", Font.PLAIN, 48)
 
     override fun draw(g: Graphics2D, frame: Int, display: Push2Display) {
         val loco = throttle?.loco ?: return
@@ -16,10 +17,10 @@ class ThrottleView(rect: Rectangle): Push2View(rect) {
         g.paint = trackColor
         g.fill(Rectangle(0, 0, rect.width, rect.height))
 
-        g.font = font18
+        g.font = font18b
         g.paint = Color.BLACK
         val locoName = loco.name
-        val wName = g.getFontMetrics(font18).stringWidth(locoName)
+        val wName = g.getFontMetrics(font18b).stringWidth(locoName)
         g.drawString(locoName, (rect.width - wName) / 2, 20)
 
         val sliderRect = Rectangle(6, 30, 10, rect.height - 38)
@@ -46,8 +47,6 @@ class ThrottleView(rect: Rectangle): Push2View(rect) {
         triangle.translate(speedTriangleX, speedTriangleY)
         g.fill(triangle)
 
-        // TODO: add "km/h"
-
         if (fullStop) {
             g.font = font24
             g.paint = Color.BLACK
@@ -58,21 +57,28 @@ class ThrottleView(rect: Rectangle): Push2View(rect) {
             g.font = font48
             g.paint = Color.BLACK
             val maxSpeed = loco.maxSpeed.value
-            val speed = if (fullStop) "STOP!" else (locoSpeed * maxSpeed.toFloat()).roundToInt().toString()
+            val speed = (locoSpeed * maxSpeed.toFloat()).roundToInt().toString()
             val wSpeed = g.getFontMetrics(font48).stringWidth(speed)
-            g.drawString(speed, rect.width - wSpeed - 10, 30 + (rect.height - 30 - 10) / 2)
+            val speedY = 30 + (rect.height - 30 - 10) / 2
+            g.drawString(speed, rect.width - wSpeed - 10, speedY)
+
+            g.font = font18
+            g.paint = Color.BLACK
+            val kmh = "km/h"
+            val wKmh = g.getFontMetrics(font18).stringWidth(kmh)
+            g.drawString(kmh, rect.width - wKmh - 12, speedY + 23)
         }
 
         val forward = loco.forward.value
         if (!forward) {
-            val reverseRect = Rectangle(36, rect.height - 40, rect.width - 42, 18)
+            val reverseRect = Rectangle(36, rect.height - 34, rect.width - 42, 18)
             g.paint = Color.WHITE
             g.fill(reverseRect)
             g.paint = Color.BLACK
             g.draw(reverseRect)
-            g.font = font18
+            g.font = font18b
             g.paint = Color.RED
-            g.drawString("reverse", 42, rect.height - 25)
+            g.drawString("reverse", 42, rect.height - 19)
         }
         g.font = font24
         g.paint = Color(64, 64, 64)

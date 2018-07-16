@@ -25,8 +25,9 @@ class Push2ThrottleController(
     fun connectToElements() {
         val loco = throttle.loco
         if (loco != null) {
+            val delta = (1.0f / loco.maxSpeed.value.toFloat()).coerceAtMost(1.0f / 128.0f)
             elements.connect(erp, this,
-                    mapOf(),
+                    mapOf("delta" to delta),
                     loco.speed.value.coerceIn(0.0f, 1.0f))
             elements.connect(dispA, this,
                     mapOf("onColor" to "green", "offColor" to "red", "type" to "toggle"),

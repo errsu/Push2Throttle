@@ -22,7 +22,7 @@ class Erp(private val turnCcNumber: Int, private val touchNnNumber: Int) : MidiE
     private var state = 0.0f
     private val min = 0.0f
     private val max = 1.0f
-    private val delta = 1.0f / 128.0f // clockwise == more
+    private var delta = 1.0f / 128.0f // clockwise == more
     private var touched = false
     private var suppressEcho = false
     private val resetTimer = Timer()
@@ -30,10 +30,18 @@ class Erp(private val turnCcNumber: Int, private val touchNnNumber: Int) : MidiE
 
     override fun reset() {
         state = 0.0f
+        delta = 1.0f / 128.0f
         touched = false
         suppressEcho = false
         resetTimerTask?.cancel()
         resetTimerTask = null
+    }
+
+    override fun setAttributes(mapping: Map<String,Any?>) {
+        val newDelta = mapping["delta"]
+        if (newDelta is Float && newDelta != 0.0f) {
+            delta = newDelta
+        }
     }
 
     override fun registerForMidi(midi: Push2MidiDriver) {

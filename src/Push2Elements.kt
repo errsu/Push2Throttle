@@ -80,7 +80,7 @@ abstract class Switch(val isRgb: Boolean) : MidiElement() {
         toggle = false
         state = false
         onColor = if (isRgb) 122 else 127
-        offColor = if (isRgb) 124 else 6
+        offColor = if (isRgb) 0 else 0
     }
 
     private fun colorIndex(color: Any?) : Int? {

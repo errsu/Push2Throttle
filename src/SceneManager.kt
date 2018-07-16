@@ -8,18 +8,10 @@ class SceneManager(private val display: Push2Display,
     private val panelScene = PanelScene(display)
     private var currentScene: Scene? = null
     private val select = elements.getElement("Select")
-    private val pageLeft = elements.getElement("Page Left")
-    private val pageRight = elements.getElement("Page Right")
 
     init {
         elements.connect(select!!, this,
                 mapOf("onColor" to 124, "offColor" to 6, "type" to "toggle"),
-                false)
-        elements.connect(pageLeft!!, this,
-                mapOf("onColor" to 124, "offColor" to 6, "type" to "momentary"),
-                false)
-        elements.connect(pageRight!!, this,
-                mapOf("onColor" to 124, "offColor" to 6, "type" to "momentary"),
                 false)
     }
 
@@ -42,8 +34,6 @@ class SceneManager(private val display: Push2Display,
     override fun <T : Any> elementStateChanged(element: MidiElement, newValue: T) {
         when (element) {
             select    -> gotoScene(if (newValue == true) "panel" else "throttles")
-            pageLeft  -> if (newValue == true) currentScene?.gotoPreviousPage()
-            pageRight -> if (newValue == true) currentScene?.gotoNextPage()
         }
     }
 }
@@ -51,13 +41,11 @@ class SceneManager(private val display: Push2Display,
 interface Scene {
     fun build()
     fun destroy()
-    fun gotoPreviousPage()
-    fun gotoNextPage()
 }
 
 class ThrottleScene(private val display: Push2Display,
                     private val elements: Push2Elements,
-                    private val throttleManager: ThrottleManager) : Scene {
+                    private val throttleManager: ThrottleManager) : Scene, MidiController {
 
     // The controllers have a fixed connection to the throttles,
     // which continously record the loco data (if a loco is assigned).
@@ -79,6 +67,9 @@ class ThrottleScene(private val display: Push2Display,
         controller
     }
 
+    private val pageLeft = elements.getElement("Page Left")
+    private val pageRight = elements.getElement("Page Right")
+
     // The views have fixed positions and are connected to the
     // locos on scene establishment.
 
@@ -93,6 +84,16 @@ class ThrottleScene(private val display: Push2Display,
             throttleViews[it].throttle = throttleManager.throttleAtSlot(slot)
             display.addView(throttleViews[it])
         }
+        if (page > 0) {
+            elements.connect(pageLeft!!, this,
+                    mapOf("onColor" to 124, "offColor" to 6, "type" to "momentary"),
+                    false)
+        }
+        if (page < 2) {
+            elements.connect(pageRight!!, this,
+                    mapOf("onColor" to 124, "offColor" to 6, "type" to "momentary"),
+                    false)
+        }
     }
 
     override fun destroy() {
@@ -102,19 +103,26 @@ class ThrottleScene(private val display: Push2Display,
             throttleViews[it].throttle = null
             display.removeView(throttleViews[it])
         }
+        elements.disconnect(pageLeft!!)
+        elements.disconnect(pageRight!!)
     }
-    override fun gotoPreviousPage() {
-        if (page > 0) {
-            destroy()
-            page--
-            build()
-        }
-    }
-    override fun gotoNextPage() {
-        if (page < 2) {
-            destroy()
-            page++
-            build()
+
+    override fun <T : Any> elementStateChanged(element: MidiElement, newValue: T) {
+        when (element) {
+            pageLeft  -> if (newValue == true) {
+                if (page > 0) {
+                    destroy()
+                    page--
+                    build()
+                }
+            }
+            pageRight -> if (newValue == true) {
+                if (page < 2) {
+                    destroy()
+                    page++
+                    build()
+                }
+            }
         }
     }
 }
@@ -128,9 +136,5 @@ class PanelScene(private val display: Push2Display) : Scene {
 
     override fun destroy() {
         display.removeView(panelView)
-    }
-    override fun gotoPreviousPage() {
-    }
-    override fun gotoNextPage() {
     }
 }

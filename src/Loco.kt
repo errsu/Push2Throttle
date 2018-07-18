@@ -1,24 +1,7 @@
-open class Attribute<T : Any>(val name: String, var value: T) {
-    val type = value::class
-    fun assign  (newValue: Any?) : Boolean {
-        if (newValue != null && newValue::class == type && value != newValue) {
-            // value is T -> value::class -> type -> newValue::class -> newValue is T
-            @Suppress("UNCHECKED_CAST")
-            value = newValue as T
-            return true
-        }
-        return false
-    }
-    override fun toString() : String {
-        return value.toString()
-    }
-}
-
 class Loco(val name: String) {
 
     var attrs = HashMap<String, Attribute<*>>()
 
-    val test       = addAttr(Attribute("Test", false))
     val address    = addAttr(Attribute("address", 0))
     val speed      = addAttr(Attribute("speed", 0.0f))
     val forward    = addAttr(Attribute("forward", false))
@@ -45,12 +28,9 @@ class Loco(val name: String) {
     }
 
     override fun toString() : String {
-        fun b(attr: Attribute<Boolean>): String {
-            return if (attr.value) "T" else "F"
-        }
-        return """Loco{name=$name, addr=$address, speed=$speed, fwd=${b(forward)}, """ +
-                """F0-F7=[${b(f0)}, ${b(f1)}, ${b(f2)}, ${b(f3)}, """ +
-                """${b(f4)}, ${b(f5)}, ${b(f6)}, ${b(f7)}], """ +
+        return """Loco{name=$name, addr=$address, speed=$speed, fwd=${forward.b()}, """ +
+                """F0-F7=[${f0.b()}, ${f1.b()}, ${f2.b()}, ${f3.b()}, """ +
+                """${f4.b()}, ${f5.b()}, ${f6.b()}, ${f7.b()}], """ +
                 """maxSpeed=$maxSpeed, slot=$slot}, color=$color}"""
     }
 }

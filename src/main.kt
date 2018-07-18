@@ -11,6 +11,7 @@ class Push2ThrottleMainView: View() {
     private val elements = Push2Elements(midi)
     private val throttleManager = ThrottleManager()
     private val sceneManager = SceneManager(display, elements, throttleManager)
+    private val turnoutManager = TurnoutManager()
 
     init {
         title = "Push 2 Throttle"
@@ -18,6 +19,7 @@ class Push2ThrottleMainView: View() {
         displayDriver.open()
         elements.register()
         throttleManager.roster.connectToJmri()
+        turnoutManager.turnouts.connectToJmri()
         sceneManager.gotoScene("throttles")
         throttleManager.throttlesReassigned = sceneManager::throttlesReassigned
     }
@@ -37,15 +39,20 @@ class Push2ThrottleMainView: View() {
         }
         button("print states") {
             action {
-                for (loco in throttleManager.roster.locos) {
+                for (loco in throttleManager.roster.locos.toSortedMap()) {
                     println(loco)
+                }
+                for (turnout in turnoutManager.turnouts.turnouts.toSortedMap()) {
+                    println(turnout)
                 }
             }
         }
         button("reconnect JMRI") {
             action {
                 throttleManager.roster.disconnectFromJmri()
+                turnoutManager.turnouts.disconnectFromJmri()
                 throttleManager.roster.connectToJmri() // will call rosterChangedCallback
+                turnoutManager.turnouts.connectToJmri()
             }
         }
         button("test JSMN") {

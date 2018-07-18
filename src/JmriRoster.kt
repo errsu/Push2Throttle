@@ -24,7 +24,7 @@ class JmriRoster(private val rosterChangedCallback: () -> Unit) {
         val address = data["address"]
         if (address is String) {
             val intAddress = address.toInt()
-            if (loco.attrs["address"]?.assign(intAddress) == true) {
+            if (loco.assignAttr("address", intAddress)) {
                 updated = true
             }
         }
@@ -33,7 +33,7 @@ class JmriRoster(private val rosterChangedCallback: () -> Unit) {
             for ((attr, regex) in intAttrsInComment) {
                 if (regex.containsMatchIn(comment)) {
                     val value = regex.find(comment)!!.groups[1]!!.value
-                    if (loco.attrs[attr]?.assign(value.toInt()) == true) {
+                    if (loco.assignAttr(attr, value.toInt())) {
                         updated = true
                     }
                 }

@@ -128,13 +128,16 @@ class ThrottleScene(private val display: Push2Display,
 }
 
 class PanelScene(private val display: Push2Display) : Scene {
-    private val panelView = PanelView(Rectangle(0, 0, display.width, display.height))
+    // private val panelView = PanelView(Rectangle(0, 0, display.width, display.height))
+    private val testView = TestView(Rectangle(0, 0, display.width, display.height))
 
     override fun build() {
-        display.addView(panelView)
+        // display.addView(panelView)
+        display.addView(testView)
     }
 
     override fun destroy() {
-        display.removeView(panelView)
+        display.removeView(testView)
+        // display.removeView(panelView)
     }
 }

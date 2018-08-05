@@ -1,6 +1,7 @@
 import java.awt.*
 import java.awt.geom.GeneralPath
 import kotlin.math.pow
+import kotlin.math.roundToInt
 
 class TestView(rect: Rectangle): Push2View(rect) {
 
@@ -15,7 +16,7 @@ class TestView(rect: Rectangle): Push2View(rect) {
             }
         }
         fun leg(direction: String, slope: Int) : P {
-            val len = 30
+            val len = 24
             val realSlope = slope.toDouble() / 2.0 // slope is same as in branch
             val shrink = 1.0 / Math.sqrt(1.0 + realSlope * realSlope)
             val deltaY = (shrink * len.toDouble()).toInt()
@@ -128,7 +129,20 @@ class TestView(rect: Rectangle): Push2View(rect) {
         val yel = display.push2Colors[7]
         val blu = display.push2Colors[125]
 
-        fillPath(g2, yel, makePath(arrayOf(g, v, u, t, s, h, a, b, c, d, e, f, a.leg("W", 0))))
+        fillPath(g2, yel, makePath(arrayOf(g, v.leg("E", 3))))
+        fillPath(g2, yel, makePath(arrayOf(v.leg("E", 3), v, v.leg("SW", 3))))
+        fillPath(g2, yel, makePath(arrayOf(v.leg("SW", 3), u.leg("NE", 3))))
+        fillPath(g2, yel, makePath(arrayOf(u.leg("NE", 3), u, u.leg("W", 3))))
+        fillPath(g2, yel, makePath(arrayOf(u.leg("W", 3), t.leg("E", 3))))
+        fillPath(g2, yel, makePath(arrayOf(t.leg("E", 3), t, t.leg("NW", 3))))
+        fillPath(g2, yel, makePath(arrayOf(t.leg("NW", 3), s.leg("SE", 3))))
+        fillPath(g2, yel, makePath(arrayOf(s.leg("SE", 3), s, s.leg("W", 3))))
+        fillPath(g2, yel, makePath(arrayOf(s.leg("W", 3), h.leg("E", 3))))
+        fillPath(g2, yel, makePath(arrayOf(h.leg("E", 3), h, h.leg("W", 3))))
+        fillPath(g2, yel, makePath(arrayOf(h.leg("W", 3), a.leg("E", 3))))
+        fillPath(g2, yel, makePath(arrayOf(a.leg("E", 3), a, a.leg("SW", 3))))
+        fillPath(g2, yel, makePath(arrayOf(a.leg("SW", 3), b, c, d, e, f, a.leg("W", 0))))
+
         fillPath(g2, yel, makePath(arrayOf(t.leg("W", 0), o, m, l, k.leg("SE", 3))))
         fillPath(g2, yel, makePath(arrayOf(o.leg("W", 6), i, h.leg("SE", 3))))
         fillPath(g2, yel, makePath(arrayOf(r, q)))

@@ -48,7 +48,7 @@ class TestView(rect: Rectangle): Push2View(rect) {
         g.draw(path)
     }
 
-    private fun fillPath(g: Graphics2D, path: GeneralPath, color: Color?) {
+    private fun fillPath(g: Graphics2D, color: Color?, path: GeneralPath) {
         g.paint = color ?: Color.WHITE
         g.stroke = BasicStroke(2.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 3.0f)
         g.draw(path)
@@ -125,29 +125,16 @@ class TestView(rect: Rectangle): Push2View(rect) {
             strokePath(g2, makePath(l))
         }
 
-        // val route = makePath(arrayOf(a.leg("SW", 3), a, h))
-        val route1 = makePath(arrayOf(g, v, u, t, s, h, a, b, c, d, e, f, a.leg("W", 0)))
-        fillPath(g2, route1, display.push2Colors[7])
+        val yel = display.push2Colors[7]
+        val blu = display.push2Colors[125]
 
-        val route2 = makePath(arrayOf(t.leg("W", 0), o, m, l, k.leg("SE", 3)))
-        fillPath(g2, route2, display.push2Colors[10])
-
-        val route3 = makePath(arrayOf(o.leg("W", 6), i, h.leg("SE", 3)))
-        fillPath(g2, route3, display.push2Colors[4])
-
-        val route4 = makePath(arrayOf(r, q))
-        fillPath(g2, route4, display.push2Colors[23])
-
-        val route5 = makePath(arrayOf(m.leg("SW", 6), p.leg("NE", 6)))
-        fillPath(g2, route5, display.push2Colors[16])
-
-        val route6 = makePath(arrayOf(m.leg("E", 6), n))
-        fillPath(g2, route6, display.push2Colors[125])
-
-        val route7 = makePath(arrayOf(v.leg("W", 3), s.leg("E", 3)))
-        fillPath(g2, route7, display.push2Colors[126])
-
-        val route8 = makePath(arrayOf(u.leg("E", 3), j))
-        fillPath(g2, route8, display.push2Colors[127])
+        fillPath(g2, yel, makePath(arrayOf(g, v, u, t, s, h, a, b, c, d, e, f, a.leg("W", 0))))
+        fillPath(g2, yel, makePath(arrayOf(t.leg("W", 0), o, m, l, k.leg("SE", 3))))
+        fillPath(g2, yel, makePath(arrayOf(o.leg("W", 6), i, h.leg("SE", 3))))
+        fillPath(g2, yel, makePath(arrayOf(r, q)))
+        fillPath(g2, blu, makePath(arrayOf(m.leg("SW", 6), p.leg("NE", 6))))
+        fillPath(g2, blu, makePath(arrayOf(m.leg("E", 6), n)))
+        fillPath(g2, blu, makePath(arrayOf(v.leg("W", 3), s.leg("E", 3))))
+        fillPath(g2, blu, makePath(arrayOf(u.leg("E", 3), j)))
     }
 }

@@ -3,17 +3,26 @@ import java.awt.geom.GeneralPath
 
 class TestView(rect: Rectangle): Push2View(rect) {
 
-    class P(val x: Double, val y: Double) {
-        fun branch(direction: String, slope: Double, targetY: Double) : P {
+    //------------------------------------------------------------------------------------
+    // turnout geometry
+
+    data class Point(val name: String, val x: Double, val y: Double) {
+        var n = 0
+        override fun toString() : String {
+            return "P$n($name){${x.toInt()},${y.toInt()}}"
+        }
+
+        fun branch(name: String, direction: String, slope: Double, targetY: Double) : Point {
             return when (direction) {
-                "NW" -> P(x - slope * (y - targetY) / 2.0, targetY)
-                "NE" -> P(x + slope * (y - targetY) / 2.0, targetY)
-                "SW" -> P(x - slope * (targetY - y) / 2.0, targetY)
-                "SE" -> P(x + slope * (targetY - y) / 2.0, targetY)
+                "NW" -> Point(name, x - slope * (y - targetY) / 2.0, targetY)
+                "NE" -> Point(name, x + slope * (y - targetY) / 2.0, targetY)
+                "SW" -> Point(name, x - slope * (targetY - y) / 2.0, targetY)
+                "SE" -> Point(name, x + slope * (targetY - y) / 2.0, targetY)
                 else -> this
             }
         }
-        fun leg(direction: String, slope: Double) : P {
+
+        fun leg(direction: String, slope: Double) : Point {
             val len = 24.0
             val realSlope = slope / 2.0 // slope is same as in branch
             val shrink = 1.0 / Math.sqrt(1.0 + realSlope * realSlope)
@@ -21,18 +30,196 @@ class TestView(rect: Rectangle): Push2View(rect) {
             val deltaX = realSlope * deltaY
 
             return when (direction) {
-                "E"  -> P(x + len, y)
-                "W"  -> P(x - len, y)
-                "NW" -> P(x - deltaX, y - deltaY)
-                "NE" -> P(x + deltaX, y - deltaY)
-                "SW" -> P(x - deltaX, y + deltaY)
-                "SE" -> P(x + deltaX, y + deltaY)
+                "E"  -> Point(name + "_e", x + len, y)
+                "W"  -> Point(name + "_w", x - len, y)
+                "NW" -> Point(name + "_nw", x - deltaX, y - deltaY)
+                "NE" -> Point(name + "_ne", x + deltaX, y - deltaY)
+                "SW" -> Point(name + "_sw", x - deltaX, y + deltaY)
+                "SE" -> Point(name + "_se", x + deltaX, y + deltaY)
                 else -> this
             }
         }
     }
 
-    private fun makePath(points: Array<P>) : GeneralPath {
+    object TurnoutState {
+        // see ./java/src/jmri/server/json/JSON.java
+        const val UNKNOWN = 0x00 // differs from NamedBean.UNKNOWN == 0x01
+        const val CLOSED = 0x02
+        const val THROWN = 0x04
+        const val INCONSISTENT = 0x08
+    }
+
+    class Turnout(val pCenter: Point, val pClosed: Point, val pThrown: Point) {
+        var state: Int = TurnoutState.CLOSED
+        fun addPointsToSet(set: MutableSet<Point>) {
+            set.add(pCenter)
+            set.add(pClosed)
+            set.add(pThrown)
+        }
+
+        fun addEdgeToGraph(graph: Graph) {
+            when (state) {
+                TurnoutState.UNKNOWN -> {}
+                TurnoutState.CLOSED -> graph.addEdge(pCenter.n, pClosed.n)
+                TurnoutState.THROWN -> graph.addEdge(pCenter.n, pThrown.n)
+                TurnoutState.INCONSISTENT -> {}
+            }
+        }
+    }
+
+    class Rail(val points: Array<Point>) {
+        fun addPointsToSet(set: MutableSet<Point>) {
+            set.addAll(points)
+        }
+
+        fun addEdgesToGraph(graph: Graph) {
+            val pIter = points.iterator()
+            var p0 = pIter.next()
+            for (p1 in pIter) {
+                graph.addEdge(p0.n, p1.n)
+                p0 = p1
+            }
+        }
+    }
+
+    //------------------------------------------------------------------------------------
+    // graph representation of selected path
+
+    // We have an undirected graph where no vertex
+    // has more than two edges connected.
+    // Also, there are no cycles by construction.
+    // The main goal is to find the connected components,
+    // which are printed in one go with a single color.
+
+    class Graph {
+        class Vertex(val name: String, val n: Int) {
+            override fun toString() : String {
+                return "V$n($name){$adj1,$adj2,$visited}"
+            }
+            var adj1: Int = -1
+            var adj2: Int = -1
+            var visited = false
+            fun valency() : Int {
+                return if (adj1 == -1) 0 else 1 + if (adj2 == -1) 0 else 1
+            }
+
+            fun reset() {
+                adj1 = -1
+                adj2 = -1
+                visited = false
+            }
+            fun addEdge(to: Int) {
+                when {
+                    adj1 == -1 -> adj1 = to
+                    adj2 == -1 -> adj2 = to
+                    else -> println("Graph Error: more than two edges for vertex $n")
+                }
+            }
+        }
+
+        val vertices = arrayListOf<Vertex>()
+
+        // how to use:
+        // Building time
+        // - add all vertexes
+        // - enumerate vertexes (?)
+        // On turnout state changed
+        // - reset edges
+        // - add all active edges
+        // - find components
+
+        fun addVertex(name: String, n: Int) {
+            vertices.add(Vertex(name, n))
+        }
+
+        fun resetEdges() {
+            vertices.forEach { it.reset() }
+        }
+
+        fun addEdge(n0: Int, n1: Int) {
+            vertices[n0].addEdge(n1)
+            vertices[n1].addEdge(n0)
+        }
+
+        fun tracePathes(startIndex: Int, list: MutableList<Int>) {
+            list.add(startIndex)
+            vertices[startIndex].visited = true
+            val next1 = vertices[startIndex].adj1
+            if (next1 != -1 && !vertices[next1].visited) {
+                tracePathes(next1, list)
+            }
+            val next2 = vertices[startIndex].adj2
+            if (next2 != -1 && !vertices[next2].visited) {
+                tracePathes(next2, list)
+            }
+        }
+
+        fun findComponents() : List<List<Int>> {
+            val components = mutableListOf<List<Int>>()
+
+            while (true) {
+                val list = mutableListOf<Int>()
+
+                // find corner vertex (cycles are ignored)
+                for (startIndex in vertices.indices) {
+                    if (!vertices[startIndex].visited && vertices[startIndex].valency() == 1) {
+                        // recursively add next vertices starting with corner
+                        tracePathes(startIndex, list)
+                        break
+                    }
+                }
+
+                if (list.isNotEmpty()) {
+                    components.add(list)
+                }
+                else {
+                    return components
+                }
+            }
+        }
+    }
+
+    fun buildGraph(points: Array<Point>): Graph {
+        val graph = Graph()
+        points.forEachIndexed { index, point ->
+            graph.addVertex(point.name, index)
+        }
+        return graph
+    }
+
+    fun updateGraph(graph: Graph, turnouts: List<Turnout>, rails: List<Rail>) {
+        graph.resetEdges()
+        turnouts.forEach {
+            it.addEdgeToGraph(graph)
+        }
+        rails.forEach {
+            it.addEdgesToGraph(graph)
+        }
+    }
+
+    fun enumeratePoints(turnouts: List<Turnout>, rails: List<Rail>): Array<Point> {
+        val pointSet = mutableSetOf<Point>()
+
+        turnouts.forEach {
+            it.addPointsToSet(pointSet)
+        }
+        rails.forEach {
+            it.addPointsToSet(pointSet)
+        }
+
+        val points = pointSet.toTypedArray()
+        pointSet.forEachIndexed {
+            index, point -> point.n = index
+        }
+
+        return points
+    }
+
+    //------------------------------------------------------------------------------------
+    // Drawing
+
+    // TODO: points should be a list
+    private fun makePath(points: Array<Point>) : GeneralPath {
         val path = GeneralPath(GeneralPath.WIND_EVEN_ODD, points.size)
         path.moveTo(points[0].x, points[0].y)
         for (i in 1 until points.size) {
@@ -57,8 +244,10 @@ class TestView(rect: Rectangle): Push2View(rect) {
 
     val ww = rect.width.toDouble()
     val hh = rect.height.toDouble()
-    val s0 = 3.0
-    val s1 = 6.0
+
+    // slopes (x/y)
+    val s0 = 3.0 // steep
+    val s1 = 6.0 // easy
 
     // obendruff
 
@@ -68,34 +257,122 @@ class TestView(rect: Rectangle): Push2View(rect) {
     val d1 = 160.0
     val d2 = 280.0
 
-    val a = P(x[0], y[0])
-    val b = a.branch("SW", s0, y[0] + d0 * 3.0)
-    val c = P(2 * d0, b.y)
-    val d = P(d0, c.y - d0)
-    val e = P(d0, a.y + d0)
-    val f = P(2 * d0, a.y)
-    val g = P(ww - d0, y[0])
+    val a = Point("a", x[0], y[0])
+    val b = a.branch("b", "SW", s0, y[0] + d0 * 3.0)
+    val c = Point("c", 2 * d0, b.y)
+    val d = Point("d", d0, c.y - d0)
+    val e = Point("e", d0, a.y + d0)
+    val f = Point("f", 2 * d0, a.y)
+    val g = Point("g", ww - d0, y[0])
 
-    val h = P(x[1], y[0])
-    val i = h.branch("SE", s0, y[1])
-    val j = P(ww - d0, y[1])
+    val h = Point("h", x[1], y[0])
+    val i = h.branch("i", "SE", s0, y[1])
+    val j = Point("j", ww - d0, y[1])
 
-    val k = P(x[2], y[1])
-    val l = k.branch("SE", s0, y[2])
-    val m = P(x[3], y[2])
-    val n = P(m.x + d1, m.y)
+    val k = Point("k", x[2], y[1])
+    val l = k.branch("l", "SE", s0, y[2])
+    val m = Point("m", x[3], y[2])
+    val n = Point("n", m.x + d1, m.y)
 
-    val o = m.branch("NE", s1, y[1])
-    val p = m.branch("SW", s1, y[3])
-    val q = P(p.x - d2, p.y)
-    val r = P(p.x + d1, p.y)
+    val o = m.branch("o", "NE", s1, y[1])
+    val p = m.branch("p", "SW", s1, y[3])
+    val q = Point("q", p.x - d2, p.y)
+    val r = Point("r", p.x + d1, p.y)
 
     val y01mid = (y[0] + y[1]) / 2
-    val s = P(x[4], y01mid).branch("NW", s0, y[0])
-    val t = P(x[4], y01mid).branch("SE", s0, y[1])
+    val s = Point("", x[4], y01mid).branch("s", "NW", s0, y[0])
+    val t = Point("", x[4], y01mid).branch("t", "SE", s0, y[1])
 
-    val u = P(x[5], y01mid).branch("SW", s0, y[1])
-    val v = P(x[5], y01mid).branch("NE", s0, y[0])
+    val u = Point("", x[5], y01mid).branch("u", "SW", s0, y[1])
+    val v = Point("", x[5], y01mid).branch("v", "NE", s0, y[0])
+
+
+    //------------------------------------------------------------------------------------
+    // building graph
+
+    val A = Turnout(a, a.leg("W", s0), a.leg("SW", s0))
+    val H = Turnout(h, h.leg("E", s0), h.leg("SE", s0))
+    val K = Turnout(k, k.leg("E", s0), k.leg("SE", s0))
+    val M1 = Turnout(m, m.leg("W", s1), m.leg("SW", s1))
+    val M2 = Turnout(m, m.leg("E", s1), m.leg("NE", s1))
+    val O = Turnout(o, o.leg("W", s1), o.leg("SW", s1))
+    val P = Turnout(p, p.leg("E", s1), p.leg("NE", s1))
+    val S = Turnout(s, s.leg("E", s0), s.leg("SE", s0))
+    val T = Turnout(t, t.leg("W", s0), t.leg("NW", s0))
+    val U = Turnout(u, u.leg("E", s0), u.leg("NE", s0))
+    val V = Turnout(v, v.leg("W", s0), v.leg("SW", s0))
+
+    val turnouts = mutableListOf<Turnout>(
+        A, H, K, M1, M2, O, P, S, T, U, V
+    )
+
+    val rails = mutableListOf<Rail>(
+        Rail(arrayOf(A.pThrown, b, c, d, e, f, A.pClosed)),
+        Rail(arrayOf(A.pCenter, H.pCenter)),
+        Rail(arrayOf(H.pClosed, S.pCenter)),
+        Rail(arrayOf(S.pClosed, V.pClosed)),
+        Rail(arrayOf(V.pCenter, g)),
+        Rail(arrayOf(H.pThrown, i, K.pCenter)),
+        Rail(arrayOf(K.pClosed, O.pClosed)),
+        Rail(arrayOf(O.pCenter, T.pClosed)),
+        Rail(arrayOf(S.pThrown, T.pThrown)),
+        Rail(arrayOf(U.pThrown, V.pThrown)),
+        Rail(arrayOf(T.pCenter, U.pCenter)),
+        Rail(arrayOf(U.pClosed, j)),
+        Rail(arrayOf(K.pThrown, l, M1.pClosed)),
+        Rail(arrayOf(M2.pThrown, O.pThrown)),
+        Rail(arrayOf(M2.pClosed, n)),
+        Rail(arrayOf(P.pThrown, M1.pThrown)),
+        Rail(arrayOf(q, P.pCenter)),
+        Rail(arrayOf(P.pClosed, r))
+    )
+
+    val points = enumeratePoints(turnouts, rails)
+    val graph = buildGraph(points)
+
+    var components: List<List<Int>> = listOf()
+
+    init {
+        println("turnouts: ------------------------------------------------------------")
+        turnouts.forEach {
+            println("pCenter: ${it.pCenter} closed: ${it.pClosed} thrown: ${it.pThrown}")
+        }
+        println("rails: ---------------------------------------------------------------")
+        rails.forEach {
+            println("(${it.points.joinToString()})")
+        }
+        println("points: --------------------------------------------------------------")
+        points.forEachIndexed { index, point ->
+            println("[$index] $point")
+        }
+        println("graph: ---------------------------------------------------------------")
+        graph.vertices.forEachIndexed { index, vertex ->
+            println("[$index] $vertex")
+        }
+
+        updateGraph(graph, turnouts, rails)
+        components = graph.findComponents()
+
+        println("components all Closed: -----------------------------------------------")
+        components.forEach { listOfInts ->
+            println("${listOfInts.map { graph.vertices[it].name }}")
+        }
+
+        turnouts.forEach {
+            it.state = TurnoutState.THROWN
+        }
+
+        updateGraph(graph, turnouts, rails)
+        components = graph.findComponents()
+
+        println("components all Thrown: ----------------------------------------------")
+        components.forEach { listOfInts ->
+            println("${listOfInts.map { graph.vertices[it].name }}")
+        }
+    }
+
+    //------------------------------------------------------------------------------------
+    // drawing
 
     val lines = arrayOf(
             arrayOf(a, b, c, d, e, f, g),
@@ -119,26 +396,11 @@ class TestView(rect: Rectangle): Push2View(rect) {
         val yel = display.push2Colors[7]
         val blu = display.push2Colors[125]
 
-        fillPath(g2, yel, makePath(arrayOf(g, v)))
-        fillPath(g2, yel, makePath(arrayOf(v, v.leg("SW", s0))))
-        fillPath(g2, yel, makePath(arrayOf(v.leg("SW", s0), u.leg("NE", s0))))
-        fillPath(g2, yel, makePath(arrayOf(u.leg("NE", s0), u)))
-        fillPath(g2, yel, makePath(arrayOf(u, t)))
-        fillPath(g2, yel, makePath(arrayOf(t, t.leg("NW", s0))))
-        fillPath(g2, yel, makePath(arrayOf(t.leg("NW", s0), s.leg("SE", s0))))
-        fillPath(g2, yel, makePath(arrayOf(s.leg("SE", s0), s)))
-        fillPath(g2, yel, makePath(arrayOf(s, h.leg("E", s0))))
-        fillPath(g2, yel, makePath(arrayOf(h.leg("E",  s0), h)))
-        fillPath(g2, yel, makePath(arrayOf(h, a)))
-        fillPath(g2, yel, makePath(arrayOf(a, a.leg("SW", s0))))
-        fillPath(g2, yel, makePath(arrayOf(a.leg("SW", s0), b, c, d, e, f, a.leg("W", s0))))
-
-        fillPath(g2, yel, makePath(arrayOf(t.leg("W",  s0), o, m, l, k.leg("SE", s0))))
-        fillPath(g2, yel, makePath(arrayOf(o.leg("W",  s1), i, h.leg("SE", s0))))
-        fillPath(g2, yel, makePath(arrayOf(r, q)))
-        fillPath(g2, blu, makePath(arrayOf(m.leg("SW", s1), p.leg("NE", s1))))
-        fillPath(g2, blu, makePath(arrayOf(m.leg("E",  s1), n)))
-        fillPath(g2, blu, makePath(arrayOf(v.leg("W",  s0), s.leg("E", s0))))
-        fillPath(g2, blu, makePath(arrayOf(u.leg("E",  s0), j)))
+        for (path in components) {
+            fillPath(g2,
+                if (path.size > 2) yel else blu,
+                makePath(path.map{points[it]}.toTypedArray())
+            )
+        }
     }
 }

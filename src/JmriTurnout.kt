@@ -1,4 +1,12 @@
-class Turnout(val name: String) {
+object TurnoutState {
+    // see ./java/src/jmri/server/json/JSON.java
+    const val UNKNOWN = 0x00 // differs from NamedBean.UNKNOWN == 0x01
+    const val CLOSED = 0x02
+    const val THROWN = 0x04
+    const val INCONSISTENT = 0x08
+}
+
+class JmriTurnout(val name: String) {
 
     var attrs = HashMap<String, Attribute<*>>()
 
@@ -16,6 +24,6 @@ class Turnout(val name: String) {
     }
 
     override fun toString() : String {
-        return """Turnout{name=$name, userName=$userName, inverted=${inverted.b()}, state=$state}"""
+        return """JmriTurnout{name=$name, userName=$userName, inverted=${inverted.b()}, state=$state}"""
     }
 }

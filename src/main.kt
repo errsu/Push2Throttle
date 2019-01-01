@@ -10,8 +10,8 @@ class Push2ThrottleMainView: View() {
     private val displayDriver = Push2DisplayDriver(libUsbHelper, display)
     private val elements = Push2Elements(midi)
     private val throttleManager = ThrottleManager()
-    private val sceneManager = SceneManager(display, elements, throttleManager)
     private val turnoutManager = TurnoutManager()
+    private val sceneManager = SceneManager(display, elements, throttleManager, turnoutManager)
 
     init {
         title = "Push 2 Throttle"

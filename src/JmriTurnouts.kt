@@ -1,6 +1,6 @@
 class JmriTurnouts(private val turnoutsChangedCallback: () -> Unit) {
 
-    val turnouts = HashMap<String, Turnout>()
+    val turnouts = HashMap<String, JmriTurnout>()
     private val jmri: JmriWsClient = JmriWsClient()
 
     fun connectToJmri() {
@@ -15,7 +15,7 @@ class JmriTurnouts(private val turnoutsChangedCallback: () -> Unit) {
 
     private val intAttrsInComment = mapOf<String,Regex>()
 
-    private fun updateTurnoutFromData(turnout: Turnout, data: Map<*, *>) : Boolean {
+    private fun updateTurnoutFromData(turnout: JmriTurnout, data: Map<*, *>) : Boolean {
 
         var updated = false
         for (attrName in listOf("userName", "state", "inverted")) {
@@ -47,7 +47,7 @@ class JmriTurnouts(private val turnoutsChangedCallback: () -> Unit) {
         if (turnoutName is String && turnoutName.length > 0) {
             var turnout = turnouts[turnoutName]
             if (turnout == null) {
-                turnout = Turnout(turnoutName)
+                turnout = JmriTurnout(turnoutName)
                 turnouts[turnoutName] = turnout
                 turnoutListChanged = true
             }

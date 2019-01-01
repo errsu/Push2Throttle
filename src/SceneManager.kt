@@ -2,10 +2,11 @@ import java.awt.Rectangle
 
 class SceneManager(private val display: Push2Display,
                    private val elements: Push2Elements,
-                   private val throttleManager: ThrottleManager) : MidiController {
+                   private val throttleManager: ThrottleManager,
+                   private val turnoutManager: TurnoutManager) : MidiController {
 
     private val throttleScene = ThrottleScene(display, elements, throttleManager)
-    private val panelScene = PanelScene(display)
+    private val panelScene = PanelScene(display, turnoutManager)
     private var currentScene: Scene? = null
     private val select = elements.getElement("Select")
 
@@ -127,14 +128,25 @@ class ThrottleScene(private val display: Push2Display,
     }
 }
 
-class PanelScene(private val display: Push2Display) : Scene {
+class PanelScene(private val display: Push2Display,
+                 private val turnoutManager: TurnoutManager) : Scene {
+
     private val panelView = PanelView(Rectangle(0, 0, display.width, display.height))
 
     override fun build() {
+        panelView.turnoutViews.forEach { turnoutView ->
+            turnoutView.jmriTurnout = turnoutManager.turnoutWithUserName(turnoutView.name)
+        }
+        panelView.update()
+        turnoutManager.activePanel = panelView
         display.addView(panelView)
     }
 
     override fun destroy() {
+        panelView.turnoutViews.forEach { turnoutView ->
+            turnoutView.jmriTurnout = null
+        }
         display.removeView(panelView)
+        turnoutManager.activePanel = panelView
     }
 }

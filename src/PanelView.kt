@@ -41,16 +41,13 @@ class PanelView(rect: Rectangle): Push2View(rect) {
         }
     }
 
-    object TurnoutState {
-        // see ./java/src/jmri/server/json/JSON.java
-        const val UNKNOWN = 0x00 // differs from NamedBean.UNKNOWN == 0x01
-        const val CLOSED = 0x02
-        const val THROWN = 0x04
-        const val INCONSISTENT = 0x08
-    }
+    class TurnoutView(val name: String,
+                      val pCenter: Point,
+                      val pClosed: Point,
+                      val pThrown: Point) {
+        // var state: Int = TurnoutState.UNKNOWN
+        var jmriTurnout: JmriTurnout? = null
 
-    class Turnout(val pCenter: Point, val pClosed: Point, val pThrown: Point) {
-        var state: Int = TurnoutState.CLOSED
         fun addPointsToSet(set: MutableSet<Point>) {
             set.add(pCenter)
             set.add(pClosed)
@@ -58,6 +55,7 @@ class PanelView(rect: Rectangle): Push2View(rect) {
         }
 
         fun addEdgeToGraph(graph: Graph) {
+            val state = jmriTurnout?.state?.value ?: TurnoutState.UNKNOWN
             when (state) {
                 TurnoutState.UNKNOWN -> {}
                 TurnoutState.CLOSED -> graph.addEdge(pCenter.n, pClosed.n)
@@ -67,7 +65,7 @@ class PanelView(rect: Rectangle): Push2View(rect) {
         }
     }
 
-    class Rail(val points: Array<Point>) {
+    class RailView(val points: Array<Point>) {
         fun addPointsToSet(set: MutableSet<Point>) {
             set.addAll(points)
         }
@@ -187,23 +185,23 @@ class PanelView(rect: Rectangle): Push2View(rect) {
         return graph
     }
 
-    fun updateGraph(graph: Graph, turnouts: List<Turnout>, rails: List<Rail>) {
+    fun updateGraph(graph: Graph, turnoutViews: List<TurnoutView>, railViews: List<RailView>) {
         graph.resetEdges()
-        turnouts.forEach {
+        turnoutViews.forEach {
             it.addEdgeToGraph(graph)
         }
-        rails.forEach {
+        railViews.forEach {
             it.addEdgesToGraph(graph)
         }
     }
 
-    fun enumeratePoints(turnouts: List<Turnout>, rails: List<Rail>): Array<Point> {
+    fun enumeratePoints(turnoutViews: List<TurnoutView>, railViews: List<RailView>): Array<Point> {
         val pointSet = mutableSetOf<Point>()
 
-        turnouts.forEach {
+        turnoutViews.forEach {
             it.addPointsToSet(pointSet)
         }
-        rails.forEach {
+        railViews.forEach {
             it.addPointsToSet(pointSet)
         }
 
@@ -218,7 +216,6 @@ class PanelView(rect: Rectangle): Push2View(rect) {
     //------------------------------------------------------------------------------------
     // Drawing
 
-    // TODO: points should be a list
     private fun makePath(points: Array<Point>) : GeneralPath {
         val path = GeneralPath(GeneralPath.WIND_EVEN_ODD, points.size)
         path.moveTo(points[0].x, points[0].y)
@@ -290,85 +287,57 @@ class PanelView(rect: Rectangle): Push2View(rect) {
     //------------------------------------------------------------------------------------
     // building graph
 
-    val A = Turnout(a, a.leg("W", s0), a.leg("SW", s0))
-    val H = Turnout(h, h.leg("E", s0), h.leg("SE", s0))
-    val K = Turnout(k, k.leg("E", s0), k.leg("SE", s0))
-    val M1 = Turnout(m, m.leg("W", s1), m.leg("SW", s1))
-    val M2 = Turnout(m, m.leg("E", s1), m.leg("NE", s1))
-    val O = Turnout(o, o.leg("W", s1), o.leg("SW", s1))
-    val P = Turnout(p, p.leg("E", s1), p.leg("NE", s1))
-    val S = Turnout(s, s.leg("E", s0), s.leg("SE", s0))
-    val T = Turnout(t, t.leg("W", s0), t.leg("NW", s0))
-    val U = Turnout(u, u.leg("E", s0), u.leg("NE", s0))
-    val V = Turnout(v, v.leg("W", s0), v.leg("SW", s0))
+    val A = TurnoutView("W1", a, a.leg("W", s0), a.leg("SW", s0))
+    val H = TurnoutView("W2", h, h.leg("E", s0), h.leg("SE", s0))
+    val K = TurnoutView("W3", k, k.leg("E", s0), k.leg("SE", s0))
+    val M1 = TurnoutView("W5", m, m.leg("W", s1), m.leg("SW", s1))
+    val M2 = TurnoutView("W6", m, m.leg("E", s1), m.leg("NE", s1))
+    val O = TurnoutView("W7", o, o.leg("W", s1), o.leg("SW", s1))
+    val P = TurnoutView("W4", p, p.leg("E", s1), p.leg("NE", s1))
+    val S = TurnoutView("W8", s, s.leg("E", s0), s.leg("SE", s0))
+    val T = TurnoutView("W9", t, t.leg("W", s0), t.leg("NW", s0))
+    val U = TurnoutView("W10", u, u.leg("E", s0), u.leg("NE", s0))
+    val V = TurnoutView("W11", v, v.leg("W", s0), v.leg("SW", s0))
 
-    val turnouts = mutableListOf<Turnout>(
+    val turnoutViews = mutableListOf(
         A, H, K, M1, M2, O, P, S, T, U, V
     )
 
-    val rails = mutableListOf<Rail>(
-        Rail(arrayOf(A.pThrown, b, c, d, e, f, A.pClosed)),
-        Rail(arrayOf(A.pCenter, H.pCenter)),
-        Rail(arrayOf(H.pClosed, S.pCenter)),
-        Rail(arrayOf(S.pClosed, V.pClosed)),
-        Rail(arrayOf(V.pCenter, g)),
-        Rail(arrayOf(H.pThrown, i, K.pCenter)),
-        Rail(arrayOf(K.pClosed, O.pClosed)),
-        Rail(arrayOf(O.pCenter, T.pClosed)),
-        Rail(arrayOf(S.pThrown, T.pThrown)),
-        Rail(arrayOf(U.pThrown, V.pThrown)),
-        Rail(arrayOf(T.pCenter, U.pCenter)),
-        Rail(arrayOf(U.pClosed, j)),
-        Rail(arrayOf(K.pThrown, l, M1.pClosed)),
-        Rail(arrayOf(M2.pThrown, O.pThrown)),
-        Rail(arrayOf(M2.pClosed, n)),
-        Rail(arrayOf(P.pThrown, M1.pThrown)),
-        Rail(arrayOf(q, P.pCenter)),
-        Rail(arrayOf(P.pClosed, r))
+    val rails = mutableListOf(
+        RailView(arrayOf(A.pThrown, b, c, d, e, f, A.pClosed)),
+        RailView(arrayOf(A.pCenter, H.pCenter)),
+        RailView(arrayOf(H.pClosed, S.pCenter)),
+        RailView(arrayOf(S.pClosed, V.pClosed)),
+        RailView(arrayOf(V.pCenter, g)),
+        RailView(arrayOf(H.pThrown, i, K.pCenter)),
+        RailView(arrayOf(K.pClosed, O.pClosed)),
+        RailView(arrayOf(O.pCenter, T.pClosed)),
+        RailView(arrayOf(S.pThrown, T.pThrown)),
+        RailView(arrayOf(U.pThrown, V.pThrown)),
+        RailView(arrayOf(T.pCenter, U.pCenter)),
+        RailView(arrayOf(U.pClosed, j)),
+        RailView(arrayOf(K.pThrown, l, M1.pClosed)),
+        RailView(arrayOf(M2.pThrown, O.pThrown)),
+        RailView(arrayOf(M2.pClosed, n)),
+        RailView(arrayOf(P.pThrown, M1.pThrown)),
+        RailView(arrayOf(q, P.pCenter)),
+        RailView(arrayOf(P.pClosed, r))
     )
 
-    val points = enumeratePoints(turnouts, rails)
+    val points = enumeratePoints(turnoutViews, rails)
     val graph = buildGraph(points)
 
     var components: List<List<Int>> = listOf()
 
     init {
-        println("turnouts: ------------------------------------------------------------")
-        turnouts.forEach {
-            println("pCenter: ${it.pCenter} closed: ${it.pClosed} thrown: ${it.pThrown}")
-        }
-        println("rails: ---------------------------------------------------------------")
-        rails.forEach {
-            println("(${it.points.joinToString()})")
-        }
-        println("points: --------------------------------------------------------------")
-        points.forEachIndexed { index, point ->
-            println("[$index] $point")
-        }
-        println("graph: ---------------------------------------------------------------")
-        graph.vertices.forEachIndexed { index, vertex ->
-            println("[$index] $vertex")
-        }
-
-        updateGraph(graph, turnouts, rails)
+        // TODO: make sure we get a real initial turnout state, not UNKNOWN
+        updateGraph(graph, turnoutViews, rails)
         components = graph.findComponents()
+    }
 
-        println("components all Closed: -----------------------------------------------")
-        components.forEach { listOfInts ->
-            println("${listOfInts.map { graph.vertices[it].name }}")
-        }
-
-        turnouts.forEach {
-            it.state = TurnoutState.THROWN
-        }
-
-        updateGraph(graph, turnouts, rails)
+    fun update() {
+        updateGraph(graph, turnoutViews, rails)
         components = graph.findComponents()
-
-        println("components all Thrown: ----------------------------------------------")
-        components.forEach { listOfInts ->
-            println("${listOfInts.map { graph.vertices[it].name }}")
-        }
     }
 
     //------------------------------------------------------------------------------------
@@ -386,7 +355,7 @@ class PanelView(rect: Rectangle): Push2View(rect) {
     @Suppress("UNUSED_PARAMETER")
     override fun draw(g2: Graphics2D, frame: Int, display: Push2Display) {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
-        g2.paint = display.push2Colors[20]
+        g2.color = display.push2Colors[20]
         g2.fillRect(0, 0, rect.width, rect.height)
 
         for (l in lines) {

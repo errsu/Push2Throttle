@@ -6,7 +6,7 @@ class SceneManager(private val display: Push2Display,
                    private val turnoutManager: TurnoutManager) : MidiController {
 
     private val throttleScene = ThrottleScene(display, elements, throttleManager)
-    private val panelScene = PanelScene(display, turnoutManager)
+    private val panelScene = PanelScene(display, elements, turnoutManager)
     private var currentScene: Scene? = null
     private val select = elements.getElement("Select")
 
@@ -64,6 +64,7 @@ class ThrottleScene(private val display: Push2Display,
                 elements.getElement("Pot T$track")    as Erp,
                 elements.getElement("Disp A T$track") as ButtonRgb,
                 elements.getElement("Disp B T$track") as ButtonRgb)
+        // TODO: the controller could establish this connection:
         throttle.controller = controller
         controller
     }
@@ -129,11 +130,18 @@ class ThrottleScene(private val display: Push2Display,
 }
 
 class PanelScene(private val display: Push2Display,
+                 private val elements: Push2Elements,
                  private val turnoutManager: TurnoutManager) : Scene {
 
     private val panelView = PanelView(Rectangle(0, 0, display.width, display.height))
+    private val controller = Push2TurnoutController(elements,
+            turnoutManager.turnouts,
+            elements.getElement("Disp A T1") as ButtonRgb)
 
     override fun build() {
+        controller.turnout = turnoutManager.turnoutWithUserName("W1")
+        turnoutManager.turnoutWithUserName("W1")?.controller = controller
+        controller.connectToElements()
         panelView.turnoutViews.forEach { turnoutView ->
             turnoutView.jmriTurnout = turnoutManager.turnoutWithUserName(turnoutView.name)
         }
@@ -143,10 +151,13 @@ class PanelScene(private val display: Push2Display,
     }
 
     override fun destroy() {
+        controller.disconnectFromElements()
+        controller.turnout = null
+        turnoutManager.turnoutWithUserName("W1")?.controller = null
         panelView.turnoutViews.forEach { turnoutView ->
             turnoutView.jmriTurnout = null
         }
         display.removeView(panelView)
-        turnoutManager.activePanel = panelView
+        turnoutManager.activePanel = null
     }
 }

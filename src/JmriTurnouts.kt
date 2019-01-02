@@ -1,7 +1,7 @@
 class JmriTurnouts(private val turnoutsChangedCallback: () -> Unit) {
 
     val turnouts = HashMap<String, JmriTurnout>()
-    private val jmri: JmriWsClient = JmriWsClient()
+    val jmri: JmriWsClient = JmriWsClient()
 
     fun connectToJmri() {
         turnouts.keys.clear()
@@ -23,7 +23,8 @@ class JmriTurnouts(private val turnoutsChangedCallback: () -> Unit) {
             if (attrName == "userName" && value == null) {
                 value = ""
             }
-            if (turnout.attrs[attrName]?.assign(value) == true) {
+            if (turnout.assignAttr(attrName, value)) {
+//            if (turnout.attrs[attrName]?.assign(value) == true) {
                 updated = true
             }
         }

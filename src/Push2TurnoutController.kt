@@ -1,42 +1,51 @@
-import com.sun.org.apache.xpath.internal.operations.Bool
-
-// The Push2 throttle controller manages the interaction between a subset of
-// the Push2 elements and a certain JMRI throttle (thus the name).
-// The JMRI throttle in turn is connected to the loco.
-
-// The advantage of using the constructor is that the links need not be nullable.
-
-// TODO: make sure no element controls more than one state, e.g. ERP - split into turn and touch
+// Manages the interaction between the Push2 display button elements and
+// the turnouts of the currently visible panel, if it is visible.
 
 class Push2TurnoutController(
         private val elements: Push2Elements,
-        private val turnouts: JmriTurnouts,
-        private val button: ButtonRgb) : MidiController {
+        private val turnoutTable: JmriTurnoutTable,
+        private val buttons: Array<ButtonRgb>) : MidiController {
 
-    var turnout:  JmriTurnout? = null
+    var turnouts = arrayOfNulls<Turnout?>(16)
 
     fun connectToElements() {
-        if (turnout != null) {
-            elements.connect(button, this,
-                    mapOf("onColor" to "red", "offColor" to "green", "type" to "toggle"),
-                    turnout?.state?.value)
+        turnouts.forEachIndexed { index, turnout ->
+            if (turnout != null) {
+                elements.connect(buttons[index], this,
+                        mapOf("onColor" to "red", "offColor" to "green", "type" to "toggle"),
+                        turnout.state.value)
+            }
         }
     }
 
     fun disconnectFromElements() {
-        elements.disconnect(button)
+        turnouts.forEachIndexed { index, _ ->
+            elements.disconnect(buttons[index])
+        }
     }
 
-    fun turnoutAttrChanged(attrName: String, newValue: Any?) {
-        when(attrName) {
-            "state" -> elements.updateElementStateByJmri(button, newValue == TurnoutState.THROWN)
+    fun turnoutAttrChanged(turnout: Turnout, attrName: String, newValue: Any?) {
+        for (index in turnouts.indices) {
+            if (turnout == turnouts[index]) {
+                when(attrName) {
+                    "state" -> elements.updateElementStateByJmri(
+                            buttons[index],
+                            newValue == TurnoutState.THROWN)
+                }
+                break
+            }
         }
     }
 
     override fun <T: Any> elementStateChanged(element: MidiElement, newValue: T) {
-        when (element) {
-            button -> turnout?.messageToJmri(turnouts, "state",
-                    if (newValue == true) TurnoutState.THROWN else TurnoutState.CLOSED)
+        for (index in buttons.indices) {
+            if (element == buttons[index]) {
+                if (turnouts[index] != null) {
+                    turnoutTable.messageToJmri(
+                            turnouts[index]!!, "state",
+                            if (newValue == true) TurnoutState.THROWN else TurnoutState.CLOSED)
+                }
+            }
         }
     }
 }

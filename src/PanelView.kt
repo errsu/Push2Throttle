@@ -42,11 +42,12 @@ class PanelView(rect: Rectangle): Push2View(rect) {
     }
 
     class TurnoutView(val name: String,
+                      val elementIndex: Int,
                       val pCenter: Point,
                       val pClosed: Point,
                       val pThrown: Point) {
         // var state: Int = TurnoutState.UNKNOWN
-        var jmriTurnout: JmriTurnout? = null
+        var turnout: Turnout? = null
 
         fun addPointsToSet(set: MutableSet<Point>) {
             set.add(pCenter)
@@ -55,7 +56,7 @@ class PanelView(rect: Rectangle): Push2View(rect) {
         }
 
         fun addEdgeToGraph(graph: Graph) {
-            val state = jmriTurnout?.state?.value ?: TurnoutState.UNKNOWN
+            val state = turnout?.state?.value ?: TurnoutState.UNKNOWN
             when (state) {
                 TurnoutState.UNKNOWN -> {}
                 TurnoutState.CLOSED -> graph.addEdge(pCenter.n, pClosed.n)
@@ -287,23 +288,23 @@ class PanelView(rect: Rectangle): Push2View(rect) {
     //------------------------------------------------------------------------------------
     // building graph
 
-    val A = TurnoutView("W1", a, a.leg("W", s0), a.leg("SW", s0))
-    val H = TurnoutView("W2", h, h.leg("E", s0), h.leg("SE", s0))
-    val K = TurnoutView("W3", k, k.leg("E", s0), k.leg("SE", s0))
-    val M1 = TurnoutView("W5", m, m.leg("W", s1), m.leg("SW", s1))
-    val M2 = TurnoutView("W6", m, m.leg("E", s1), m.leg("NE", s1))
-    val O = TurnoutView("W7", o, o.leg("W", s1), o.leg("SW", s1))
-    val P = TurnoutView("W4", p, p.leg("E", s1), p.leg("NE", s1))
-    val S = TurnoutView("W8", s, s.leg("E", s0), s.leg("SE", s0))
-    val T = TurnoutView("W9", t, t.leg("W", s0), t.leg("NW", s0))
-    val U = TurnoutView("W10", u, u.leg("E", s0), u.leg("NE", s0))
-    val V = TurnoutView("W11", v, v.leg("W", s0), v.leg("SW", s0))
+    val A = TurnoutView("W1", 0, a, a.leg("W", s0), a.leg("SW", s0))
+    val H = TurnoutView("W2", 1, h, h.leg("E", s0), h.leg("SE", s0))
+    val K = TurnoutView("W3", 2, k, k.leg("E", s0), k.leg("SE", s0))
+    val M1 = TurnoutView("W5", 12, m, m.leg("W", s1), m.leg("SW", s1))
+    val M2 = TurnoutView("W6", 4, m, m.leg("E", s1), m.leg("NE", s1))
+    val O = TurnoutView("W7", 5, o, o.leg("W", s1), o.leg("SW", s1))
+    val P = TurnoutView("W4", 11, p, p.leg("E", s1), p.leg("NE", s1))
+    val S = TurnoutView("W8", 6, s, s.leg("E", s0), s.leg("SE", s0))
+    val T = TurnoutView("W9", 14, t, t.leg("W", s0), t.leg("NW", s0))
+    val U = TurnoutView("W10", 15, u, u.leg("E", s0), u.leg("NE", s0))
+    val V = TurnoutView("W11", 7, v, v.leg("W", s0), v.leg("SW", s0))
 
     val turnoutViews = mutableListOf(
         A, H, K, M1, M2, O, P, S, T, U, V
     )
 
-    val rails = mutableListOf(
+    val railViews = mutableListOf(
         RailView(arrayOf(A.pThrown, b, c, d, e, f, A.pClosed)),
         RailView(arrayOf(A.pCenter, H.pCenter)),
         RailView(arrayOf(H.pClosed, S.pCenter)),
@@ -324,19 +325,19 @@ class PanelView(rect: Rectangle): Push2View(rect) {
         RailView(arrayOf(P.pClosed, r))
     )
 
-    val points = enumeratePoints(turnoutViews, rails)
+    val points = enumeratePoints(turnoutViews, railViews)
     val graph = buildGraph(points)
 
     var components: List<List<Int>> = listOf()
 
     init {
         // TODO: make sure we get a real initial turnout state, not UNKNOWN
-        updateGraph(graph, turnoutViews, rails)
+        updateGraph(graph, turnoutViews, railViews)
         components = graph.findComponents()
     }
 
     fun update() {
-        updateGraph(graph, turnoutViews, rails)
+        updateGraph(graph, turnoutViews, railViews)
         components = graph.findComponents()
     }
 

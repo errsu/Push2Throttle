@@ -5,7 +5,7 @@ class JmriRoster(private val rosterChangedCallback: () -> Unit) {
 
     fun connectToJmri() {
         locos.keys.clear()
-        jmri.connect(this::jmriCallback)
+        jmri.connect(this::messageFromJmri)
         jmri.sendTextMessage("""{"list":"roster"}""")
     }
 
@@ -59,7 +59,7 @@ class JmriRoster(private val rosterChangedCallback: () -> Unit) {
         return rosterChanged
     }
 
-    private fun jmriCallback(tree: Any?) {
+    private fun messageFromJmri(tree: Any?) {
         var rosterChanged = false
         if (tree is Map<*,*> && tree["type"] == "hello") {
             // hello ignored

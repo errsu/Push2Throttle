@@ -10,8 +10,8 @@ class Push2ThrottleMainView: View() {
     private val displayDriver = Push2DisplayDriver(libUsbHelper, display)
     private val elements = Push2Elements(midi)
     private val throttleManager = ThrottleManager()
-    private val turnoutManager = TurnoutManager()
-    private val sceneManager = SceneManager(display, elements, throttleManager, turnoutManager)
+    private val panelManager = PanelManager()
+    private val sceneManager = SceneManager(display, elements, throttleManager, panelManager)
 
     init {
         title = "Push 2 Throttle"
@@ -19,9 +19,8 @@ class Push2ThrottleMainView: View() {
         displayDriver.open()
         elements.register()
         throttleManager.roster.connectToJmri()
-        turnoutManager.turnouts.connectToJmri()
+        panelManager.turnoutTable.connectToJmri()
         sceneManager.gotoScene("throttles")
-        throttleManager.throttlesReassigned = sceneManager::throttlesReassigned
     }
 
     override val root = hbox {
@@ -42,7 +41,7 @@ class Push2ThrottleMainView: View() {
                 for (loco in throttleManager.roster.locos.toSortedMap()) {
                     println(loco)
                 }
-                for (turnout in turnoutManager.turnouts.turnouts.toSortedMap()) {
+                for (turnout in panelManager.turnoutTable.turnouts.toSortedMap()) {
                     println(turnout)
                 }
             }
@@ -50,9 +49,9 @@ class Push2ThrottleMainView: View() {
         button("reconnect JMRI") {
             action {
                 throttleManager.roster.disconnectFromJmri()
-                turnoutManager.turnouts.disconnectFromJmri()
+                panelManager.turnoutTable.disconnectFromJmri()
                 throttleManager.roster.connectToJmri() // will call rosterChangedCallback
-                turnoutManager.turnouts.connectToJmri()
+                panelManager.turnoutTable.connectToJmri()
             }
         }
         button("test JSMN") {
@@ -83,7 +82,7 @@ fun getMoreData() {
     // Decoder Pro -> Edit -> Preferences
     // Aufstartverhalten -> Add (pull down) -> Open File
     // and choose the panels/tournouts xml file
-    if (!jmri.isConnected()) jmri.connect(::jmriCallback)
+    if (!jmri.isConnected()) jmri.connect(::messageFromJmri)
     jmri.sendTextMessage("""{"type":"power","data":{}}""")
     jmri.sendTextMessage("""{"list":"panels"}""")
     jmri.sendTextMessage("""{"type":"turnout","data":{"name":"NT1","state":4}}""")
@@ -94,7 +93,7 @@ fun getMoreData() {
     // {name=NT1, comment=null, state=4, userName=W0, inverted=false}
 }
 
-private fun jmriCallback(tree: Any?) {
+private fun messageFromJmri(tree: Any?) {
     println("$tree")
     if (tree is Map<*,*> && tree["type"] != "pong") println("> $tree")
     if (tree is List<*>) {

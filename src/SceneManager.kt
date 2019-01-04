@@ -3,14 +3,16 @@ import java.awt.Rectangle
 class SceneManager(private val display: Push2Display,
                    private val elements: Push2Elements,
                    private val throttleManager: ThrottleManager,
-                   private val turnoutManager: TurnoutManager) : MidiController {
+                   private val panelManager: PanelManager) : MidiController {
 
     private val throttleScene = ThrottleScene(display, elements, throttleManager)
-    private val panelScene = PanelScene(display, elements, turnoutManager)
+    private val panelScene = PanelScene(display, elements, panelManager)
     private var currentScene: Scene? = null
     private val select = elements.getElement("Select")
 
     init {
+        throttleManager.throttlesReassigned = this::sceneContentReassigned
+        panelManager.turnoutsReassigned = this::sceneContentReassigned
         elements.connect(select!!, this,
                 mapOf("onColor" to 124, "offColor" to 6, "type" to "toggle"),
                 false)
@@ -27,7 +29,7 @@ class SceneManager(private val display: Push2Display,
         elements.updateElementStateByJmri(select!!, scene == "panel")
     }
 
-    fun throttlesReassigned() {
+    fun sceneContentReassigned() {
         currentScene?.destroy()
         currentScene?.build()
     }
@@ -131,33 +133,34 @@ class ThrottleScene(private val display: Push2Display,
 
 class PanelScene(private val display: Push2Display,
                  private val elements: Push2Elements,
-                 private val turnoutManager: TurnoutManager) : Scene {
+                 private val panelManager: PanelManager) : Scene {
 
     private val panelView = PanelView(Rectangle(0, 0, display.width, display.height))
-    private val controller = Push2TurnoutController(elements,
-            turnoutManager.turnouts,
-            elements.getElement("Disp A T1") as ButtonRgb)
+    private val buttons = Array(16) { elements.getElement("Disp ${if (it < 8) "A" else "B"} T${(it % 8) + 1}") as ButtonRgb}
+    private val controller = Push2TurnoutController(elements, panelManager.turnoutTable, buttons)
 
     override fun build() {
-        controller.turnout = turnoutManager.turnoutWithUserName("W1")
-        turnoutManager.turnoutWithUserName("W1")?.controller = controller
-        controller.connectToElements()
+        panelManager.turnoutTable.controller = controller
         panelView.turnoutViews.forEach { turnoutView ->
-            turnoutView.jmriTurnout = turnoutManager.turnoutWithUserName(turnoutView.name)
+            turnoutView.turnout = panelManager.turnoutTable.turnoutWithUserName(turnoutView.name)
+            controller.turnouts[turnoutView.elementIndex] = turnoutView.turnout
         }
+        controller.connectToElements()
+        panelManager.turnoutsMoved = panelView::update
         panelView.update()
-        turnoutManager.activePanel = panelView
         display.addView(panelView)
     }
 
     override fun destroy() {
-        controller.disconnectFromElements()
-        controller.turnout = null
-        turnoutManager.turnoutWithUserName("W1")?.controller = null
+        panelManager.turnoutTable.controller = null
         panelView.turnoutViews.forEach { turnoutView ->
-            turnoutView.jmriTurnout = null
+            turnoutView.turnout = null
         }
+        for (index in controller.turnouts.indices) {
+            controller.turnouts[index] = null
+        }
+        controller.disconnectFromElements()
+        panelManager.turnoutsMoved = {}
         display.removeView(panelView)
-        turnoutManager.activePanel = null
     }
 }

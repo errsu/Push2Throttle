@@ -1,11 +1,34 @@
-class JmriTurnouts(private val turnoutsChangedCallback: () -> Unit) {
+// For turnouts, plays the roles of JmriRoster and JmriThrottle (communication part)
+class JmriTurnoutTable(
+        private val turnoutTableChangedCallback: () -> Unit,
+        private val turnoutStateChangedCallback: () -> Unit) {
 
-    val turnouts = HashMap<String, JmriTurnout>()
+    private enum class Change { NO_CHANGE, STATE_CHANGED, TABLE_CHANGED }
+    private fun Change.raiseTo(level: Change) : Change {
+        return when(this) {
+            Change.NO_CHANGE -> level
+            Change.STATE_CHANGED -> if (level == Change.TABLE_CHANGED) level else this
+            Change.TABLE_CHANGED -> this
+        }
+    }
+
+    val turnouts = HashMap<String, Turnout>()
+    var controller: Push2TurnoutController? = null
+
     val jmri: JmriWsClient = JmriWsClient()
+
+    fun turnoutWithUserName(userName: String) : Turnout? {
+        for (turnout in turnouts.values) {
+            if (turnout.userName.value == userName) {
+                return turnout
+            }
+        }
+        return null
+    }
 
     fun connectToJmri() {
         turnouts.keys.clear()
-        jmri.connect(this::jmriCallback)
+        jmri.connect(this::messageFromJmri)
         jmri.sendTextMessage("""{"list":"turnouts"}""")
     }
 
@@ -15,17 +38,17 @@ class JmriTurnouts(private val turnoutsChangedCallback: () -> Unit) {
 
     private val intAttrsInComment = mapOf<String,Regex>()
 
-    private fun updateTurnoutFromData(turnout: JmriTurnout, data: Map<*, *>) : Boolean {
+    private fun updateTurnoutFromData(turnout: Turnout, data: Map<*, *>) : Change {
 
-        var updated = false
+        var change = Change.NO_CHANGE
         for (attrName in listOf("userName", "state", "inverted")) {
             var value = data[attrName]
             if (attrName == "userName" && value == null) {
                 value = ""
             }
             if (turnout.assignAttr(attrName, value)) {
-//            if (turnout.attrs[attrName]?.assign(value) == true) {
-                updated = true
+                controller?.turnoutAttrChanged(turnout, attrName, value)
+                change = change.raiseTo(if (attrName == "state") Change.STATE_CHANGED else Change.TABLE_CHANGED)
             }
         }
         val comment = data["comment"]
@@ -34,33 +57,31 @@ class JmriTurnouts(private val turnoutsChangedCallback: () -> Unit) {
                 if (regex.containsMatchIn(comment)) {
                     val value = regex.find(comment)!!.groups[1]!!.value
                     if (turnout.assignAttr(attr, value.toInt())) {
-                        updated = true
+                        change = change.raiseTo(Change.TABLE_CHANGED)
                     }
                 }
             }
         }
-        return updated
+        return change
     }
 
-    private fun addOrUpdateTurnoutFromData(data: Map<*,*>) : Boolean {
-        var turnoutListChanged = false
+    private fun addOrUpdateTurnoutFromData(data: Map<*,*>) : Change {
+        var change = Change.NO_CHANGE
         val turnoutName = data["name"]
         if (turnoutName is String && turnoutName.length > 0) {
             var turnout = turnouts[turnoutName]
             if (turnout == null) {
-                turnout = JmriTurnout(turnoutName)
+                turnout = Turnout(turnoutName)
                 turnouts[turnoutName] = turnout
-                turnoutListChanged = true
+                change = change.raiseTo(Change.TABLE_CHANGED)
             }
-            if (updateTurnoutFromData(turnout, data)) {
-                turnoutListChanged = true
-            }
+            change = change.raiseTo(updateTurnoutFromData(turnout, data))
         }
-        return turnoutListChanged
+        return change
     }
 
-    private fun jmriCallback(tree: Any?) {
-        var turnoutListChanged = false
+    private fun messageFromJmri(tree: Any?) {
+        var change = Change.NO_CHANGE
         if (tree is Map<*,*> && tree["type"] == "hello") {
             // hello ignored
         } else if (tree is List<*>) {
@@ -74,9 +95,7 @@ class JmriTurnouts(private val turnoutsChangedCallback: () -> Unit) {
                         if (name is String) {
                             newNames.add(name)
                         }
-                        if (addOrUpdateTurnoutFromData(data)) {
-                            turnoutListChanged = true
-                        }
+                        change = change.raiseTo(addOrUpdateTurnoutFromData(data))
                     }
                 }
                 // Deletion is sent as updated list only, so we have to
@@ -90,12 +109,17 @@ class JmriTurnouts(private val turnoutsChangedCallback: () -> Unit) {
         } else if (tree is Map<*,*> && tree["type"] == "turnout") {
             // single entry -- changed (or added)
             val data = tree["data"] as Map<*,*>
-            if (addOrUpdateTurnoutFromData(data)) {
-                turnoutListChanged = true
-            }
+            change = change.raiseTo(addOrUpdateTurnoutFromData(data))
         }
-        if (turnoutListChanged) {
-            turnoutsChangedCallback()
+        when(change) {
+            Change.NO_CHANGE -> {}
+            Change.STATE_CHANGED -> turnoutStateChangedCallback()
+            Change.TABLE_CHANGED -> turnoutTableChangedCallback()
         }
+    }
+
+    fun messageToJmri(turnout: Turnout, propertyName: String, value: Any?) {
+        jmri.sendTree(mapOf("type" to "turnout",
+                "data" to mapOf("name" to turnout.name, propertyName to value)))
     }
 }

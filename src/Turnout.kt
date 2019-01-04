@@ -6,7 +6,8 @@ object TurnoutState {
     const val INCONSISTENT = 0x08
 }
 
-class JmriTurnout(val name: String) {
+// plays same role as Loco
+class Turnout(val name: String) {
 
     var attrs = HashMap<String, Attribute<*>>()
 
@@ -14,29 +15,16 @@ class JmriTurnout(val name: String) {
     val state      = addAttr(Attribute("state", 0))
     val inverted   = addAttr(Attribute("inverted", false))
 
-    var controller: Push2TurnoutController? = null
-
     private fun <T : Any> addAttr(attr: Attribute<T>) : Attribute<T>{
         attrs[attr.name] = attr
         return attr
     }
 
     fun assignAttr(attrName: String, value: Any?) : Boolean {
-        val success = attrs[attrName]?.assign(value) ?: false
-        if (success) {
-            controller?.turnoutAttrChanged(attrName, value)
-        }
-        return success
+        return attrs[attrName]?.assign(value) ?: false
     }
 
     override fun toString() : String {
-        return """JmriTurnout{name=$name, userName=$userName, inverted=${inverted.b()}, state=$state}"""
-    }
-
-    // TODO: check if this makes sense
-    fun messageToJmri(turnouts: JmriTurnouts, propertyName: String, value: Any?) {
-        turnouts.jmri.sendTree(mapOf("type" to "turnout",
-                                     "data" to mapOf("name" to name,
-                                     propertyName to value)))
+        return """Turnout{name=$name, userName=$userName, inverted=${inverted.b()}, state=$state}"""
     }
 }

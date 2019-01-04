@@ -111,6 +111,13 @@ class JmriTurnoutTable(
             val data = tree["data"] as Map<*,*>
             change = change.raiseTo(addOrUpdateTurnoutFromData(data))
         }
+        if (change == Change.TABLE_CHANGED) {
+            turnouts.forEach { name, turnout ->
+                if (turnout.state.value == TurnoutState.UNKNOWN) {
+                    messageToJmri(turnout, "state", TurnoutState.CLOSED)
+                }
+            }
+        }
         when(change) {
             Change.NO_CHANGE -> {}
             Change.STATE_CHANGED -> turnoutStateChangedCallback()

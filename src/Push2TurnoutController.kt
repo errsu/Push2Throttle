@@ -13,7 +13,7 @@ class Push2TurnoutController(
             if (turnout != null) {
                 elements.connect(buttons[index], this,
                         mapOf("onColor" to "red", "offColor" to "green", "type" to "toggle"),
-                        turnout.state.value)
+                        turnout.state.value == TurnoutState.THROWN)
             }
         }
     }

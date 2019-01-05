@@ -8,6 +8,9 @@ class PanelView(rect: Rectangle): Push2View(rect) {
 
     data class Point(val name: String, val x: Double, val y: Double) {
         var n = 0
+        var turnoutName: String? = null
+        var preferredColor = -1
+
         override fun toString() : String {
             return "P$n($name){${x.toInt()},${y.toInt()}}"
         }
@@ -48,6 +51,12 @@ class PanelView(rect: Rectangle): Push2View(rect) {
                       val pThrown: Point) {
         // var state: Int = TurnoutState.UNKNOWN
         var turnout: Turnout? = null
+
+        init {
+            pCenter.turnoutName = name
+            pClosed.turnoutName = name
+            pThrown.turnoutName = name
+        }
 
         fun addPointsToSet(set: MutableSet<Point>) {
             set.add(pCenter)
@@ -214,6 +223,38 @@ class PanelView(rect: Rectangle): Push2View(rect) {
         return points
     }
 
+    private fun determineColor(path: List<Int>, points: Array<Point>): Int {
+        // see if we have a preferred color
+        var preferredColor = -1
+        for (pnum in path) {
+            if (points[pnum].preferredColor != -1) {
+                if (preferredColor == -1) {
+                    preferredColor = points[pnum].preferredColor
+                } else {
+                    if (preferredColor != points[pnum].preferredColor) {
+                        preferredColor = -2 // conflict
+                    }
+                }
+            }
+        }
+        if (preferredColor >= 0) {
+            return preferredColor
+        }
+
+        // see if we are crossing a turnout
+        var crossingTurnoutCount = 0
+        for (i in 0 until path.lastIndex) {
+            val p0 = points[path[i]]
+            val p1 = points[path[i+1]]
+            if (p0.turnoutName != null && p0.turnoutName == p1.turnoutName) {
+                crossingTurnoutCount++
+            }
+        }
+        val yel = 7
+        val blu = 125
+        return if (crossingTurnoutCount > 0) yel else blu
+    }
+
     //------------------------------------------------------------------------------------
     // Drawing
 
@@ -284,6 +325,10 @@ class PanelView(rect: Rectangle): Push2View(rect) {
     val u = Point("", x[5], y01mid).branch("u", "SW", s0, y[1])
     val v = Point("", x[5], y01mid).branch("v", "NE", s0, y[0])
 
+    init {
+        g.preferredColor = 3
+        j.preferredColor = 11
+    }
 
     //------------------------------------------------------------------------------------
     // building graph
@@ -329,16 +374,16 @@ class PanelView(rect: Rectangle): Push2View(rect) {
     val graph = buildGraph(points)
 
     var components: List<List<Int>> = listOf()
+    var colors: List<Int> = listOf()
 
     init {
-        // TODO: make sure we get a real initial turnout state, not UNKNOWN
-        updateGraph(graph, turnoutViews, railViews)
-        components = graph.findComponents()
+        update()
     }
 
     fun update() {
         updateGraph(graph, turnoutViews, railViews)
         components = graph.findComponents()
+        colors = components.map { determineColor(it, points)}
     }
 
     //------------------------------------------------------------------------------------
@@ -363,12 +408,9 @@ class PanelView(rect: Rectangle): Push2View(rect) {
             strokePath(g2, makePath(l))
         }
 
-        val yel = display.push2Colors[7]
-        val blu = display.push2Colors[125]
-
-        for (path in components) {
+        components.forEachIndexed { index, path ->
             fillPath(g2,
-                if (path.size > 2) yel else blu,
+                display.push2Colors[colors[index]],
                 makePath(path.map{points[it]}.toTypedArray())
             )
         }

@@ -69,6 +69,21 @@ class Push2ThrottleMainView: View() {
                 getMoreData()
             }
         }
+        button("memory test 0") {
+            action {
+                memoryTest("0")
+            }
+        }
+        button("memory test 1") {
+            action {
+                memoryTest("1")
+            }
+        }
+        button("memory test 2") {
+            action {
+                memoryTest("2")
+            }
+        }
     }
 }
 
@@ -91,6 +106,12 @@ fun getMoreData() {
     // returns things like
     // {name=IT1, comment=null, state=0, userName=WI0, inverted=false}
     // {name=NT1, comment=null, state=4, userName=W0, inverted=false}
+}
+
+fun memoryTest(value: String) {
+    if (!jmri.isConnected()) jmri.connect(::messageFromJmri)
+    jmri.sendTextMessage("""{"type":"memory","data":{"name":"IM3WAYSTATE", "value":"$value"}}""")
+    // returns things like
 }
 
 private fun messageFromJmri(tree: Any?) {

@@ -279,6 +279,16 @@ class PanelView(rect: Rectangle): Push2View(rect) {
         g.draw(path)
     }
 
+    private val font24b  = Font("SansSerif", Font.BOLD, 24)
+
+    private fun drawTitle(g: Graphics2D, title: String, color: Color?, point: Point) {
+        g.font = font24b
+        g.paint = color ?: Color.BLACK
+        val wTitle = g.getFontMetrics(font24b).stringWidth(title).toFloat()
+        val hTitle = g.getFontMetrics(font24b).height.toFloat()
+        g.drawString(title, point.x.toFloat() - wTitle / 2.0f, point.y.toFloat() + hTitle / 2.0f)
+    }
+
     // 1:2  branch length stretching
 
     val ww = rect.width.toDouble()
@@ -325,6 +335,9 @@ class PanelView(rect: Rectangle): Push2View(rect) {
     val u = Point("", x[5], y01mid).branch("u", "SW", s0, y[1])
     val v = Point("", x[5], y01mid).branch("v", "NE", s0, y[0])
 
+    val pTitle = Point("title", 860.0, 130.0)
+    val title = "Bf Obendruff"
+
     init {
         g.preferredColor = 3
         j.preferredColor = 11
@@ -370,8 +383,8 @@ class PanelView(rect: Rectangle): Push2View(rect) {
         RailView(arrayOf(P.pClosed, r))
     )
 
-    val points = enumeratePoints(turnoutViews, railViews)
-    val graph = buildGraph(points)
+    val graphPoints = enumeratePoints(turnoutViews, railViews)
+    val graph = buildGraph(graphPoints)
 
     var components: List<List<Int>> = listOf()
     var colors: List<Int> = listOf()
@@ -383,7 +396,7 @@ class PanelView(rect: Rectangle): Push2View(rect) {
     fun update() {
         updateGraph(graph, turnoutViews, railViews)
         components = graph.findComponents()
-        colors = components.map { determineColor(it, points)}
+        colors = components.map { determineColor(it, graphPoints)}
     }
 
     //------------------------------------------------------------------------------------
@@ -411,8 +424,10 @@ class PanelView(rect: Rectangle): Push2View(rect) {
         components.forEachIndexed { index, path ->
             fillPath(g2,
                 display.push2Colors[colors[index]],
-                makePath(path.map{points[it]}.toTypedArray())
+                makePath(path.map{graphPoints[it]}.toTypedArray())
             )
         }
+
+        drawTitle(g2, title, null, pTitle)
     }
 }

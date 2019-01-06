@@ -3,7 +3,7 @@ import java.awt.image.BufferedImage
 import java.nio.ByteBuffer
 
 abstract class Push2View(val rect: Rectangle) {
-    abstract fun draw(g: Graphics2D, frame: Int, display: Push2Display)
+    abstract fun draw(g2: Graphics2D, frame: Int, display: Push2Display)
 }
 
 class Push2Display {

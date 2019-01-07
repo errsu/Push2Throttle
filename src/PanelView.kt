@@ -1,7 +1,7 @@
 import java.awt.*
 import java.awt.geom.GeneralPath
 
-class PanelView(rect: Rectangle): Push2View(rect) {
+abstract class PanelView(rect: Rectangle): Push2View(rect) {
 
     //------------------------------------------------------------------------------------
     // turnout geometry
@@ -64,7 +64,7 @@ class PanelView(rect: Rectangle): Push2View(rect) {
             set.add(pThrown)
         }
 
-        fun addEdgeToGraph(graph: Graph) {
+        fun addEdgeToGraph(graph: ConnectedTurnoutsGraph) {
             val state = turnout?.state?.value ?: TurnoutState.UNKNOWN
             when (state) {
                 TurnoutState.UNKNOWN -> {}
@@ -80,7 +80,7 @@ class PanelView(rect: Rectangle): Push2View(rect) {
             set.addAll(points)
         }
 
-        fun addEdgesToGraph(graph: Graph) {
+        fun addEdgesToGraph(graph: ConnectedTurnoutsGraph) {
             val pIter = points.iterator()
             var p0 = pIter.next()
             for (p1 in pIter) {
@@ -91,111 +91,17 @@ class PanelView(rect: Rectangle): Push2View(rect) {
     }
 
     //------------------------------------------------------------------------------------
-    // graph representation of selected path
+    // building graph
 
-    // We have an undirected graph where no vertex
-    // has more than two edges connected.
-    // Also, there are no cycles by construction.
-    // The main goal is to find the connected components,
-    // which are printed in one go with a single color.
-
-    class Graph {
-        class Vertex(val name: String, val n: Int) {
-            override fun toString() : String {
-                return "V$n($name){$adj1,$adj2,$visited}"
-            }
-            var adj1: Int = -1
-            var adj2: Int = -1
-            var visited = false
-            fun valency() : Int {
-                return if (adj1 == -1) 0 else 1 + if (adj2 == -1) 0 else 1
-            }
-
-            fun reset() {
-                adj1 = -1
-                adj2 = -1
-                visited = false
-            }
-            fun addEdge(to: Int) {
-                when {
-                    adj1 == -1 -> adj1 = to
-                    adj2 == -1 -> adj2 = to
-                    else -> println("Graph Error: more than two edges for vertex $n")
-                }
-            }
-        }
-
-        val vertices = arrayListOf<Vertex>()
-
-        // how to use:
-        // Building time
-        // - add all vertexes
-        // - enumerate vertexes (?)
-        // On turnout state changed
-        // - reset edges
-        // - add all active edges
-        // - find components
-
-        fun addVertex(name: String, n: Int) {
-            vertices.add(Vertex(name, n))
-        }
-
-        fun resetEdges() {
-            vertices.forEach { it.reset() }
-        }
-
-        fun addEdge(n0: Int, n1: Int) {
-            vertices[n0].addEdge(n1)
-            vertices[n1].addEdge(n0)
-        }
-
-        fun tracePathes(startIndex: Int, list: MutableList<Int>) {
-            list.add(startIndex)
-            vertices[startIndex].visited = true
-            val next1 = vertices[startIndex].adj1
-            if (next1 != -1 && !vertices[next1].visited) {
-                tracePathes(next1, list)
-            }
-            val next2 = vertices[startIndex].adj2
-            if (next2 != -1 && !vertices[next2].visited) {
-                tracePathes(next2, list)
-            }
-        }
-
-        fun findComponents() : List<List<Int>> {
-            val components = mutableListOf<List<Int>>()
-
-            while (true) {
-                val list = mutableListOf<Int>()
-
-                // find corner vertex (cycles are ignored)
-                for (startIndex in vertices.indices) {
-                    if (!vertices[startIndex].visited && vertices[startIndex].valency() == 1) {
-                        // recursively add next vertices starting with corner
-                        tracePathes(startIndex, list)
-                        break
-                    }
-                }
-
-                if (list.isNotEmpty()) {
-                    components.add(list)
-                }
-                else {
-                    return components
-                }
-            }
-        }
-    }
-
-    fun buildGraph(points: Array<Point>): Graph {
-        val graph = Graph()
+    fun buildGraph(points: Array<Point>): ConnectedTurnoutsGraph {
+        val graph = ConnectedTurnoutsGraph()
         points.forEachIndexed { index, point ->
             graph.addVertex(point.name, index)
         }
         return graph
     }
 
-    fun updateGraph(graph: Graph, turnoutViews: List<TurnoutView>, railViews: List<RailView>) {
+    fun updateGraph(graph: ConnectedTurnoutsGraph, turnoutViews: List<TurnoutView>, railViews: List<RailView>) {
         graph.resetEdges()
         turnoutViews.forEach {
             it.addEdgeToGraph(graph)
@@ -289,109 +195,21 @@ class PanelView(rect: Rectangle): Push2View(rect) {
         g.drawString(title, point.x.toFloat() - wTitle / 2.0f, point.y.toFloat() + hTitle / 2.0f)
     }
 
-    // 1:2  branch length stretching
-
     val ww = rect.width.toDouble()
     val hh = rect.height.toDouble()
 
-    // slopes (x/y)
-    val s0 = 3.0 // steep
-    val s1 = 6.0 // easy
+    abstract val pTitle: Point
+    abstract val title: String
 
-    // obendruff
+    abstract val turnoutViews: List<TurnoutView>
+    abstract val railViews: List<RailView>
 
-    val y = arrayOf(20.0, 50.0, 95.0, 140.0)
-    val x = arrayOf(80.0, 160.0, 280.0, 540.0, 780.0, 900.0)
-    val d0 = 10.0
-    val d1 = 160.0
-    val d2 = 280.0
-
-    val a = Point("a", x[0], y[0])
-    val b = a.branch("b", "SW", s0, y[0] + d0 * 3.0)
-    val c = Point("c", 2 * d0, b.y)
-    val d = Point("d", d0, c.y - d0)
-    val e = Point("e", d0, a.y + d0)
-    val f = Point("f", 2 * d0, a.y)
-    val g = Point("g", ww - d0, y[0])
-
-    val h = Point("h", x[1], y[0])
-    val i = h.branch("i", "SE", s0, y[1])
-    val j = Point("j", ww - d0, y[1])
-
-    val k = Point("k", x[2], y[1])
-    val l = k.branch("l", "SE", s0, y[2])
-    val m = Point("m", x[3], y[2])
-    val n = Point("n", m.x + d1, m.y)
-
-    val o = m.branch("o", "NE", s1, y[1])
-    val p = m.branch("p", "SW", s1, y[3])
-    val q = Point("q", p.x - d2, p.y)
-    val r = Point("r", p.x + d1, p.y)
-
-    val y01mid = (y[0] + y[1]) / 2
-    val s = Point("", x[4], y01mid).branch("s", "NW", s0, y[0])
-    val t = Point("", x[4], y01mid).branch("t", "SE", s0, y[1])
-
-    val u = Point("", x[5], y01mid).branch("u", "SW", s0, y[1])
-    val v = Point("", x[5], y01mid).branch("v", "NE", s0, y[0])
-
-    val pTitle = Point("title", 860.0, 130.0)
-    val title = "Bf Obendruff"
-
-    init {
-        g.preferredColor = 3
-        j.preferredColor = 11
-    }
-
-    //------------------------------------------------------------------------------------
-    // building graph
-
-    val A = TurnoutView("W1", 0, a, a.leg("W", s0), a.leg("SW", s0))
-    val H = TurnoutView("W2", 1, h, h.leg("E", s0), h.leg("SE", s0))
-    val K = TurnoutView("W3", 2, k, k.leg("E", s0), k.leg("SE", s0))
-    val M1 = TurnoutView("W5", 12, m, m.leg("W", s1), m.leg("SW", s1))
-    val M2 = TurnoutView("W6", 4, m, m.leg("E", s1), m.leg("NE", s1))
-    val O = TurnoutView("W7", 5, o, o.leg("W", s1), o.leg("SW", s1))
-    val P = TurnoutView("W4", 11, p, p.leg("E", s1), p.leg("NE", s1))
-    val S = TurnoutView("W8", 6, s, s.leg("E", s0), s.leg("SE", s0))
-    val T = TurnoutView("W9", 14, t, t.leg("W", s0), t.leg("NW", s0))
-    val U = TurnoutView("W10", 15, u, u.leg("E", s0), u.leg("NE", s0))
-    val V = TurnoutView("W11", 7, v, v.leg("W", s0), v.leg("SW", s0))
-
-    val turnoutViews = mutableListOf(
-        A, H, K, M1, M2, O, P, S, T, U, V
-    )
-
-    val railViews = mutableListOf(
-        RailView(arrayOf(A.pThrown, b, c, d, e, f, A.pClosed)),
-        RailView(arrayOf(A.pCenter, H.pCenter)),
-        RailView(arrayOf(H.pClosed, S.pCenter)),
-        RailView(arrayOf(S.pClosed, V.pClosed)),
-        RailView(arrayOf(V.pCenter, g)),
-        RailView(arrayOf(H.pThrown, i, K.pCenter)),
-        RailView(arrayOf(K.pClosed, O.pClosed)),
-        RailView(arrayOf(O.pCenter, T.pClosed)),
-        RailView(arrayOf(S.pThrown, T.pThrown)),
-        RailView(arrayOf(U.pThrown, V.pThrown)),
-        RailView(arrayOf(T.pCenter, U.pCenter)),
-        RailView(arrayOf(U.pClosed, j)),
-        RailView(arrayOf(K.pThrown, l, M1.pClosed)),
-        RailView(arrayOf(M2.pThrown, O.pThrown)),
-        RailView(arrayOf(M2.pClosed, n)),
-        RailView(arrayOf(P.pThrown, M1.pThrown)),
-        RailView(arrayOf(q, P.pCenter)),
-        RailView(arrayOf(P.pClosed, r))
-    )
-
-    val graphPoints = enumeratePoints(turnoutViews, railViews)
-    val graph = buildGraph(graphPoints)
+    abstract val graphPoints: Array<Point>
+    abstract val graph: ConnectedTurnoutsGraph
 
     var components: List<List<Int>> = listOf()
     var colors: List<Int> = listOf()
-
-    init {
-        update()
-    }
+    abstract val lines: Array<Array<Point>>
 
     fun update() {
         updateGraph(graph, turnoutViews, railViews)
@@ -399,17 +217,6 @@ class PanelView(rect: Rectangle): Push2View(rect) {
         colors = components.map { determineColor(it, graphPoints)}
     }
 
-    //------------------------------------------------------------------------------------
-    // drawing
-
-    val lines = arrayOf(
-            arrayOf(a, b, c, d, e, f, g),
-            arrayOf(h, i, j),
-            arrayOf(k, l, n),
-            arrayOf(o, p),
-            arrayOf(q, r),
-            arrayOf(s, t),
-            arrayOf(u, v))
 
     @Suppress("UNUSED_PARAMETER")
     override fun draw(g2: Graphics2D, frame: Int, display: Push2Display) {

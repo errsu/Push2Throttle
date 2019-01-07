@@ -135,7 +135,7 @@ class PanelScene(private val display: Push2Display,
                  private val elements: Push2Elements,
                  private val panelManager: PanelManager) : Scene {
 
-    private val panelView = PanelView(Rectangle(0, 0, display.width, display.height))
+    private val panelView = PanelView4(Rectangle(0, 0, display.width, display.height))
     private val buttons = Array(16) { elements.getElement("Disp ${if (it < 8) "A" else "B"} T${(it % 8) + 1}") as ButtonRgb}
     private val controller = Push2TurnoutController(elements, panelManager.turnoutTable, buttons)
 

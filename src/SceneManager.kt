@@ -46,16 +46,64 @@ interface Scene {
     fun destroy()
 }
 
+abstract class ScenePager (
+        private val elements: Push2Elements,
+        private val pageCount: Int) : MidiController {
+
+    var page = 0
+
+    private val pageLeft = elements.getElement("Page Left")
+    private val pageRight = elements.getElement("Page Right")
+
+    abstract fun build()
+    abstract fun destroy()
+
+    fun connectPager() {
+        if (page > 0) {
+            elements.connect(pageLeft!!, this,
+                    mapOf("onColor" to 124, "offColor" to 6, "type" to "momentary"),
+                    false)
+        }
+        if (page < pageCount - 1) {
+            elements.connect(pageRight!!, this,
+                    mapOf("onColor" to 124, "offColor" to 6, "type" to "momentary"),
+                    false)
+        }
+    }
+
+    fun disconnectPager() {
+        elements.disconnect(pageLeft!!)
+        elements.disconnect(pageRight!!)
+    }
+
+    override fun <T : Any> elementStateChanged(element: MidiElement, newValue: T) {
+        when (element) {
+            pageLeft  -> if (newValue == true) {
+                if (page > 0) {
+                    destroy()
+                    page--
+                    build()
+                }
+            }
+            pageRight -> if (newValue == true) {
+                if (page < pageCount - 1) {
+                    destroy()
+                    page++
+                    build()
+                }
+            }
+        }
+    }
+}
+
 class ThrottleScene(private val display: Push2Display,
                     private val elements: Push2Elements,
-                    private val throttleManager: ThrottleManager) : Scene, MidiController {
+                    private val throttleManager: ThrottleManager) : Scene, ScenePager(elements, 3) {
 
     // The controllers have a fixed connection to the throttles,
     // which continously record the loco data (if a loco is assigned).
     // The controllers also know their elements, but are not
     // connected to them until the scene is established.
-
-    private var page = 0
 
     private val controllers = Array(24) {
         val throttle = throttleManager.throttleAtSlot(it)
@@ -71,9 +119,6 @@ class ThrottleScene(private val display: Push2Display,
         controller
     }
 
-    private val pageLeft = elements.getElement("Page Left")
-    private val pageRight = elements.getElement("Page Right")
-
     // The views have fixed positions and are connected to the
     // locos on scene establishment.
 
@@ -88,16 +133,7 @@ class ThrottleScene(private val display: Push2Display,
             throttleViews[it].throttle = throttleManager.throttleAtSlot(slot)
             display.addView(throttleViews[it])
         }
-        if (page > 0) {
-            elements.connect(pageLeft!!, this,
-                    mapOf("onColor" to 124, "offColor" to 6, "type" to "momentary"),
-                    false)
-        }
-        if (page < 2) {
-            elements.connect(pageRight!!, this,
-                    mapOf("onColor" to 124, "offColor" to 6, "type" to "momentary"),
-                    false)
-        }
+        connectPager()
     }
 
     override fun destroy() {
@@ -107,35 +143,13 @@ class ThrottleScene(private val display: Push2Display,
             throttleViews[it].throttle = null
             display.removeView(throttleViews[it])
         }
-        elements.disconnect(pageLeft!!)
-        elements.disconnect(pageRight!!)
-    }
-
-    override fun <T : Any> elementStateChanged(element: MidiElement, newValue: T) {
-        when (element) {
-            pageLeft  -> if (newValue == true) {
-                if (page > 0) {
-                    destroy()
-                    page--
-                    build()
-                }
-            }
-            pageRight -> if (newValue == true) {
-                if (page < 2) {
-                    destroy()
-                    page++
-                    build()
-                }
-            }
-        }
+        disconnectPager()
     }
 }
 
 class PanelScene(private val display: Push2Display,
                  private val elements: Push2Elements,
-                 private val panelManager: PanelManager) : Scene, MidiController {
-
-    private var page = 0 // TODO: move page management into scenemanager
+                 private val panelManager: PanelManager) : Scene, ScenePager(elements, 4) {
 
     private val panelViews = listOf(
             PanelView0(Rectangle(0, 0, display.width, display.height)),
@@ -145,9 +159,6 @@ class PanelScene(private val display: Push2Display,
 
     private val buttons = Array(16) { elements.getElement("Disp ${if (it < 8) "A" else "B"} T${(it % 8) + 1}") as ButtonRgb}
     private val controller = Push2TurnoutController(elements, panelManager.turnoutTable, buttons)
-
-    private val pageLeft = elements.getElement("Page Left")
-    private val pageRight = elements.getElement("Page Right")
 
     override fun build() {
         val panelView = panelViews[page]
@@ -160,16 +171,7 @@ class PanelScene(private val display: Push2Display,
         panelManager.turnoutsMoved = panelView::update
         panelView.update()
         display.addView(panelView)
-        if (page > 0) {
-            elements.connect(pageLeft!!, this,
-                    mapOf("onColor" to 124, "offColor" to 6, "type" to "momentary"),
-                    false)
-        }
-        if (page < 3) {
-            elements.connect(pageRight!!, this,
-                    mapOf("onColor" to 124, "offColor" to 6, "type" to "momentary"),
-                    false)
-        }
+        connectPager()
     }
 
     override fun destroy() {
@@ -184,25 +186,6 @@ class PanelScene(private val display: Push2Display,
         controller.disconnectFromElements()
         panelManager.turnoutsMoved = {}
         display.removeView(panelView)
-        elements.disconnect(pageLeft!!)
-        elements.disconnect(pageRight!!)
-    }
-    override fun <T : Any> elementStateChanged(element: MidiElement, newValue: T) {
-        when (element) {
-            pageLeft  -> if (newValue == true) {
-                if (page > 0) {
-                    destroy()
-                    page--
-                    build()
-                }
-            }
-            pageRight -> if (newValue == true) {
-                if (page < 3) {
-                    destroy()
-                    page++
-                    build()
-                }
-            }
-        }
+        disconnectPager()
     }
 }

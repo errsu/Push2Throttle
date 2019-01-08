@@ -1,7 +1,6 @@
 import java.awt.*
-import java.awt.geom.GeneralPath
 
-open class PanelView4(rect: Rectangle): PanelView(rect) {
+open class PanelView3(rect: Rectangle): PanelView(rect) {
 
     // 1:2  branch length stretching
     // slopes (x/y)

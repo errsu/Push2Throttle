@@ -133,13 +133,24 @@ class ThrottleScene(private val display: Push2Display,
 
 class PanelScene(private val display: Push2Display,
                  private val elements: Push2Elements,
-                 private val panelManager: PanelManager) : Scene {
+                 private val panelManager: PanelManager) : Scene, MidiController {
 
-    private val panelView = PanelView4(Rectangle(0, 0, display.width, display.height))
+    private var page = 0 // TODO: move page management into scenemanager
+
+    private val panelViews = listOf(
+            PanelView0(Rectangle(0, 0, display.width, display.height)),
+            PanelView1(Rectangle(0, 0, display.width, display.height)),
+            PanelView2(Rectangle(0, 0, display.width, display.height)),
+            PanelView3(Rectangle(0, 0, display.width, display.height)))
+
     private val buttons = Array(16) { elements.getElement("Disp ${if (it < 8) "A" else "B"} T${(it % 8) + 1}") as ButtonRgb}
     private val controller = Push2TurnoutController(elements, panelManager.turnoutTable, buttons)
 
+    private val pageLeft = elements.getElement("Page Left")
+    private val pageRight = elements.getElement("Page Right")
+
     override fun build() {
+        val panelView = panelViews[page]
         panelManager.turnoutTable.controller = controller
         panelView.turnoutViews.forEach { turnoutView ->
             turnoutView.turnout = panelManager.turnoutTable.turnoutWithUserName(turnoutView.name)
@@ -149,9 +160,20 @@ class PanelScene(private val display: Push2Display,
         panelManager.turnoutsMoved = panelView::update
         panelView.update()
         display.addView(panelView)
+        if (page > 0) {
+            elements.connect(pageLeft!!, this,
+                    mapOf("onColor" to 124, "offColor" to 6, "type" to "momentary"),
+                    false)
+        }
+        if (page < 3) {
+            elements.connect(pageRight!!, this,
+                    mapOf("onColor" to 124, "offColor" to 6, "type" to "momentary"),
+                    false)
+        }
     }
 
     override fun destroy() {
+        val panelView = panelViews[page]
         panelManager.turnoutTable.controller = null
         panelView.turnoutViews.forEach { turnoutView ->
             turnoutView.turnout = null
@@ -162,5 +184,25 @@ class PanelScene(private val display: Push2Display,
         controller.disconnectFromElements()
         panelManager.turnoutsMoved = {}
         display.removeView(panelView)
+        elements.disconnect(pageLeft!!)
+        elements.disconnect(pageRight!!)
+    }
+    override fun <T : Any> elementStateChanged(element: MidiElement, newValue: T) {
+        when (element) {
+            pageLeft  -> if (newValue == true) {
+                if (page > 0) {
+                    destroy()
+                    page--
+                    build()
+                }
+            }
+            pageRight -> if (newValue == true) {
+                if (page < 3) {
+                    destroy()
+                    page++
+                    build()
+                }
+            }
+        }
     }
 }

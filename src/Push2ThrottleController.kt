@@ -11,7 +11,7 @@ class Push2ThrottleController(
         private val throttle: JmriThrottle,
         private val erp:      Erp,
         private val dispA:    ButtonRgb,
-        private val dispB:    ButtonRgb
+        private val dispB:    ButtonRgb,
 //        private val pad1: Pad,
 //        private val pad2: Pad,
 //        private val pad3: Pad,
@@ -20,7 +20,16 @@ class Push2ThrottleController(
 //        private val pad6: Pad,
 //        private val pad7: Pad,
 //        private val pad8: Pad
+        private val selectionManager: SelectionManager
 ) : MidiController {
+
+     var selected = false
+        set(value) {
+            if (value != field && throttle.loco != null) {
+                field = value
+                elements.updateElementStateByJmri(dispB, value)
+            }
+        }
 
     fun connectToElements() {
         val loco = throttle.loco
@@ -56,6 +65,7 @@ class Push2ThrottleController(
         when (element) {
             erp   -> throttle.messageToJmri("speed", newValue)
             dispA -> throttle.messageToJmri("forward", newValue)
+            dispB -> selectionManager.requestSelection(if (newValue == true) this else null)
         }
     }
 }

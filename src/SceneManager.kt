@@ -51,12 +51,20 @@ abstract class ScenePager (
         private val pageCount: Int) : MidiController {
 
     var page = 0
-
+    private val selectedIndex = Array(pageCount) {-1}
     private val pageLeft = elements.getElement("Page Left")
     private val pageRight = elements.getElement("Page Right")
 
     abstract fun build()
     abstract fun destroy()
+
+    fun saveSelectedIndex(index: Int) {
+        selectedIndex[page] = index
+    }
+
+    fun restoreSelectedIndex() : Int {
+        return selectedIndex[page]
+    }
 
     fun connectPager() {
         if (page > 0) {
@@ -96,9 +104,14 @@ abstract class ScenePager (
     }
 }
 
+interface SelectionManager {
+    fun requestSelection(controller: Push2ThrottleController?)
+}
+
 class ThrottleScene(private val display: Push2Display,
                     private val elements: Push2Elements,
-                    private val throttleManager: ThrottleManager) : Scene, ScenePager(elements, 3) {
+                    private val throttleManager: ThrottleManager) :
+        Scene, ScenePager(elements, 3), SelectionManager {
 
     // The controllers have a fixed connection to the throttles,
     // which continously record the loco data (if a loco is assigned).
@@ -113,7 +126,9 @@ class ThrottleScene(private val display: Push2Display,
                 throttle,
                 elements.getElement("Pot T$track")    as Erp,
                 elements.getElement("Disp A T$track") as ButtonRgb,
-                elements.getElement("Disp B T$track") as ButtonRgb)
+                elements.getElement("Disp B T$track") as ButtonRgb,
+                elements.getElement("Pad S1 T$track") as Pad,
+                this)
         // TODO: the controller could establish this connection:
         throttle.controller = controller
         controller
@@ -132,18 +147,33 @@ class ThrottleScene(private val display: Push2Display,
             controllers[slot].connectToElements()
             throttleViews[it].throttle = throttleManager.throttleAtSlot(slot)
             display.addView(throttleViews[it])
+            controllers[slot].selected = (restoreSelectedIndex() == it)
         }
         connectPager()
     }
 
     override fun destroy() {
+        saveSelectedIndex(-1)
         repeat(8) {
             val slot = page * 8 + it
+            if (controllers[slot].selected) {
+                controllers[slot].selected = false
+                saveSelectedIndex(it)
+            }
             controllers[slot].disconnectFromElements()
             throttleViews[it].throttle = null
             display.removeView(throttleViews[it])
         }
         disconnectPager()
+    }
+
+    override fun requestSelection(controller: Push2ThrottleController?) {
+        repeat(8) { track ->
+            val slot = page * 8 + track
+            controllers[slot].run {
+                this.selected = (this == controller)
+            }
+        }
     }
 }
 

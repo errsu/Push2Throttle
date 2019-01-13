@@ -143,6 +143,9 @@ class Pad(private val number: Int) : Switch(true) {
     override fun updatePush2(midi: Push2MidiDriver) {
         midi.sendNN(0, number, if (state) onColor else offColor)
     }
+
+    fun col() = (number - 36) % 8
+    fun row() = 7 - (number - 36) / 8
 }
 
 class ButtonWhite(private val number: Int) : Switch(false) {

@@ -57,17 +57,9 @@ class Push2LocoFunctionController(
                 else -> null
             }
         } else {
-            when (throttle) {
-                selectionManager.getThrottleAtColumn(0) -> pads[0][0]
-                selectionManager.getThrottleAtColumn(1) -> pads[1][0]
-                selectionManager.getThrottleAtColumn(2) -> pads[2][0]
-                selectionManager.getThrottleAtColumn(3) -> pads[3][0]
-                selectionManager.getThrottleAtColumn(4) -> pads[4][0]
-                selectionManager.getThrottleAtColumn(5) -> pads[5][0]
-                selectionManager.getThrottleAtColumn(6) -> pads[6][0]
-                selectionManager.getThrottleAtColumn(7) -> pads[7][0]
-                else -> null
-            }
+            println("${throttle.slot}")
+            val col = selectionManager.getThrottleColumn(throttle)
+            if (col == -1) null else pads[col][0]
         }
         if (pad != null) {
             when(attrName) {
@@ -77,21 +69,16 @@ class Push2LocoFunctionController(
     }
 
     override fun <T: Any> elementStateChanged(element: MidiElement, newValue: T) {
+        val pad = if (element is Pad) element else return
         val selectedColumn = selectionManager.getSelectedColumn()
+
         if (selectedColumn != -1) {
             when (element) {
                 pads[0][7] -> selectionManager.getThrottleAtColumn(selectedColumn).messageToJmri("F0", newValue)
             }
         } else {
-            when (element) {
-                pads[0][0] -> selectionManager.getThrottleAtColumn(0).messageToJmri("F0", newValue)
-                pads[1][0] -> selectionManager.getThrottleAtColumn(1).messageToJmri("F0", newValue)
-                pads[2][0] -> selectionManager.getThrottleAtColumn(2).messageToJmri("F0", newValue)
-                pads[3][0] -> selectionManager.getThrottleAtColumn(3).messageToJmri("F0", newValue)
-                pads[4][0] -> selectionManager.getThrottleAtColumn(4).messageToJmri("F0", newValue)
-                pads[5][0] -> selectionManager.getThrottleAtColumn(5).messageToJmri("F0", newValue)
-                pads[6][0] -> selectionManager.getThrottleAtColumn(6).messageToJmri("F0", newValue)
-                pads[7][0] -> selectionManager.getThrottleAtColumn(7).messageToJmri("F0", newValue)
+            if (pad.row() == 0) {
+                selectionManager.getThrottleAtColumn(pad.col()).messageToJmri("F0", newValue)
             }
         }
     }

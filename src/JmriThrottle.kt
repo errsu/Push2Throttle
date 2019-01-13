@@ -1,4 +1,4 @@
-class JmriThrottle(val name: String) {
+class JmriThrottle(val slot: Int, val name: String) {
 
     var loco: Loco? = null
     var throttleController: Push2ThrottleController? = null

@@ -108,6 +108,7 @@ interface SelectionManager {
     fun requestSelection(controller: Push2ThrottleController?)
     fun getSelectedColumn() : Int
     fun getThrottleAtColumn(column: Int) : JmriThrottle
+    fun getThrottleColumn(throttle: JmriThrottle) : Int
 }
 
 class ThrottleScene(private val display: Push2Display,
@@ -199,6 +200,11 @@ class ThrottleScene(private val display: Push2Display,
 
     override fun getThrottleAtColumn(column: Int) : JmriThrottle {
         return throttleManager.throttleAtSlot(page * 8 + column)
+    }
+
+    override fun getThrottleColumn(throttle: JmriThrottle) : Int {
+        val col = throttle.slot - page * 8
+        return if (col < 0 || col > 7) -1 else col
     }
 }
 

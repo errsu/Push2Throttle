@@ -1,7 +1,8 @@
 class JmriThrottle(val name: String) {
 
     var loco: Loco? = null
-    var controller: Push2ThrottleController? = null
+    var throttleController: Push2ThrottleController? = null
+    var locoFunctionController: Push2LocoFunctionController? = null
 
     private val jmri: JmriWsClient = JmriWsClient()
 
@@ -29,7 +30,8 @@ class JmriThrottle(val name: String) {
                     if (throttleName is String && throttleName == name) {
                         for ((attrName, value) in data) {
                             if (attrName is String && loco!!.assignAttr(attrName, value)) {
-                                controller?.locoAttrChanged(attrName, value)
+                                throttleController?.locoAttrChanged(attrName, value)
+                                locoFunctionController?.locoAttrChanged(this, attrName, value)
                             }
                         }
                     }

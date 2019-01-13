@@ -106,6 +106,8 @@ abstract class ScenePager (
 
 interface SelectionManager {
     fun requestSelection(controller: Push2ThrottleController?)
+    fun getSelectedColumn() : Int
+    fun getThrottleAtColumn(column: Int) : JmriThrottle
 }
 
 class ThrottleScene(private val display: Push2Display,
@@ -113,26 +115,33 @@ class ThrottleScene(private val display: Push2Display,
                     private val throttleManager: ThrottleManager) :
         Scene, ScenePager(elements, 3), SelectionManager {
 
-    // The controllers have a fixed connection to the throttles,
+    // The throttle controllers have a fixed connection to the throttles,
     // which continously record the loco data (if a loco is assigned).
-    // The controllers also know their elements, but are not
-    // connected to them until the scene is established.
+    // There is only one loco function controller, which is known by all
+    // throttles. It controls them depending on page and selection.
+    // The controllers know their elements, but are connected to them only
+    // when the scene is established or the selection changes.
 
-    private val controllers = Array(24) {
-        val throttle = throttleManager.throttleAtSlot(it)
-        val track = (it % 8) + 1
-        val controller = Push2ThrottleController(
+    private val throttleControllers = Array(throttleManager.slotCount) { slot ->
+        val track = (slot % 8) + 1
+        Push2ThrottleController(
                 elements,
-                throttle,
+                throttleManager.throttleAtSlot(slot),
                 elements.getElement("Pot T$track")    as Erp,
                 elements.getElement("Disp A T$track") as ButtonRgb,
                 elements.getElement("Disp B T$track") as ButtonRgb,
-                elements.getElement("Pad S1 T$track") as Pad,
                 this)
-        // TODO: the controller could establish this connection:
-        throttle.controller = controller
-        controller
     }
+
+    private val locoFunctionController = Push2LocoFunctionController(
+            elements,
+            throttleManager,
+            Array(8) { column ->
+                Array(8) { row ->
+                    elements.getElement("Pad S${row + 1} T${column + 1}") as Pad
+                }
+            },
+            this)
 
     // The views have fixed positions and are connected to the
     // locos on scene establishment.
@@ -144,11 +153,12 @@ class ThrottleScene(private val display: Push2Display,
     override fun build() {
         repeat(8) {
             val slot = page * 8 + it
-            controllers[slot].connectToElements()
+            throttleControllers[slot].connectToElements()
             throttleViews[it].throttle = throttleManager.throttleAtSlot(slot)
             display.addView(throttleViews[it])
-            controllers[slot].selected = (restoreSelectedIndex() == it)
+            throttleControllers[slot].selected = (restoreSelectedIndex() == it)
         }
+        locoFunctionController.connectToElements()
         connectPager()
     }
 
@@ -156,24 +166,39 @@ class ThrottleScene(private val display: Push2Display,
         saveSelectedIndex(-1)
         repeat(8) {
             val slot = page * 8 + it
-            if (controllers[slot].selected) {
-                controllers[slot].selected = false
+            if (throttleControllers[slot].selected) {
+                throttleControllers[slot].selected = false
                 saveSelectedIndex(it)
             }
-            controllers[slot].disconnectFromElements()
+            throttleControllers[slot].disconnectFromElements()
             throttleViews[it].throttle = null
             display.removeView(throttleViews[it])
         }
+        locoFunctionController.disconnectFromElements()
         disconnectPager()
     }
 
     override fun requestSelection(controller: Push2ThrottleController?) {
+        locoFunctionController.disconnectFromElements()
         repeat(8) { track ->
             val slot = page * 8 + track
-            controllers[slot].run {
-                this.selected = (this == controller)
+            throttleControllers[slot].selected = (throttleControllers[slot] == controller)
+        }
+        locoFunctionController.connectToElements()
+    }
+
+    override fun getSelectedColumn() : Int {
+        repeat(8) {
+            val slot = page * 8 + it
+            if (throttleControllers[slot].selected) {
+                return it
             }
         }
+        return -1
+    }
+
+    override fun getThrottleAtColumn(column: Int) : JmriThrottle {
+        return throttleManager.throttleAtSlot(page * 8 + column)
     }
 }
 

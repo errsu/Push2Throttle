@@ -56,11 +56,12 @@ class Erp(private val turnCcNumber: Int, private val touchNnNumber: Int) : MidiE
             resetTimerTask = resetTimer.schedule(10) {
                 suppressEcho = false
             }
-            updateJmri(state)
-            updatePush2(midi)
+            updateJmri(state) // Q: why are we updating here but not on nn?
+            updatePush2(midi) // Looks like a NOOP
         }
         midi.registerElement("nn", touchNnNumber) { value ->
             touched = (value > 0)
+            // TODO: updateJmri2?
             updatePush2(midi)
         }
     }
@@ -97,6 +98,7 @@ abstract class Switch(val isRgb: Boolean) : MidiElement() {
             "red" -> if (isRgb) 127 else null
             "green" -> if (isRgb) 126 else null
             "blue" -> if (isRgb) 125 else null
+            "yellow" -> if (isRgb) 7 else null
             "white" -> if (isRgb) 122 else 127
             "black" -> if (isRgb) 0 else 0
             is Int -> color

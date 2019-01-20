@@ -99,4 +99,10 @@ class Push2MidiDriver : Receiver {
         val timeStamp: Long = -1
         outgoingPortReceiver?.send(msg, timeStamp)
     }
+
+    fun sendSysex(data: ByteArray) {
+        val msg = SysexMessage(data, data.size)
+        val timeStamp: Long = -1
+        outgoingPortReceiver?.send(msg, timeStamp)
+    }
 }

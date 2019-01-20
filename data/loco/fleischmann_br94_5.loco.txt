@@ -1,0 +1,8 @@
+### BR 94-5, Fleischmann, 409486, Nur normaler Dekoder (ab Werk, kein Sound)
+
+SPEED 60
+F0 L  1 T "Spitzenbeleuchtung" Licht
+F1 O  2 M "Kupplung vorne" KupplungV
+F2 O  3 M "Kupplung hinten" KupplungH
+F3 O  - T "Rangiergang" Rangiergang
+F4 O  - I "Fahrverzögerung" ABV

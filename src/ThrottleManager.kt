@@ -1,6 +1,7 @@
 class ThrottleManager {
     val slotCount = 24
     val roster = JmriRoster(this::rosterChangedCallback)
+    val locoData = LocoDatabase()
     var throttlesReassigned : () -> Unit = {}  // callback used by scene manager
     private val throttles = Array(slotCount) {JmriThrottle(it, "T${it + 1}")}
 

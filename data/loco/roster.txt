@@ -1,0 +1,30 @@
+
+Dampfloks
+
+1) BR 64, Fleischmann, 406101, Nur normaler Dekoder (nachträglich eingebaut, kein Sound)        -------- Decoder unklar!!
+2) BR 94-5, Fleischmann, 409486, Nur normaler Dekoder (ab Werk, kein Sound)                     -------- OK
+3) BR 24, TRIX, 22248, Sound ab Werk
+4) BR 55, Fleischmann, 415473, Sound ab Werk
+5) BR 39, Fleischmann, 413875, Sound ab Werk
+6) BR 65, TRIX, ist nicht einmal in der Datenbank, aber schon fest bestellt, Sound ab Werk
+
+E-Lokomotiven
+
+1) E69 05, Fleischmann, 430074, Sound ab Werk
+2) E44, TRIX, 22710, Sound ab Werk
+3) E41, TRIX, 22268, Sound ab Werk
+4) E63, PIKO, 51070, Sound nachträglich eingebaut (von ESU)
+5) E52, PIKO, 51822, Sound ab Werk
+6) E-Triebwagen ET 87, TRIX, 22738, Sound ab Werk (noch nicht ausgeliefert)
+
+Diesel-Lokomotiven
+
+1) BR 210, Mehano, 2640, Sound nachgerüstet (ESU)
+2) V 60-6 von der HVLE (Havelländische Eisenbahn), PIKO, 59421, Sound nachgerüstet (ESU)    ------- OK
+3) DH 360 von Henschel (blau), Hobby Trade, AD 155018, nur Dekoder (kein Sound)
+4) BR 245, PIKO, 52512, Sound ab Werk
+5) BR V200, PIKO, 59700-4, Sound nachgerüstet (ESU)                                         ------- OK
+6) Turmtriebwagen BR VT 621.9, TRIX, 22974, Sound ab Werk                                   ------- OK
+7) VT/VS 98, Roco, 52631, Sound ab Werk (1. Triebwagen)
+8) VT/VS 98, Roco, 52631, Sound ab Werk (2. Triebwagen)
+9) VT 04, Kato, Herstellernummer ist noch ungewiss, (noch nicht in meinem Besitz, aber schon gekauft....)

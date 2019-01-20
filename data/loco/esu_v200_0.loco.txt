@@ -1,0 +1,25 @@
+### ESU V200.0 Art.-Nr. 21409 Version V6-R4
+
+SPEED 140
+F0  L  1 T "Licht vorn" Licht
+F1  S  2 T "Motor #1 + Motor #2" Fahrgeräusch
+F2  S  3 M "Signalhorn" Signalhorn
+F3  O  - T "Raucherzeuger"
+F4  L  - T "Führerstandslicht"
+F5  L  - I "FS1 Licht" FS1
+F6  L  - I "FS2 Licht" FS2
+F7  L  - T "Führerpultbeleuchtung"
+F8  LS 4 I "Rangierbeleuchtung + Motor #2 + Rangiergang" Rangiergang
+F9  L  - T "Maschinenraumbeleuchtung"
+F10 S  5 M "Luftpresser" Kompressor
+F11 S  6 M "Bahnsteigansage #1"
+F12 SO - I "Kurve / Weichensensor" Kurvenquietschen
+F13 S  - M "Kupplungssound" Kuppeln
+F14 S  - M "Zugheizung"
+F15 S  - M "Luftablass" Luftablass
+F16 S  7 M "Schaffnerpfiff" Schaffnerpfiff
+F17 S  - M "Bahnsteigansage #2"
+F18 S  8 M "Kurzpfiff" Kurzpfiff
+F19 S  - M "Schnellbremsung"
+F20 S  - M "Sanden" Sanden
+F21 O  - I "Beschleunigung, Rangiermodus" ABV

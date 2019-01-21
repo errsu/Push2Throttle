@@ -14,23 +14,33 @@ data class LocoInfo(val model: String, val speed: Int, val functions: Map<String
 class LocoDatabase {
 
     private val folderPath = "data/loco/"
-    private val fileExtension = ".loco.txt"
+    private val locoFileExtension = ".loco.txt"
+    private val functionMatrixFileName = "function_matrix.txt"
     private val speedRegex = Regex("""\s*SPEED\s+([0-9]+)\s*""")
     private val funcRegex = Regex(
-            """\s*(F\d+)\s+(L|S|O|LS|LO|SO|LSO)\s+([1-8-])\s+([MTI])\s+"(.*)"\s*([\p{IsAlphabetic}\p{Digit}]*)\s*""")
-
-    private val data = HashMap<String, LocoInfo>()
+            """(?U)\s*(F\d+)\s+(L|S|O|LS|LO|SO|LSO)\s+([1-8-])\s+([MTI])\s+"(.*)"\s*([\p{Alnum}]*)\s*""")
+    private val matrixRegex = StringBuffer().run {
+        append("""(?U)\s*([1-8])""")
+        repeat(8) {append("""\s+([\p{Alnum}]*|-)""")}
+        append("""\s*""")
+        Regex(toString())
+    }
+    private val locoData = HashMap<String, LocoInfo>()
+    private val functionMatrix = Array(8) { Array<String?>(8) {null}}
 
     private val lengthThenNatural = compareBy<String>{ it.length }.then(naturalOrder())
 
     init {
         scanFolder()
-        data.keys.forEach { key ->
+        functionMatrix.forEach {
+            println("${it.asList()}")
+        }
+        locoData.keys.forEach { key ->
             println(key)
-            println("    model: ${data[key]?.model}")
-            println("    speed: ${data[key]?.speed}")
+            println("    model: ${locoData[key]?.model}")
+            println("    speed: ${locoData[key]?.speed}")
             println("    functions:")
-            data[key]?.functions?.toSortedMap(lengthThenNatural)?.forEach { fname, f ->
+            locoData[key]?.functions?.toSortedMap(lengthThenNatural)?.forEach { fname, f ->
                 println("        $fname: '${f.function}' ${f.type} '${f.name}' '${f.stdName}' ${f.behavior} ${f.rank}")
             }
         }
@@ -62,9 +72,8 @@ class LocoDatabase {
         return LocoFunc(function, funcType, name, stdName, funcBehavior, rank)
     }
 
-    private fun parseFile(file: File) {
-        println(file.name)
-        val model =  file.name.dropLast(fileExtension.length)
+    private fun parseLocoFile(file: File) {
+        val model = file.name.dropLast(locoFileExtension.length)
         var speed = 100
         val functions = HashMap<String, LocoFunc>()
         file.forEachLine { line ->
@@ -86,15 +95,35 @@ class LocoDatabase {
             }
         }
         val info = LocoInfo(model, speed, functions)
-        data[model] = info
+        locoData[model] = info
+    }
+
+    private fun parseFunctionMatrixFile(file: File) {
+        file.forEachLine { line ->
+            if (!line.startsWith("#") && line.isNotBlank()) {
+                val matchResult = matrixRegex.matchEntire(line)
+                if (matchResult == null) {
+                    println("Bad function matrix file format: $line")
+                } else {
+                    val values = matchResult.groupValues
+                    val row = values[1].toInt() - 1
+                    repeat(8) { col ->
+                        val stdName = values[2 + col]
+                        functionMatrix[row][col] = if (stdName == "-") null else stdName
+                    }
+                }
+            }
+        }
     }
 
     fun scanFolder() {
         val folder = File(folderPath)
         if (folder.exists()) {
             folder.listFiles().forEach { file ->
-                if (file.name.endsWith(fileExtension)) {
-                    parseFile(file)
+                if (file.name == functionMatrixFileName) {
+                    parseFunctionMatrixFile(file)
+                } else if (file.name.endsWith(locoFileExtension)) {
+                    parseLocoFile(file)
                 }
             }
         }

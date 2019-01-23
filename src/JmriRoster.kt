@@ -21,10 +21,23 @@ class JmriRoster(private val rosterChangedCallback: () -> Unit) {
     private fun updateLocoFromData(loco: Loco, data: Map<*, *>) : Boolean {
 
         var updated = false
+
         val address = data["address"]
         if (address is String) {
             val intAddress = address.toInt()
             if (loco.assignAttr("address", intAddress)) {
+                updated = true
+            }
+        }
+        val model = data["model"]
+        if (model is String) {
+            if (loco.assignAttr("model", model)) {
+                updated = true
+            }
+        }
+        val mfg = data["mfg"]
+        if (model is String) {
+            if (loco.assignAttr("mfg", mfg)) {
                 updated = true
             }
         }

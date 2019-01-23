@@ -14,6 +14,8 @@ class Loco(val name: String) {
     val f6         = addAttr(Attribute("F6", false))
     val f7         = addAttr(Attribute("F7", false))
     val speedSteps = addAttr(Attribute("speedSteps", 126))
+    val model      = addAttr(Attribute("model", ""))
+    val mfg        = addAttr(Attribute("mfg", ""))
     val maxSpeed   = addAttr(Attribute("maxSpeed", 80))
     val slot       = addAttr(Attribute("slot", 0))  // 0 is "no slot", valid slots start at 1
     val color      = addAttr(Attribute("color", 123)) // see Push2Display for valid colors
@@ -31,6 +33,7 @@ class Loco(val name: String) {
         return """Loco{name=$name, addr=$address, speed=$speed, fwd=${forward.b()}, """ +
                 """F0-F7=[${f0.b()}, ${f1.b()}, ${f2.b()}, ${f3.b()}, """ +
                 """${f4.b()}, ${f5.b()}, ${f6.b()}, ${f7.b()}], """ +
-                """maxSpeed=$maxSpeed, slot=$slot}, color=$color}"""
+                """mfgModel=$model, mfg=$mfg, """ +
+                """maxSpeed=$maxSpeed, slot=$slot, color=$color}"""
     }
 }

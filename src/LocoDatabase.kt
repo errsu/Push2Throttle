@@ -9,7 +9,7 @@ data class LocoFunc(
         val stdName: String,
         val behavior: FuncBehavior,
         val rank: Int?)
-data class LocoInfo(val model: String, val speed: Int, val functions: Map<String, LocoFunc>)
+data class LocoInfo(val mfgModel: String, val speed: Int, val functions: Map<String, LocoFunc>)
 
 class LocoDatabase {
 
@@ -27,23 +27,11 @@ class LocoDatabase {
     }
     private val locoData = HashMap<String, LocoInfo>()
     private val functionMatrix = Array(8) { Array<String?>(8) {null}}
-
+    private val functionRowCols = HashMap<String, Pair<Int, Int>>()
     private val lengthThenNatural = compareBy<String>{ it.length }.then(naturalOrder())
 
     init {
         scanFolder()
-        functionMatrix.forEach {
-            println("${it.asList()}")
-        }
-        locoData.keys.forEach { key ->
-            println(key)
-            println("    model: ${locoData[key]?.model}")
-            println("    speed: ${locoData[key]?.speed}")
-            println("    functions:")
-            locoData[key]?.functions?.toSortedMap(lengthThenNatural)?.forEach { fname, f ->
-                println("        $fname: '${f.function}' ${f.type} '${f.name}' '${f.stdName}' ${f.behavior} ${f.rank}")
-            }
-        }
     }
 
     private fun scanSpeedLine(line: String) : Int? {
@@ -73,7 +61,7 @@ class LocoDatabase {
     }
 
     private fun parseLocoFile(file: File) {
-        val model = file.name.dropLast(locoFileExtension.length)
+        val mfgModel = file.name.dropLast(locoFileExtension.length)
         var speed = 100
         val functions = HashMap<String, LocoFunc>()
         file.forEachLine { line ->
@@ -94,8 +82,8 @@ class LocoDatabase {
                 }
             }
         }
-        val info = LocoInfo(model, speed, functions)
-        locoData[model] = info
+        val info = LocoInfo(mfgModel, speed, functions)
+        locoData[mfgModel] = info
     }
 
     private fun parseFunctionMatrixFile(file: File) {
@@ -109,7 +97,12 @@ class LocoDatabase {
                     val row = values[1].toInt() - 1
                     repeat(8) { col ->
                         val stdName = values[2 + col]
-                        functionMatrix[row][col] = if (stdName == "-") null else stdName
+                        if (stdName == "-") {
+                            functionMatrix[row][col] = null
+                        } else {
+                            functionMatrix[row][col] = stdName
+                            functionRowCols[stdName] = Pair(row, col)
+                        }
                     }
                 }
             }
@@ -125,6 +118,30 @@ class LocoDatabase {
                 } else if (file.name.endsWith(locoFileExtension)) {
                     parseLocoFile(file)
                 }
+            }
+        }
+    }
+
+    fun getInfoForMfgModel(mfg: String, model: String): LocoInfo? {
+        val mfgModel = mfg.toLowerCase().replace(' ', '_') + "_" + model.toLowerCase().replace(' ', '_')
+        return locoData[mfgModel]
+    }
+
+    fun getRowColForFunction(stdName: String): Pair<Int, Int>? {
+        return functionRowCols[stdName]
+    }
+
+    fun print() {
+        functionMatrix.forEach {
+            println("${it.asList()}")
+        }
+        locoData.keys.forEach { key ->
+            println(key)
+            println("    mfg_model: ${locoData[key]?.mfgModel}")
+            println("    speed: ${locoData[key]?.speed}")
+            println("    functions:")
+            locoData[key]?.functions?.toSortedMap(lengthThenNatural)?.forEach { fname, f ->
+                println("        $fname: '${f.function}' ${f.type} '${f.name}' '${f.stdName}' ${f.behavior} ${f.rank}")
             }
         }
     }

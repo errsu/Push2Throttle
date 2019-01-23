@@ -1,5 +1,3 @@
-import kotlin.experimental.and
-
 // The Push2 loco function controller uses the Push2 Pads to control
 // the F0...F32 functions of locos (via throttle). The controlled functions/locos
 // depend on the selection. Selection is a property of the throttle controller.
@@ -11,7 +9,7 @@ import kotlin.experimental.and
 
 class Push2LocoFunctionController(
         private val elements: Push2Elements,
-        throttleManager: ThrottleManager,
+        private val throttleManager: ThrottleManager,
         private val pads: Array<Array<Pad>>, // pads[column][row]
         private val selectionManager: SelectionManager
 ) : MidiController {
@@ -91,6 +89,13 @@ class Push2LocoFunctionController(
             repeat(8) { column  ->
                 val loco = selectionManager.getThrottleAtColumn(column).loco
                 if (loco != null) {
+                    val locoInfo = throttleManager.locoData.getInfoForMfgModel(loco.mfg.value, loco.model.value)
+                    locoInfo?.functions?.forEach { funcName, locoFunc ->
+                        val rowCol = throttleManager.locoData.getRowColForFunction(locoFunc.stdName)
+                        if (rowCol != null) {
+                            println("$funcName, $rowCol")
+                        }
+                    }
                     elements.connect(pads[column][0], this,
                             mapOf("onColor" to "red", "offColor" to "blue", "type" to "toggle"),
                             loco.f0.value)

@@ -38,12 +38,16 @@ class Push2ThrottleMainView: View() {
         }
         button("print states") {
             action {
+                println("------------------------------- Roster -------------------------------------------")
                 for (loco in throttleManager.roster.locos.toSortedMap()) {
                     println(loco)
                 }
+                println("------------------------------- Turnouts -----------------------------------------")
                 for (turnout in panelManager.turnoutTable.turnouts.toSortedMap()) {
                     println(turnout)
                 }
+                println("------------------------------- Loco Database ------------------------------------")
+                throttleManager.locoData.print()
             }
         }
         button("reconnect JMRI") {

@@ -26,7 +26,7 @@ class LocoDatabase {
         Regex(toString())
     }
     private val locoData = HashMap<String, LocoInfo>()
-    private val functionMatrix = Array(8) { Array<String?>(8) {null}}
+    private val functionMatrix = Array(8) { Array<String?>(8) {null}} // stdNames for [row][col]
     private val functionRowCols = HashMap<String, Pair<Int, Int>>()
     private val lengthThenNatural = compareBy<String>{ it.length }.then(naturalOrder())
 
@@ -122,13 +122,19 @@ class LocoDatabase {
         }
     }
 
-    fun getInfoForMfgModel(mfg: String, model: String): LocoInfo? {
+    fun getInfoForMfgModel(mfg: String?, model: String?): LocoInfo? {
+        if (mfg == null || model == null) {
+            return null
+        }
         val mfgModel = mfg.toLowerCase().replace(' ', '_') + "_" + model.toLowerCase().replace(' ', '_')
         return locoData[mfgModel]
     }
 
     fun getRowColForFunction(stdName: String): Pair<Int, Int>? {
         return functionRowCols[stdName]
+    }
+    fun getStdNameForRowCol(row: Int, col: Int) : String? {
+        return functionMatrix[row][col]
     }
 
     fun print() {

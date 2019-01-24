@@ -10,7 +10,7 @@
 class Push2LocoFunctionController(
         private val elements: Push2Elements,
         private val throttleManager: ThrottleManager,
-        private val pads: Array<Array<Pad>>, // pads[column][row]
+        private val pads: Array<Array<Pad>>, // pads[row][col]
         private val selectionManager: SelectionManager
 ) : MidiController {
 
@@ -83,71 +83,112 @@ class Push2LocoFunctionController(
         setColorPaletteEntry(2, 216, 8, 0, 4) // make R3 a little brighter (was: 128, 4, 0, 4)
     }
 
+    fun ThrottleManager.getLocoInfo(loco: Loco) : LocoInfo? {
+        return locoData.getInfoForMfgModel(loco.mfg.value, loco.model.value)
+    }
+
+    fun connectPadToLocoFunc(pad: Pad, locoFunc: LocoFunc, loco: Loco, color: Int) {
+        val onColor : Any? = when (locoFunc.behavior) {
+            FuncBehavior.M -> color
+            FuncBehavior.T -> color
+            FuncBehavior.I -> darkestColor(color)
+        }
+        val offColor = when (locoFunc.behavior) {
+            FuncBehavior.M -> darkerColor(color)
+            FuncBehavior.T -> darkestColor(color)
+            FuncBehavior.I -> color
+        }
+        val padType = when (locoFunc.behavior) {
+            FuncBehavior.M -> "momentary"
+            FuncBehavior.T -> "toggle"
+            FuncBehavior.I -> "toggle"
+        }
+        elements.connect(pad, this,
+                mapOf("onColor" to onColor, "offColor" to offColor, "type" to padType),
+                loco.attrs[locoFunc.function]?.value ?: 0)
+    }
+
     fun connectToElements() {
-        val selectedColumn = selectionManager.getSelectedColumn()
-        if (selectedColumn == -1) {
-            repeat(8) { column  ->
-                val loco = selectionManager.getThrottleAtColumn(column).loco
-                if (loco != null) {
-                    val locoInfo = throttleManager.locoData.getInfoForMfgModel(loco.mfg.value, loco.model.value)
-                    locoInfo?.functions?.forEach { funcName, locoFunc ->
-                        val rowCol = throttleManager.locoData.getRowColForFunction(locoFunc.stdName)
-                        if (rowCol != null) {
-                            println("$funcName, $rowCol")
-                        }
+        selectionManager.getSelectedColumn()?.also {selectedColumn ->
+            selectionManager.getThrottleAtColumn(selectedColumn).loco?.also { loco ->
+                throttleManager.getLocoInfo(loco)?.functions?.forEach { _, locoFunc ->
+                    // pad and color row/cols are identical
+                    throttleManager.locoData.getRowColForFunction(locoFunc.stdName)?.also {(row, col) ->
+                        connectPadToLocoFunc(pads[row][col], locoFunc, loco, padColors[row][col] ?: 0)
                     }
-                    elements.connect(pads[column][0], this,
-                            mapOf("onColor" to "red", "offColor" to "blue", "type" to "toggle"),
-                            loco.f0.value)
                 }
             }
-        } else {
-            val loco = selectionManager.getThrottleAtColumn(selectedColumn).loco
-            if (loco != null) {
-                elements.connect(pads[0][7], this,
-                        mapOf("onColor" to "green", "offColor" to "yellow", "type" to "toggle"),
-                        loco.f0.value)
+        } ?: run {
+            repeat(8) { col  ->
+                selectionManager.getThrottleAtColumn(col).loco?.also { loco ->
+                    throttleManager.getLocoInfo(loco)?.functions?.forEach { _, locoFunc ->
+                        if (locoFunc.rank != null) {
+                            val pad = pads[locoFunc.rank - 1][col] // rank is in range 1..8 by scanning regex
+                            // colors from the function matrix are mapped to a column of pads for selected track
+                            throttleManager.locoData.getRowColForFunction(locoFunc.stdName)?.also {(colorRow, colorCol) ->
+                                val color = padColors[colorRow][colorCol] ?: 0
+                                connectPadToLocoFunc(pad, locoFunc, loco, color)
+                            }
+                        }
+                    }
+                }
             }
         }
     }
 
     fun disconnectFromElements() {
-        pads.forEach { columnOfPads ->
-            columnOfPads.forEach { pad ->
+        pads.forEach { rowOfPads ->
+            rowOfPads.forEach { pad ->
                 elements.disconnect(pad)
             }
         }
     }
 
+    // TODO: all these search algorithms should be in locoData or locoInfo
     fun locoAttrChanged(throttle: JmriThrottle, attrName: String, newValue: Any?) {
-        val selectedColumn = selectionManager.getSelectedColumn()
-        val pad = if (selectedColumn != -1) {
-            when (throttle) {
-                selectionManager.getThrottleAtColumn(selectedColumn) -> pads[0][7]
-                else -> null
+        selectionManager.getSelectedColumn()?.also { selectedColumn ->
+            if (throttle == selectionManager.getThrottleAtColumn(selectedColumn)) {
+                val loco = throttle.loco ?: throw Exception("there should be a loco if there is a selection")
+                throttleManager.getLocoInfo(loco)?.functions?.get(attrName)?.also { locoFunc ->
+                    throttleManager.locoData.getRowColForFunction(locoFunc.stdName)?.also { (row, col) ->
+                        elements.updateElementStateByJmri(pads[row][col], newValue)
+                    }
+                }
             }
-        } else {
-            val col = selectionManager.getThrottleColumn(throttle)
-            if (col == -1) null else pads[col][0]
-        }
-        if (pad != null) {
-            when(attrName) {
-                "f0" -> elements.updateElementStateByJmri(pad, newValue)
+        } ?: run {
+            selectionManager.getThrottleColumn(throttle)?.also { col ->
+                throttle.loco?.also { loco ->
+                    throttleManager.getLocoInfo(loco)?.functions?.get(attrName)?.also { locoFunc ->
+                        val rank = locoFunc.rank  ?: throw Exception("no pad in unselected state without rank")
+                        elements.updateElementStateByJmri(pads[rank - 1][col], newValue)
+                    }
+                }
             }
         }
     }
 
     override fun <T: Any> elementStateChanged(element: MidiElement, newValue: T) {
         val pad = if (element is Pad) element else return
-        val selectedColumn = selectionManager.getSelectedColumn()
-
-        if (selectedColumn != -1) {
-            when (element) {
-                pads[0][7] -> selectionManager.getThrottleAtColumn(selectedColumn).messageToJmri("F0", newValue)
+        val padRow = pad.row()
+        val padCol = pad.col()
+        selectionManager.getSelectedColumn()?.also { selectedColumn ->
+            val throttle = selectionManager.getThrottleAtColumn(selectedColumn)
+            val loco = throttle.loco ?: throw Exception("there should be a loco if there is a selection")
+            throttleManager.locoData.getStdNameForRowCol(padRow, padCol)?.also { stdName ->
+                throttleManager.getLocoInfo(loco)?.functions?.forEach { _, locoFunc ->
+                    if (locoFunc.stdName == stdName) {
+                        throttle.messageToJmri(locoFunc.function, newValue)
+                    }
+                }
             }
-        } else {
-            if (pad.row() == 0) {
-                selectionManager.getThrottleAtColumn(pad.col()).messageToJmri("F0", newValue)
+        } ?: run {
+            val throttle = selectionManager.getThrottleAtColumn(padCol)
+            throttle.loco?.also { loco ->
+                throttleManager.getLocoInfo(loco)?.functions?.forEach { _, locoFunc ->
+                    if (locoFunc.rank == padRow + 1) {
+                        throttle.messageToJmri(locoFunc.function, newValue)
+                    }
+                }
             }
         }
     }

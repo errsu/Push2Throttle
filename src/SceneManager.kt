@@ -106,9 +106,9 @@ abstract class ScenePager (
 
 interface SelectionManager {
     fun requestSelection(controller: Push2ThrottleController?)
-    fun getSelectedColumn() : Int
+    fun getSelectedColumn() : Int?
     fun getThrottleAtColumn(column: Int) : JmriThrottle
-    fun getThrottleColumn(throttle: JmriThrottle) : Int
+    fun getThrottleColumn(throttle: JmriThrottle) : Int?
 }
 
 class ThrottleScene(private val display: Push2Display,
@@ -137,9 +137,9 @@ class ThrottleScene(private val display: Push2Display,
     private val locoFunctionController = Push2LocoFunctionController(
             elements,
             throttleManager,
-            Array(8) { column ->
-                Array(8) { row ->
-                    elements.getElement("Pad S${row + 1} T${column + 1}") as Pad
+            Array(8) { row ->
+                Array(8) { col ->
+                    elements.getElement("Pad S${row + 1} T${col + 1}") as Pad
                 }
             },
             this)
@@ -188,23 +188,23 @@ class ThrottleScene(private val display: Push2Display,
         locoFunctionController.connectToElements()
     }
 
-    override fun getSelectedColumn() : Int {
+    override fun getSelectedColumn() : Int? {
         repeat(8) {
             val slot = page * 8 + it
             if (throttleControllers[slot].selected) {
                 return it
             }
         }
-        return -1
+        return null
     }
 
     override fun getThrottleAtColumn(column: Int) : JmriThrottle {
         return throttleManager.throttleAtSlot(page * 8 + column)
     }
 
-    override fun getThrottleColumn(throttle: JmriThrottle) : Int {
+    override fun getThrottleColumn(throttle: JmriThrottle) : Int? {
         val col = throttle.slot - page * 8
-        return if (col < 0 || col > 7) -1 else col
+        return if (col < 0 || col > 7) null else col
     }
 }
 

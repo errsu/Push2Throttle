@@ -5,14 +5,12 @@ class Loco(val name: String) {
     val address    = addAttr(Attribute("address", 0))
     val speed      = addAttr(Attribute("speed", 0.0f))
     val forward    = addAttr(Attribute("forward", false))
-    val f0         = addAttr(Attribute("F0", false))
-    val f1         = addAttr(Attribute("F1", false))
-    val f2         = addAttr(Attribute("F2", false))
-    val f3         = addAttr(Attribute("F3", false))
-    val f4         = addAttr(Attribute("F4", false))
-    val f5         = addAttr(Attribute("F5", false))
-    val f6         = addAttr(Attribute("F6", false))
-    val f7         = addAttr(Attribute("F7", false))
+
+    init {
+        for (i in 0..31) {
+            addAttr(Attribute("F$i", false))
+        }
+    }
     val speedSteps = addAttr(Attribute("speedSteps", 126))
     val model      = addAttr(Attribute("model", ""))
     val mfg        = addAttr(Attribute("mfg", ""))
@@ -31,8 +29,8 @@ class Loco(val name: String) {
 
     override fun toString() : String {
         return """Loco{name=$name, addr=$address, speed=$speed, fwd=${forward.b()}, """ +
-                """F0-F7=[${f0.b()}, ${f1.b()}, ${f2.b()}, ${f3.b()}, """ +
-                """${f4.b()}, ${f5.b()}, ${f6.b()}, ${f7.b()}], """ +
+                """F0-F7=[${attrs["f0"]?.b()}, ${attrs["f1"]?.b()}, ${attrs["f2"]?.b()}, ${attrs["f3"]?.b()}, """ +
+                """${attrs["f4"]?.b()}, ${attrs["f5"]?.b()}, ${attrs["f6"]?.b()}, ${attrs["f7"]?.b()}], """ +
                 """mfgModel=$model, mfg=$mfg, """ +
                 """maxSpeed=$maxSpeed, slot=$slot, color=$color}"""
     }

@@ -126,7 +126,7 @@ class LocoDatabase {
         if (mfg == null || model == null) {
             return null
         }
-        val mfgModel = mfg.toLowerCase().replace(' ', '_') + "_" + model.toLowerCase().replace(' ', '_')
+        val mfgModel = "${mfg}_$model".toLowerCase().replace(Regex("""[ .\-]"""), "_")
         return locoData[mfgModel]
     }
 

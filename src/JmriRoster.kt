@@ -1,4 +1,4 @@
-class JmriRoster(private val rosterChangedCallback: () -> Unit) {
+class JmriRoster(val locoData: LocoDatabase, private val rosterChangedCallback: () -> Unit) {
 
     val locos = HashMap<String, Loco>()
     private val jmri: JmriWsClient = JmriWsClient()
@@ -51,6 +51,9 @@ class JmriRoster(private val rosterChangedCallback: () -> Unit) {
                     }
                 }
             }
+        }
+        locoData.getInfoForMfgModel(loco.mfg.value, loco.model.value)?.also { locoInfo ->
+            locoInfo.speed?.also{ speed -> loco.maxSpeed.assign(speed) }
         }
         return updated
     }

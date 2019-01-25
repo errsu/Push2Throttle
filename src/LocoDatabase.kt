@@ -9,7 +9,7 @@ data class LocoFunc(
         val stdName: String,
         val behavior: FuncBehavior,
         val rank: Int?)
-data class LocoInfo(val mfgModel: String, val speed: Int, val functions: Map<String, LocoFunc>)
+data class LocoInfo(val mfgModel: String, val speed: Int?, val functions: Map<String, LocoFunc>)
 
 class LocoDatabase {
 
@@ -62,16 +62,11 @@ class LocoDatabase {
 
     private fun parseLocoFile(file: File) {
         val mfgModel = file.name.dropLast(locoFileExtension.length)
-        var speed = 100
+        var speed : Int? = null
         val functions = HashMap<String, LocoFunc>()
         file.forEachLine { line ->
             if (line.startsWith("SPEED")) {
-                val locoSpeed = scanSpeedLine(line)
-                if (locoSpeed == null) {
-                    println("error in ${file.name}")
-                } else {
-                    speed = locoSpeed
-                }
+                speed = scanSpeedLine(line)
             }
             if (line.startsWith("F")) {
                 val locoFunction = scanFuncLine(line)

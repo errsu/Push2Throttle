@@ -1,0 +1,35 @@
+### Turmtriebwagen BR VT 621.9, TRIX, 22974, Sound ab Werk
+
+SPEED 90
+F0  L  1 T "Spitzensignal / Schlusslicht rot" Licht
+F1  O  2 T "Umschalten Fahrbetrieb/Arbeitsbühne" Op1
+F2  S  3 T "Betriebsgeräusch" Motorsound
+F3  S  4 M "Signalhorn" Horn2
+F4  O  - T "Pantograph heben/senken" Pantograph
+F5  O  - M "Arbeitsbühne heben" Op2
+F6  O  - M "Arbeitsbühne senken" Op3
+F7  O  - M "Arbeitsbühne rechtsdrehend" Op4
+F8  O  - M "Arbeitsbühne linksdrehend" Op5
+F9  O  - M "Initialisierung Arbeitsbühne" Op8
+F10 O  - M "Arbeitsbühne 90° rechtsdrehend" Op6
+F11 O  - M "Arbeitsbühne 90° linksdrehend" Op7
+F12 O  - I "ABV" ABV
+F13 S  - M "Hämmern" Sound1
+F14 S  - M "Bohren" Sound2
+F15 S  5 I "Bremsenquietschen" Bremsenquietschen
+F16 S  - M "Elektroschweißen" Sound3
+F17 S  - M "Schleifbock" Sound4
+F18 S  - M "Drahtbürste" Sound5
+F19 S  - M "Kettenzug" Sound6
+F20 S  - M "Warnsignal Typhon" Horn1
+F21 S  6 M "Kabinenfunk" Sound7
+F22 S  - M "Sanden" Sanden
+F23 S  7 T "Schienenstöße" Schienenstöße
+F24 O  8 T "Rangiergang" Rangiergang
+F25 L  - I "Spitzensignal Führerstand 2 aus" Licht2
+F26 L  - I "Spitzensignal Führerstand 1 aus" Licht1
+F27 S  - M "Gespräch 1 (Arbeiter)" Talk1
+F28 S  - M "Gespräch 2 (Arbeiter)" Talk2
+F29 S  - M "Gespräch 3 (Arbeiter)" Talk3
+F30 S  - M "Gespräch 4 (Arbeiter)" Talk4
+F31 S  - M "Hände waschen" Sound8

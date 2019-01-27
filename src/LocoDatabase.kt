@@ -32,6 +32,8 @@ class LocoDatabase {
 
     init {
         scanFolder()
+        // generateStats()
+        // print()
     }
 
     private fun scanSpeedLine(line: String) : Int? {
@@ -44,7 +46,7 @@ class LocoDatabase {
     }
 
     private fun scanFuncLine(line: String) : LocoFunc? {
-        // F12 $@ - I "Kurve / Weichensensor" Kurvenquietschen
+        // F12 SO - I "Kurve / Weichensensor" Kurvenquietschen
         val matchResult = funcRegex.matchEntire(line)
         if (matchResult == null) {
             println("Bad loco.txt format: $line")
@@ -121,7 +123,7 @@ class LocoDatabase {
         if (mfg == null || model == null) {
             return null
         }
-        val mfgModel = "${mfg}_$model".toLowerCase().replace(Regex("""[ .\-]"""), "_")
+        val mfgModel = "${mfg}_$model".toLowerCase().replace(Regex("""[ ./\-]"""), "_")
         return locoData[mfgModel]
     }
 
@@ -145,5 +147,39 @@ class LocoDatabase {
                 println("        $fname: '${f.function}' ${f.type} '${f.name}' '${f.stdName}' ${f.behavior} ${f.rank}")
             }
         }
+    }
+
+    fun generateStats() {
+        println("-----------------------------------------------------------------------")
+        var locosTotal = 0
+        var noStdNameCount = 0
+        val names = HashMap<String, Int>()
+        val stdNames = HashMap<String, Int>()
+        locoData.values.forEach { locoInfo ->
+            var unassigned = 0
+            if (locoInfo.functions.isNotEmpty()) locosTotal += 1
+            locoInfo.functions.values.forEach { funcInfo ->
+                if (funcInfo.name.isNotBlank() && funcInfo.stdName.isBlank()) {
+                    noStdNameCount += 1
+                }
+                if (funcInfo.stdName.isNotBlank()) {
+                    stdNames[funcInfo.stdName] = stdNames[funcInfo.stdName]?.plus(1) ?: 1
+                } else if (funcInfo.name.isNotBlank()) {
+                    unassigned += 1
+                    names[funcInfo.name] = names[funcInfo.name]?.plus(1) ?: 1
+                }
+            }
+            if (unassigned != 0) println("${locoInfo.mfgModel} unassigned: $unassigned")
+        }
+
+        println("Names -----------------------------------------------------------------")
+        names.toSortedMap().forEach { name, count -> println("$name [$count]") }
+        println("StdNames --------------------------------------------------------------")
+        stdNames.toSortedMap().forEach { stdName, count -> println("$stdName [$count]") }
+        println("-----------------------------------------------------------------------")
+        println("Locos total: $locosTotal")
+        println("Functions w/o stdNames: $noStdNameCount")
+        println("Unassigned Names: [${names.keys.size}]")
+        println("StdNames: [${stdNames.keys.size}]")
     }
 }

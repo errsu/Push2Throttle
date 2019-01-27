@@ -1,0 +1,25 @@
+### BR V200, PIKO, 59700-4, ESU Sound 21409 V6-R4
+
+SPEED 140
+F0  L  1 T "Licht vorn" Licht
+F1  S  2 T "Motor #1 + Motor #2" Motorsound
+F2  S  3 M "Signalhorn" Horn2
+F3  O  - T "Raucherzeuger" Rauchgenerator
+F4  L  - T "Führerstandslicht" FS1
+F5  L  - I "FS1 Licht" FS1
+F6  L  - I "FS2 Licht" FS2
+F7  L  - T "Führerpultbeleuchtung" FS2
+F8  LS 4 I "Rangierbeleuchtung + Motor #2 + Rangiergang" Rangiergang
+F9  L  - T "Maschinenraumbeleuchtung" Innenlicht
+F10 S  5 M "Luftpresser" Kompressor
+F11 S  6 M "Bahnsteigansage #1" Bahnhofsansage
+F12 SO - I "Kurve / Weichensensor" Kurvenquietschen
+F13 S  - M "Kupplungssound" Kupplung
+F14 S  - M "Zugheizung" Heizung
+F15 S  - M "Luftablass" Luftablass
+F16 S  7 M "Schaffnerpfiff" Triller
+F17 S  - M "Bahnsteigansage #2" Bahnhofsansage2
+F18 S  8 M "Kurzpfiff" Horn1
+F19 S  - M "Schnellbremsung" Notbremse
+F20 S  - M "Sanden" Sanden
+F21 O  - I "Beschleunigung, Rangiermodus" ABV

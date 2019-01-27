@@ -1,0 +1,19 @@
+### E41, aka. BR 141, TRIX, 22268, Sound ab Werk
+### kein Manual verfügbar, Funktionen entsprechend Märklin BR141, 39415
+
+SPEED 120
+F0  L  1 T "Spitzensignal" Licht
+F1  L  - T "Führerstandsbeleuchtung 1" FS1
+F2  S  2 T "Betriebsgeräusch" Motorsound
+F3  S  5 M "Lokpfeife lang" Horn2
+F4  L  - T "Führerstandsbeleuchtung 2" FS2
+F5  SO - I "Bremsenquietschen" Bremsenquietschen
+F6  L  3 I "Spitzensignal Führerstand 2" Licht2
+F7  S  - M "Schlagglocke" Glocke
+F8  L  4 I "Spitzensignal Führerstand 1" Licht1
+F9  O  - I "ABV" ABV
+F10 S  - M "Sanden" Sanden
+F11 S  6 M "Rangierpfiff" Horn0
+F12 S  - M "Bahnhofsansage" Bahnhofsansage
+F13 S  - M "Ankuppeln / Abkuppeln" Kupplung
+F14 S  - T "Lüfter" Lüfter

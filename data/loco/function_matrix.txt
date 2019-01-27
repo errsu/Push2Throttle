@@ -1,9 +1,12 @@
-#  1               2      3                4          5      6      7              8
-1  Fahrgeräusch    -      Kurvenquietschen -          -      -      Beschleunigung Rangiergang
-2  Signalhorn      -      -                -          -      -      -              -
-3  Schaffnerpfiff  -      Kompressor       Luftablass -      -      -              -
-4  Kurzpfiff       -      Kuppeln          -          -      -      -              -
-5  -               -      Sanden           -          -      -      -              -
-6  -               -      -                -          -      -      -              -
-7  -               -      -                -          -      -      -              -
-8  Licht           FS1    FS2              -          -      -      -              -
+#  1            2                 3               4           5               6        7       8
+#  Light        Sound             Sound           Sound       Sound           Sound    Operations
+#               Functions         Signals         Triggered   Toggled         Misc     Misc    Common
+#------------------------------------------------------------------------------------------------------------
+1  Licht        Motorsound        Horn0           Talk1       Kompressor      Sound1   Op1     ABV
+2  Licht1       Bremsenquietschen Horn1           Talk2       Sanden          Sound2   Op2     Rangiergang
+3  Licht2       Notbremse         Horn2           Talk3       Lüfter          Sound3   Op3     Kupplung
+4  Licht3       Kurvenquietschen  Horn3           Talk4       Lichtmaschine   Sound4   Op4     KupplungH
+5  FS1          Schienenstöße     Triller         Luftablass  Bremse          Sound5   Op5     KupplungV
+6  FS2          Soundfader        Glocke          Dampfablass Heizung         Sound6   Op6     Rauchgenerator
+7  Innenlicht   -                 Bahnhofsansage  Tür         Injektor        Sound7   Op7     Pantograph
+8  Rangierlicht -                 Bahnhofsansage2 Fenster     Kohlenschaufeln Sound8   Op8     Pantograph2

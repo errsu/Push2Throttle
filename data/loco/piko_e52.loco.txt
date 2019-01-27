@@ -1,0 +1,32 @@
+### E52, PIKO, 51822, Sound ab Werk
+
+SPEED 90
+F0  L  1 T "Licht vorn" Licht
+F1  S  2 T "Motorsound" Motorsound
+F2  SO - T "Pantograph auf/ab" Pantograph
+F3  S  - M "Führerstandstüre auf/zu" Tür
+F4  L  - T "Führerstandsbeleuchtung FS 1" FS1
+F5  L  - T "Führerstandsbeleuchtung FS 2" FS2
+F6  L  - T "Maschinenraumbeleuchtung" Innenlicht
+F7  S  - M "Führerstandsfenster auf/zu" Fenster
+F8  LO - T "Rangiergang + Rangierbeleuchtung 1" Rangiergang
+F9  S  - M "Handbremse anlegen/lösen" Sound1
+F10 S  - T "Kompressor" Kompressor
+F11 S  - T "Lüfter" Lüfter
+F12 S  - M "Zugbremse anlegen/lösen" Bremse
+F13 S  3 M "Druckluftpfeife kurz" Horn1
+F14 S  4 M "Druckluftpfeife lang" Horn2
+F15 S  - T "Ölpumpe" Sound2
+F16 S  - M "Druckluft ablassen" Luftablass
+F17 S  - M "Notbremse" Notbremse
+F18 S  - M "Schaffnerpfiff" Triller
+F19 L  - M "Lokführergruß (abblenden)" Horn3
+F20 L  - T "Spitzenlicht" Licht3
+F21 SO - I "Bremsgeräusch" Bremsenquietschen
+F22 S  - M "Sanden" Sanden
+F23 S  - M "Kuppeln ab-/ankuppeln" Kupplung
+F24 S  - T "Schienenstöße" Schienenstöße
+F25 SO - T "Kurvenquietschen" Kurvenquietschen
+F26 L  - T "Zugbeleuchtung: Lok zieht" Licht1
+F27 L  - T "Zugbeleuchtung: Lok schiebt" Licht2
+F28 SO - T "Soundfader (Tunnelmodus)" Soundfader

@@ -1,0 +1,19 @@
+### E-Triebwagen ET 87, TRIX, 22738, Sound ab Werk
+# Zuordnung zu Funktionen zu überprüfen
+
+SPEED 70
+
+F0  L  1 T "Spitzensignal" Licht
+F1  L  - T "Innenbeleuchtung" Innenlicht
+F2  S  2 T "E-Lok-Fahrgeräusch" Motorsound
+F3  S  3 M "Lokpfiff" Horn2
+F4  O  - T "Direktsteuerung" ABV
+F5  SO - I "Bremsenquietschen" Bremsenquietschen
+F6  L  - T "Spitzensignal Lokseite 2" Licht2
+F7  S  4 M "Glocke" Glocke
+F8  L  - T "Spitzensignal Lokseite 1" Licht1
+F9  S  - M "Panto-Geräusch" Pantograph
+F10 S  - T "Lüfter" Lüfter
+F11 S  5 M "Schaffnerpfiff" Triller
+F12 S  - T "Luftpresser" Kompressor
+F13 S  - M "Druckluft ablassen" Luftablass

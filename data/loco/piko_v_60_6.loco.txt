@@ -1,0 +1,25 @@
+### V 60-6, HVLE (Havelländische Eisenbahn), PIKO, 59421, ESU Sound nachgerüstet
+
+# Achtung, bei Rangierfahrt nur 30 -> Funktion einführen
+SPEED 60
+F0  L  1 T "Licht" Licht
+F1  S  2 T "Fahrgeräusch" Motorsound
+F2  S  3 M "Signalhorn" Horn2
+F3  S  4 M "Kurzpfiff" Horn1
+F4  S  - T "Lüfter" Lüfter
+F5  S  5 T "Kompressor" Kompressor
+F6  O  - T "Rangiergang" Rangiergang
+F7  SO 6 T "Kurvenquietschen" Kurvenquietschen
+F9  S  - M "Pressluft ablassen" Luftablass
+F10 S  - M "Rangierfunk #1" Talk1
+F11 S  - M "Kuppeln" Kupplung
+F12 S  - M "Sanden" Sanden
+F13 S  - T "Bremse anlegen/lösen" Bremse
+F14 S  - M "Rangierfunk #2" Talk2
+F15 S  - M "Rangierfunk #3" Talk3
+F16 S  7 T "Führerstandstüre" Tür
+F17 S  8 T "Schienenstöße" Schienenstöße
+F18 S  - M "Rangierfunk #4" Talk4
+F19 S  - M "Stangenklappern" Sound1
+F20 SO - T "Soundfader" Soundfader
+F21 SO - M "Bremsgeräusch" Bremsenquietschen

@@ -144,7 +144,6 @@ class Push2LocoFunctionController(
         }
     }
 
-    // TODO: all these search algorithms should be in locoData or locoInfo
     fun locoAttrChanged(throttle: JmriThrottle, attrName: String, newValue: Any?) {
         selectionManager.getSelectedColumn()?.also { selectedColumn ->
             if (throttle == selectionManager.getThrottleAtColumn(selectedColumn)) {

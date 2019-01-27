@@ -1,0 +1,18 @@
+### E44, TRIX, 22710, Sound ab Werk
+
+SPEED 90
+F0  L  1 M "Spitzensignal / Schlusslicht" Licht
+F1  S  - M "Bahnhofsansage" Bahnhofsansage
+F2  S  2 M "Betriebsgeräusch" Motorsound
+F3  S  4 M "Lokpfeife" Horn2
+F4  O  - I "ABV" ABV
+F5  SO - I "Bremsenquietschen" Bremsenquietschen
+F6  S  - I "Spitzensignal Führerstand 2" Licht2
+F7  S  3 M "Rangierpfiff" Horn0
+F8  S  - I "Spitzensignal Führerstand 1" Licht1
+F9  SO - M "Pantograph 2 heben/senken + Pantograph-Geräusch" Pantograph
+F10 S  5 M "Schaffnerpfiff" Triller
+F11 SO - M "Pantograph 1 heben/senken + Pantograph-Geräusch" Pantograph2
+F12 S  - M "Kompressor" Kompressor
+F13 S  - M "Druckluft ablassen" Luftablass
+F14 LO - M "Rangierlicht + Rangiergang" Rangiergang

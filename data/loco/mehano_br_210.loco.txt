@@ -1,0 +1,11 @@
+### BR 210, Mehano, 2640, ESU Sound nachgerüstet
+
+F0  L  1 T "Licht vorn" Licht
+F1  S  2 T "Sound ein/aus, Lüftergeräusch" Motorsound
+F2  S  6 M "Dopplereffekt, Signalhorn 1" Horn3
+F3  S  3 M "Signalhorn 2" Horn2
+F4  S  - T "Kompressor" Kompressor
+F5  S  - T "Heizung" Heizung
+F6  O  - T "Beschleunigungs-/Bremszeit, Rangiergang" Rangiergang
+F7  S  5 M "Kurzpfiff 1" Horn0
+F8  S  3 M "Kurzpfiff 2" Horn1

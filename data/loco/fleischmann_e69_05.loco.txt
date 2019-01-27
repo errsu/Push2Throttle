@@ -1,0 +1,22 @@
+### E69 05, LAG "Adolphine", Fleischmann, 430074, Sound ab Werk
+
+SPEED 50
+F0  L  1 T "Spitzenbeleuchtung" Licht
+F1  S  2 T "Fahrgeräusch" Motorsound
+F2  S  3 M "Lokpfeife kurz" Horn1
+F3  S  4 M "Lokpfeife lang" Horn2
+F4  S  - T "Luftpresser"  Kompressor
+F5  L  - T "Führerstandsbeleuchtung" FS1
+F6  O  - I "ABV" ABV
+F7  SO - M "Kupplung vorne" KupplungV
+F8  SO - M "Kupplung hinten" KupplungH
+F9  O  - T "Rangiergang"  Rangiergang
+F10 L  - T "Rangierlicht" Rangierlicht
+F11 L  - I "Lichtabschaltung hinten" Licht1
+F12 L  - I "Lichtabschaltung vorne" Licht2
+F13 S  - M "Tür schliessen" Tür
+F14 SO - T "Stumm"  Soundfader
+F15 S  - M "Abfahrt-Signal/Trillerpfeife" Triller
+F16 S  - T "Sandkasten" Sanden
+F17 S  - T "Anfahrpfiff" Horn0
+F18 S  - T "Glocke" Glocke

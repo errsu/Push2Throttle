@@ -17,6 +17,10 @@ class Push2Display {
 
     private var lastFrame = -1
 
+    // recommended sequence of colors for Throttles:
+    // 1 7 14 18 23 26 2 8 15 21 24 3 9 16 21 4 10 17 25 5 11 19 6 12 20 13
+
+    // TODO: Update for Live 10
     val push2Colors = mapOf(
          0 to Color(0x000000),
          1 to Color(0xed5938),

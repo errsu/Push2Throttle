@@ -1,0 +1,26 @@
+### BR 55, Fleischmann, 415473, Sound ab Werk
+
+SPEED 55
+F0  L  1 T "Spitzenbeleuchtung" Licht
+F1  S  2 T "Fahrgeräusch" Motorsound
+F2  S  - M "Anfahrpfiff" Horn0
+F3  S  3 M "Lokpfeife kurz" Horn1
+F4  S  - M "Lokpfeife lang" Horn2
+F5  S  - T "Zylinderhähne" Dampfablass
+F6  O  - I "Fahrverzögerung" ABV
+F7  LS 4 T "Kohlenschaufeln, Feuerbüchse" Kohlenschaufeln
+F8  S  - T "Luftpumpe" Kompressor
+F9  O  - T "Rangiergang" Rangiergang
+F10 SO 5 T "Stumm" Soundfader
+F11 L  - T "Rangierlicht" Rangierlicht
+F12 S  - M "Lokpfeife (Strecke)" Horn3
+F14 S  - T "Sanddom" Sanden
+F15 S  - M "Sicherheitsventil" Luftablass
+F16 S  6 T "Injektor" Injektor
+F17 S  - T "Lichtmaschine" Lichtmaschine
+F18 S  - M "Glocke" Glocke
+F19 SO 7 M "Kupplung vorne" KupplungV
+F20 SO 8 M "Kupplung hinten" KupplungH
+F21 S  - M "Rangiersig. RA 2 - Kommen - 2Mittel" Sound1
+F22 S  - M "Rangiersig. RA 4 - Abstoßen - 2Lang1Kurz" Sound2
+F23 S  - M "Rangiersig. RA 5 - Halt - 3Kurz" Sound3

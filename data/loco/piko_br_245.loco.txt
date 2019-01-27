@@ -1,0 +1,27 @@
+### BR 245, PIKO, 52512, Sound ab Werk
+
+SPEED 50
+F0  L  1 T "Licht vorn" Licht
+F1  S  2 T "Motor 1" Motorsound
+F2  S  3 M "Signalhorn tief" Horn1
+F3  S  4 M "Signalhorn hoch" Horn2
+F4  S  - T "Motor 2,3,4" Sound1
+F5  S  - T "Kompressor" Kompressor
+F6  O  - T "Rangiergang" Rangiergang
+F7  L  - T "Rücklicht rot" Licht2
+F8  L  - T "Führerstandsbeleuchtung" FS1
+F9  S  - M "Pressluft ablassen" Luftablass
+F10 S  - M "Schaffnerpfiff" Triller
+F11 O  - M "Kuppeln ab-/ankuppeln" Kupplung
+F12 S  - T "Schienenstöße" Schienenstöße
+F13 SO - T "Kurvenquietschen" Kurvenquietschen
+F14 S  - M "Bahnhofsdurchsage #1" Bahnhofsansage
+F15 S  - M "Doppelhorn" Horn3
+F16 S  - M "Führerstandstüre" Tür
+F17 S  - M "Bahnhofsdurchsage #2" Bahnhofsansage2
+F18 S  - T "Bremswiderstandslüfter" Bremse
+F19 S  - T "Zugheizung" Heizung
+F20 S  - T "Vorwärmgerät" Sound2
+F21 S  - T "Lüfter" Lüfter
+F22 SO - I "Bremsgeräusch" Bremsenquietschen
+F23 SO - T "Soundfader (Tunnelmodus)" Soundfader

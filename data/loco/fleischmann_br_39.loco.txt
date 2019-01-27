@@ -1,0 +1,22 @@
+### BR 39, Fleischmann, 413875, Sound ab Werk
+
+SPEED 55
+F0  L  1 T "Spitzenbeleuchtung" Licht
+F1  S  2 T "Fahrgeräusch" Motorsound
+F2  S  - M "Lokpfeife (Strecke)" Horn3
+F3  S  3 T "Kohlenschaufeln" Kohlenschaufeln
+F4  S  4 T "Injektor" Injektor
+F5  S  - M "Abfahrt-Signal" Horn1
+F6  O  - I "Fahrverzögerung" ABV
+F7  S  - M "Wasserpumpe" Sound1
+F8  S  - M "Bahnhofsdurchsage" Bahnhofsansage
+F9  O  - T "Rangiergang" Rangiergang
+F10 SO 5 T "Stumm" Soundfader
+F11 S  6 M "Sicherheitsventil" Luftablass
+F12 S  - M "Zylinderhähne" Dampfablass
+F13 S  - M "Luftpumpengeräusch langsam" Kompressor
+F14 S  7 M "Geräusche beim Kuppeln" Kupplung
+F15 S  - M "Anfahrpfiff" Horn0
+F16 S  - M "Sanddom" Sanden
+F17 S  - M "Luftpumpengeräusch schnell (bei leerem Luftkessel)" Sound2
+F18 S  8 T "Lichtmaschine" Lichtmaschine

@@ -1,0 +1,14 @@
+### Triebwagen VT/VS 98, Roco, 52631, Sound ab Werk
+
+SPEED 90
+F0  L  1 T "Licht" Licht
+F1  S  2 T "Fahrgeräusch" Motorsound
+F2  S  3 M "Horn" Horn2
+F3  S  - M "Türengeräusch" Tür
+F4  S  - M "Schaffnerpfiff" Triller
+F5  SO - M "Kupplung" Kupplung
+F6  O  - T "Rangiergang" Rangiergang
+F7  S  5 T "Kompressor" Kompressor
+F8  S  - M "Druckluft" Luftablass
+F9  S  4 M "Bahnhofsansage" Bahnhofsansage
+F14 O  - I "Mute-Taste" Soundfader

@@ -1,0 +1,17 @@
+### TRIX BR24 Art.-Nr. 22248
+
+SPEED 90
+F0  L  1 T "Stirnbeleuchtung" Licht
+F1  O  - T "Rauchgenerator" Rauchgenerator
+F2  S  2 T "Betriebsgeräusch" Motorsound
+F3  S  3 M "Lokpfeife" Horn2
+F4  O  - I "ABV" ABV
+F5  S  4 I "Bremsenquietschen" Bremsenquietschen
+F6  S  - M "Glocke" Glocke
+F7  S  5 M "Rangierpfiff" Horn0
+F8  S  6 M "Dampf ablassen" Dampfablass
+F9  S  - M "Luftpumpe" Kompressor
+F10 S  7 M "Kohle schaufeln" Kohlenschaufeln
+F11 S  - M "Schüttelrost" Sound1
+F12 S  8 M "Injektor" Injektor
+F13 S  - M "Lichtmaschine" Lichtmaschine

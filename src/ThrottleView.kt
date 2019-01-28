@@ -1,7 +1,7 @@
 import java.awt.*
 import kotlin.math.roundToInt
 
-class ThrottleView(rect: Rectangle): Push2View(rect) {
+class ThrottleView(rect: Rectangle, val selectionManager: SelectionManager): Push2View(rect) {
 
     var throttle: JmriThrottle? = null
 
@@ -17,6 +17,10 @@ class ThrottleView(rect: Rectangle): Push2View(rect) {
         val trackColor = display.push2Colors.getOrDefault(trackColorIndex, Color.GRAY)
         g2.paint = trackColor
         g2.fill(Rectangle(0, 0, rect.width, rect.height))
+        if (selectionManager.getSelectedColumn() == selectionManager.getThrottleColumn(throttle!!)) {
+            g2.paint = display.invertedColor(trackColor)
+            g2.fill(Rectangle(0, 0, rect.width, 26))
+        }
 
         g2.font = font18b
         g2.paint = Color.BLACK

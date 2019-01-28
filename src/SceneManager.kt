@@ -148,7 +148,7 @@ class ThrottleScene(private val display: Push2Display,
     // locos on scene establishment.
 
     private val throttleViews = Array(8) {
-        ThrottleView(Rectangle(it * (display.width / 8), 0, (display.width / 8), display.height))
+        ThrottleView(Rectangle(it * (display.width / 8), 0, (display.width / 8), display.height), this)
     }
 
     override fun build() {

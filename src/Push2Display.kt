@@ -59,6 +59,14 @@ class Push2Display {
 
     private val backgroundColor = Color(0x7070DF)
 
+    fun brighterColor(color: Color) : Color {
+        val hsb = Color.RGBtoHSB(color.red, color.green, color.blue, null)
+        return Color.getHSBColor(
+                hsb[0],
+                hsb[1],
+                (2.0f + hsb[2]) / 3.0f)
+    }
+
     fun darkerColor(color: Color) : Color {
         val hsb = Color.RGBtoHSB(color.red, color.green, color.blue, null)
         return Color.getHSBColor(

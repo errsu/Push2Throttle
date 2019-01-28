@@ -60,7 +60,10 @@ class Push2ThrottleController(
     override fun <T: Any> elementStateChanged(element: MidiElement, newValue: T) {
         when (element) {
             erp   -> throttle.messageToJmri("speed", newValue)
-            dispA -> throttle.messageToJmri("forward", newValue)
+            dispA -> {
+                throttle.messageToJmri("speed", 0.0f)
+                throttle.messageToJmri("forward", newValue)
+            }
             dispB -> selectionManager.requestSelection(if (newValue == true) this else null)
         }
     }

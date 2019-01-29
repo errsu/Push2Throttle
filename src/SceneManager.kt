@@ -108,7 +108,9 @@ interface SelectionManager {
     fun requestSelection(controller: Push2ThrottleController?)
     fun getSelectedColumn() : Int?
     fun getThrottleAtColumn(column: Int) : JmriThrottle
+    fun getViewAtColumn(column: Int) : ThrottleView
     fun getThrottleColumn(throttle: JmriThrottle) : Int?
+    val overlayView : ThrottleOverlayView
 }
 
 class ThrottleScene(private val display: Push2Display,
@@ -151,6 +153,8 @@ class ThrottleScene(private val display: Push2Display,
         ThrottleView(Rectangle(it * (display.width / 8), 0, (display.width / 8), display.height), this)
     }
 
+    override val overlayView = ThrottleOverlayView(Rectangle(0, 0, display.width, display.height))
+
     override fun build() {
         repeat(8) {
             val slot = page * 8 + it
@@ -160,6 +164,7 @@ class ThrottleScene(private val display: Push2Display,
             throttleControllers[slot].selected = (restoreSelectedIndex() == it)
         }
         locoFunctionController.connectToElements()
+        display.addView(overlayView)
         connectPager()
     }
 
@@ -176,6 +181,7 @@ class ThrottleScene(private val display: Push2Display,
             display.removeView(throttleViews[it])
         }
         locoFunctionController.disconnectFromElements()
+        display.removeView(overlayView)
         disconnectPager()
     }
 
@@ -200,6 +206,10 @@ class ThrottleScene(private val display: Push2Display,
 
     override fun getThrottleAtColumn(column: Int) : JmriThrottle {
         return throttleManager.throttleAtSlot(page * 8 + column)
+    }
+
+    override fun getViewAtColumn(column: Int) : ThrottleView {
+        return throttleViews[column]
     }
 
     override fun getThrottleColumn(throttle: JmriThrottle) : Int? {

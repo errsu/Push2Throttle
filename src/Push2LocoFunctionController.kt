@@ -166,6 +166,16 @@ class Push2LocoFunctionController(
         }
     }
 
+    private fun showFunction(column: Int, locoFunc: LocoFunc, value: Any?) {
+        when (locoFunc.behavior) {
+            FuncBehavior.T ->  value as Boolean
+            FuncBehavior.I ->  !(value as Boolean)
+            FuncBehavior.M ->  if (value == true) null else return
+        }.also { action ->
+            selectionManager.overlayView.showText(column, locoFunc.name, action)
+        }
+    }
+
     override fun <T: Any> elementStateChanged(element: MidiElement, newValue: T) {
         val pad = if (element is Pad) element else return
         val padRow = pad.row()
@@ -176,6 +186,7 @@ class Push2LocoFunctionController(
             throttleManager.locoData.getStdNameForRowCol(padRow, padCol)?.also { stdName ->
                 throttleManager.getLocoInfo(loco)?.functions?.forEach { _, locoFunc ->
                     if (locoFunc.stdName == stdName) {
+                        showFunction(selectedColumn, locoFunc, newValue)
                         throttle.messageToJmri(locoFunc.function, newValue)
                     }
                 }
@@ -185,6 +196,7 @@ class Push2LocoFunctionController(
             throttle.loco?.also { loco ->
                 throttleManager.getLocoInfo(loco)?.functions?.forEach { _, locoFunc ->
                     if (locoFunc.rank == padRow + 1) {
+                        showFunction(padCol, locoFunc, newValue)
                         throttle.messageToJmri(locoFunc.function, newValue)
                     }
                 }

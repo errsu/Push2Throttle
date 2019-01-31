@@ -1,3 +1,5 @@
+import tornadofx.mapEach
+
 // The Push2 loco function controller uses the Push2 Pads to control
 // the F0...F32 functions of locos (via throttle). The controlled functions/locos
 // depend on the selection. Selection is a property of the throttle controller.
@@ -14,73 +16,21 @@ class Push2LocoFunctionController(
         private val selectionManager: SelectionManager
 ) : MidiController {
 
-    private fun setColorPaletteEntry(n: Int, r: Int, g: Int, b: Int, w: Int) {
-        val data = arrayOf(
-            0xF0, // start of sysex
-            0x00, 0x21, 0x1D, 0x01, 0x01, // header
-            0x03, // cmd
-            n,
-            r.and(0x7F), r.and(0x80).shr(7),
-            g.and(0x7F), g.and(0x80).shr(7),
-            b.and(0x7F), b.and(0x80).shr(7),
-            w.and(0x7F), w.and(0x80).shr(7),
-            0xF7 // end of sysex
-        )
-        elements.midi.sendSysex(data.map{it.toByte()}.toByteArray())
-    }
-
-    private val colorNumbers = mapOf(
-            "R1" to 1,
-            "R3" to 2,
-            "Y2" to 3,
-            "R2" to 4,
-            "Y5" to 5,
-            "Y6" to 6,
-            "Y1" to 7,
-            "Y3" to 8,
-            "Y4" to 9,
-            "G4" to 10,
-            "G1" to 11,
-            "G5" to 12,
-            "G3" to 13,
-            "G2" to 14,
-            "G6" to 15,
-            "B2" to 16,
-            "B4" to 17,
-            "B3" to 18,
-            "B6" to 19,
-            "B1" to 20,
-            "B5" to 21,
-            "V1" to 22,
-            "V4" to 23,
-            "V2" to 24,
-            "R4" to 25,
-            "V3" to 26)
-
-    private fun darkerColor(colorNumber: Int): Int {
-        return 65 + colorNumber * 2
-    }
-
-    private fun darkestColor(colorNumber: Int): Int {
-        return 66 + colorNumber * 2
-    }
-
     private val padColors = arrayOf(
-        arrayOf("G1", "Y2", "R1", "Y1", "G2", "Y1", "G1", "B1").map{colorNumbers[it]},
-        arrayOf("B2", "V1", "G3", "V2", "R2", "B2", "V1", "G3").map{colorNumbers[it]},
-        arrayOf("Y3", "R3", "B3", "G6", "B4", "Y3", "R3", "B3").map{colorNumbers[it]},
-        arrayOf("B5", "V3", "Y4", "R4", "G4", "B5", "V3", "Y4").map{colorNumbers[it]},
-        arrayOf("Y5", "G2", "B6", "V4", "Y6", "Y5", "G1", "B6").map{colorNumbers[it]},
-        arrayOf("G1", "Y2", "R1", "Y1", "G2", "R4", "Y1", "R1").map{colorNumbers[it]},
-        arrayOf("B2", "V1", "G3", "V2", "R2", "V1", "G6", "V2").map{colorNumbers[it]},
-        arrayOf("R4", "Y3", "B3", "G6", "B4", "Y3", "B3", "G5").map{colorNumbers[it]})
-
+            arrayOf("green", "orange", "lt-rose", "lt-yellow", "pale-cyan", "lt-yellow", "green", "pale-blue"),
+            arrayOf("lt-blue", "indigo", "mint", "pale-pink", "dk-orange", "lt-blue", "indigo", "mint"),
+            arrayOf("yellow", "red", "dk-blue", "cyan", "blue", "yellow", "red", "dk-blue"),
+            arrayOf("lt-navy", "pink", "lime", "rose", "lt-green", "lt-navy", "pink", "lime"),
+            arrayOf("lt-brown", "pale-cyan", "navy", "lt-indigo", "dk-brown", "lt-brown", "green", "navy"),
+            arrayOf("green", "orange", "lt-rose", "lt-yellow", "pale-cyan", "rose", "lt-yellow", "lt-rose"),
+            arrayOf("lt-blue", "indigo", "mint", "pale-pink", "dk-orange", "indigo", "cyan", "pale-pink"),
+            arrayOf("rose", "yellow", "dk-blue", "cyan", "blue", "yellow", "dk-blue", "dk-lime"))
+        .map{ it.map{ color -> elements.color2number[color] ?: 0 }}
 
     init {
         repeat(throttleManager.slotCount) { slot ->
             throttleManager.throttleAtSlot(slot).locoFunctionController = this
         }
-        setColorPaletteEntry(2, 216, 8, 0, 4) // make R3 a little brighter (was: 128, 4, 0, 4)
     }
 
     fun ThrottleManager.getLocoInfo(loco: Loco) : LocoInfo? {
@@ -91,11 +41,11 @@ class Push2LocoFunctionController(
         val onColor : Any? = when (locoFunc.behavior) {
             FuncBehavior.M -> color
             FuncBehavior.T -> color
-            FuncBehavior.I -> darkestColor(color)
+            FuncBehavior.I -> elements.darkestColor(color)
         }
         val offColor = when (locoFunc.behavior) {
-            FuncBehavior.M -> darkerColor(color)
-            FuncBehavior.T -> darkestColor(color)
+            FuncBehavior.M -> elements.darkerColor(color)
+            FuncBehavior.T -> elements.darkestColor(color)
             FuncBehavior.I -> color
         }
         val padType = when (locoFunc.behavior) {
@@ -114,7 +64,7 @@ class Push2LocoFunctionController(
                 throttleManager.getLocoInfo(loco)?.functions?.forEach { _, locoFunc ->
                     // pad and color row/cols are identical
                     throttleManager.locoData.getRowColForFunction(locoFunc.stdName)?.also {(row, col) ->
-                        connectPadToLocoFunc(pads[row][col], locoFunc, loco, padColors[row][col] ?: 0)
+                        connectPadToLocoFunc(pads[row][col], locoFunc, loco, padColors[row][col])
                     }
                 }
             }

@@ -70,11 +70,11 @@ open class PanelView3(rect: Rectangle): PanelView(rect) {
     val U = TurnoutView("W10", 15, u, u.leg("E", s0), u.leg("NE", s0))
     val V = TurnoutView("W11", 7, v, v.leg("W", s0), v.leg("SW", s0))
 
-    override val turnoutViews = mutableListOf( // TODO: why mutable?
+    final override val turnoutViews = mutableListOf( // TODO: why mutable?
         A, H, K, M1, M2, O, P, S, T, U, V
     )
 
-    override val railViews = mutableListOf(  // TODO: why mutable?
+    final override val railViews = mutableListOf(  // TODO: why mutable?
         RailView(arrayOf(A.pThrown, b, c, d, e, f, A.pClosed)),
         RailView(arrayOf(A.pCenter, H.pCenter)),
         RailView(arrayOf(H.pClosed, S.pCenter)),
@@ -95,7 +95,7 @@ open class PanelView3(rect: Rectangle): PanelView(rect) {
         RailView(arrayOf(P.pClosed, r))
     )
 
-    override val graphPoints = enumeratePoints(turnoutViews, railViews)
+    final override val graphPoints = enumeratePoints(turnoutViews, railViews)
     override val graph = buildGraph(graphPoints)
 
     override val pTitle = Point("title", 860.0, 130.0)

@@ -46,9 +46,14 @@ interface Scene {
     fun destroy()
 }
 
+interface Pager {
+    fun gotoPage(newPage: Int)
+    fun currentPage(): Int
+}
+
 abstract class ScenePager (
         private val elements: Push2Elements,
-        private val pageCount: Int) : MidiController {
+        private val pageCount: Int) : MidiController, Pager {
 
     var page = 0
     private val selectedIndex = Array(pageCount) {-1}
@@ -84,22 +89,20 @@ abstract class ScenePager (
         elements.disconnect(pageRight!!)
     }
 
+    override fun gotoPage(newPage: Int) {
+        if (newPage in (0 until pageCount)) {
+            destroy()
+            page = newPage
+            build()
+        }
+    }
+
+    override fun currentPage() = page
+
     override fun <T : Any> elementStateChanged(element: MidiElement, newValue: T) {
         when (element) {
-            pageLeft  -> if (newValue == true) {
-                if (page > 0) {
-                    destroy()
-                    page--
-                    build()
-                }
-            }
-            pageRight -> if (newValue == true) {
-                if (page < pageCount - 1) {
-                    destroy()
-                    page++
-                    build()
-                }
-            }
+            pageLeft  -> if (newValue == true) { gotoPage(page - 1) }
+            pageRight -> if (newValue == true) { gotoPage(page + 1) }
         }
     }
 }
@@ -220,16 +223,35 @@ class ThrottleScene(private val display: Push2Display,
 
 class PanelScene(private val display: Push2Display,
                  private val elements: Push2Elements,
-                 private val panelManager: PanelManager) : Scene, ScenePager(elements, 4) {
+                 private val panelManager: PanelManager) : Scene, ScenePager(elements, 14) {
 
     private val panelViews = listOf(
             PanelView0(Rectangle(0, 0, display.width, display.height)),
             PanelView1(Rectangle(0, 0, display.width, display.height)),
             PanelView2(Rectangle(0, 0, display.width, display.height)),
-            PanelView3(Rectangle(0, 0, display.width, display.height)))
+            PanelView3(Rectangle(0, 0, display.width, display.height)),
+            PanelView4(Rectangle(0, 0, display.width, display.height)),
+            PanelView5(Rectangle(0, 0, display.width, display.height)),
+            PanelView6(Rectangle(0, 0, display.width, display.height)),
+            PanelView7(Rectangle(0, 0, display.width, display.height)),
+            PanelView8(Rectangle(0, 0, display.width, display.height)),
+            PanelView9(Rectangle(0, 0, display.width, display.height)),
+            PanelView10(Rectangle(0, 0, display.width, display.height)),
+            PanelView11(Rectangle(0, 0, display.width, display.height)),
+            PanelView12(Rectangle(0, 0, display.width, display.height)),
+            PanelView13(Rectangle(0, 0, display.width, display.height)))
 
     private val buttons = Array(16) { elements.getElement("Disp ${if (it < 8) "A" else "B"} T${(it % 8) + 1}") as ButtonRgb}
-    private val controller = Push2TurnoutController(elements, panelManager.turnoutTable, buttons)
+    private val controller = Push2TurnoutController(
+            elements,
+            panelManager.turnoutTable,
+            Array(8) { row ->
+                Array(8) { col ->
+                    elements.getElement("Pad S${row + 1} T${col + 1}") as Pad
+                }
+            },
+            buttons,
+            this)
 
     override fun build() {
         val panelView = panelViews[page]

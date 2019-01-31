@@ -90,6 +90,7 @@ class Push2Display {
         g.paint = backgroundColor
         g.fill(Rectangle(0, 0, width, height))
 
+        // TODO: make sure drawing is done in Main view
         val iterator = viewList.iterator()
         for (view in iterator) {
             val gView = g.create() as Graphics2D

@@ -217,7 +217,6 @@ abstract class PanelView(rect: Rectangle): Push2View(rect) {
         colors = components.map { determineColor(it, graphPoints)}
     }
 
-
     @Suppress("UNUSED_PARAMETER")
     override fun draw(g2: Graphics2D, frame: Int, display: Push2Display) {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)

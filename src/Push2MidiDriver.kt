@@ -29,7 +29,11 @@ class Push2MidiDriver : Receiver {
             when (status and 0xF0) {
                 0x90 -> nnCallbacks[number]?.invoke(value) ?: println("unhandled note-on $number $value")
                 0x80 -> nnCallbacks[number]?.invoke(0)     ?: println("unhandled note-off $number $value")
-                0xB0 -> ccCallbacks[number]?.invoke(value) ?: println("unhandled cc $number $value")
+                0xB0 -> ccCallbacks[number]?.invoke(value) ?: run {
+                    if (number != 16 && number != 17) { // failed attempt for a pad touch sensor function
+                        println("unhandled cc $number $value")
+                    }
+                }
                 else -> println("unhandled midi ${msg.message.asList()}")
             }
         } else {

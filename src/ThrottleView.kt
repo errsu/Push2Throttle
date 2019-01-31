@@ -12,7 +12,11 @@ class ThrottleView(rect: Rectangle, val selectionManager: SelectionManager): Pus
     private val font48  = Font("SansSerif", Font.PLAIN, 48)
 
     override fun draw(g2: Graphics2D, frame: Int, display: Push2Display) {
-        val loco = throttle?.loco ?: return
+        val loco = throttle?.loco ?: run {
+            g2.paint = Color.GRAY
+            g2.fill(Rectangle(0, 0, rect.width, rect.height))
+            return
+        }
         val trackColorIndex = loco.color.value
         val trackColor = display.push2Colors.getOrDefault(trackColorIndex, Color.GRAY)
         g2.paint = trackColor

@@ -60,8 +60,8 @@ abstract class ScenePager (
     private val pageLeft = elements.getElement("Page Left")
     private val pageRight = elements.getElement("Page Right")
 
-    abstract fun build()
-    abstract fun destroy()
+    abstract fun onAfterPageSwitch()
+    abstract fun onBeforePageSwitch()
 
     fun saveSelectedIndex(index: Int) {
         selectedIndex[page] = index
@@ -91,9 +91,9 @@ abstract class ScenePager (
 
     override fun gotoPage(newPage: Int) {
         if (newPage in (0 until pageCount)) {
-            destroy()
+            onBeforePageSwitch()
             page = newPage
-            build()
+            onAfterPageSwitch()
         }
     }
 
@@ -188,6 +188,14 @@ class ThrottleScene(private val display: Push2Display,
         disconnectPager()
     }
 
+    override fun onBeforePageSwitch() {
+        destroy()
+    }
+
+    override fun onAfterPageSwitch() {
+        build()
+    }
+
     override fun requestSelection(controller: Push2ThrottleController?) {
         locoFunctionController.disconnectFromElements()
         repeat(8) { track ->
@@ -242,43 +250,75 @@ class PanelScene(private val display: Push2Display,
             PanelView13(Rectangle(0, 0, display.width, display.height)))
 
     private val buttons = Array(16) { elements.getElement("Disp ${if (it < 8) "A" else "B"} T${(it % 8) + 1}") as ButtonRgb}
-    private val controller = Push2TurnoutController(
+
+    private val turnoutController = Push2TurnoutController(
             elements,
             panelManager.turnoutTable,
+            buttons)
+
+    private val panelController = Push2PanelController(
+            elements,
             Array(8) { row ->
                 Array(8) { col ->
                     elements.getElement("Pad S${row + 1} T${col + 1}") as Pad
                 }
             },
-            buttons,
             this)
 
-    override fun build() {
+    private fun buildTurnoutControlPart() {
         val panelView = panelViews[page]
-        panelManager.turnoutTable.controller = controller
+        panelManager.turnoutTable.controller = turnoutController
         panelView.turnoutViews.forEach { turnoutView ->
             turnoutView.turnout = panelManager.turnoutTable.turnoutWithUserName(turnoutView.name)
-            controller.turnouts[turnoutView.elementIndex] = turnoutView.turnout
+            turnoutController.turnouts[turnoutView.elementIndex] = turnoutView.turnout
         }
-        controller.connectToElements()
+        turnoutController.connectToElements()
         panelManager.turnoutsMoved = panelView::update
         panelView.update()
         display.addView(panelView)
         connectPager()
     }
 
-    override fun destroy() {
+    private fun buildPanelControlPart() {
+        panelController.connectToElements()
+    }
+
+    override fun build() {
+        buildTurnoutControlPart()
+        buildPanelControlPart()
+    }
+
+    private fun destroyTurnoutControlPart() {
         val panelView = panelViews[page]
         panelManager.turnoutTable.controller = null
         panelView.turnoutViews.forEach { turnoutView ->
             turnoutView.turnout = null
         }
-        for (index in controller.turnouts.indices) {
-            controller.turnouts[index] = null
+        for (index in turnoutController.turnouts.indices) {
+            turnoutController.turnouts[index] = null
         }
-        controller.disconnectFromElements()
+        turnoutController.disconnectFromElements()
         panelManager.turnoutsMoved = {}
         display.removeView(panelView)
         disconnectPager()
+    }
+
+    private fun destroyPanelControlPart() {
+        panelController.disconnectFromElements()
+    }
+
+    override fun destroy() {
+        destroyTurnoutControlPart()
+        destroyPanelControlPart()
+    }
+
+    // we don't want to destroy/rebuild the pad elements when changing pages
+    override fun onBeforePageSwitch() {
+        destroyTurnoutControlPart()
+    }
+
+    override fun onAfterPageSwitch() {
+        buildTurnoutControlPart()
+        build()
     }
 }

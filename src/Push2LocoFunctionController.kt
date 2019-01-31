@@ -59,6 +59,16 @@ class Push2LocoFunctionController(
     }
 
     fun connectToElements() {
+        // have default settings for unconnected pads
+        repeat(8) { row ->
+            repeat(8) {col ->
+                elements.connect(pads[row][col], null,
+                    mapOf("onColor" to elements.color2number["lt-gray"],
+                        "offColor" to elements.color2number["lt-black"],
+                        "type" to "momentary"), false)
+            }
+        }
+
         selectionManager.getSelectedColumn()?.also {selectedColumn ->
             selectionManager.getThrottleAtColumn(selectedColumn).loco?.also { loco ->
                 throttleManager.getLocoInfo(loco)?.functions?.forEach { _, locoFunc ->

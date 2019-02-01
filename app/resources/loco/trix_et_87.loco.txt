@@ -2,7 +2,6 @@
 # Zuordnung zu Funktionen zu überprüfen
 
 SPEED 70
-
 F0  L  1 T "Spitzensignal" Licht
 F1  L  - T "Innenbeleuchtung" Innenlicht
 F2  S  2 T "E-Lok-Fahrgeräusch" Motorsound

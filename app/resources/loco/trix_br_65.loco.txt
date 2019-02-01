@@ -1,3 +1,4 @@
 ### TRIX, BR65 Art.-Nr. 22650
 
 SPEED 85
+F0  L  1 T "Spitzenbeleuchtung" Licht

@@ -1,3 +1,4 @@
 ### DH 360 Henschel (blau), Hobby Trade, AD 155018, kein Sound
 
 SPEED 30
+F0  L  1 T "Spitzenbeleuchtung" Licht

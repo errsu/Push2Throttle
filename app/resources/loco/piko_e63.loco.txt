@@ -2,3 +2,4 @@
 ### welcher decoder?
 
 SPEED 45
+F0  L  1 T "Spitzenbeleuchtung" Licht

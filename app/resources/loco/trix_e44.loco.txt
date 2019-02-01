@@ -1,7 +1,7 @@
 ### E44, TRIX, 22710, Sound ab Werk
 
 SPEED 90
-F0  L  1 M "Spitzensignal / Schlusslicht" Licht
+F0  L  1 T "Spitzensignal / Schlusslicht" Licht
 F1  S  - M "Bahnhofsansage" Bahnhofsansage
 F2  S  2 M "Betriebsgeräusch" Motorsound
 F3  S  4 M "Lokpfeife" Horn2

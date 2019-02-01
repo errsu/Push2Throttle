@@ -1,2 +1,4 @@
 ### VT 04, Kato
 
+SPEED 160
+F0  L  1 T "Spitzenbeleuchtung" Licht

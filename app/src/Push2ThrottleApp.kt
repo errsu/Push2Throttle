@@ -1,6 +1,8 @@
 package push2throttle
 
 import tornadofx.*
+import javafx.event.EventHandler
+import kotlin.system.exitProcess
 
 class Push2ThrottleApp: App(Push2ThrottleMainView::class)
 
@@ -23,6 +25,17 @@ class Push2ThrottleMainView: View() {
         throttleManager.roster.connectToJmri()
         panelManager.turnoutTable.connectToJmri()
         sceneManager.gotoScene("throttles")
+        primaryStage.onCloseRequest = EventHandler { quit() }
+    }
+
+    private fun quit() {
+        throttleManager.roster.disconnectFromJmri()
+        panelManager.turnoutTable.disconnectFromJmri()
+        midi.close()
+        // Successfully closing the display driver requires a wait for transfers
+        // finished mechanism, otherwise LibUsb.close(push2DeviceHandle) hangs.
+        // displayDriver.close()
+        exitProcess(0)
     }
 
     override val root = hbox {

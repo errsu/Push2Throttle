@@ -77,18 +77,21 @@ class Erp(private val turnCcNumber: Int, private val touchNnNumber: Int) : MidiE
     }
 }
 
-const val TOGGLE = true
-const val MOMENTARY = false
+enum class SwitchType {
+    Toggle,
+    Momentary,
+    Trigger
+}
 
 abstract class Switch(val isRgb: Boolean) : MidiElement() {
-    private var toggle = false
+    private var type = SwitchType.Momentary
     var state = false
 
     protected var onColor = if (isRgb) 122 else 127
     protected var offColor = if (isRgb) 0 else 0
 
     override fun reset() {
-        toggle = false
+        type = SwitchType.Momentary
         state = false
         onColor = if (isRgb) 122 else 127
         offColor = if (isRgb) 0 else 0
@@ -109,25 +112,42 @@ abstract class Switch(val isRgb: Boolean) : MidiElement() {
         }}
 
     fun onMidi(midi: Push2MidiDriver, value: Int) {
-        var newState = state
-        if (toggle) {
-            if (value > 0) newState = !state
-        } else {
-            newState = (value > 0)
-        }
-        if (newState != state) {
-            state = newState
-            updateJmri(state)
-            // TODO: for each Element, have a flag if it is reflecting a jmri state
-            // if the flag is true, don't call updatePush2 here
-            updatePush2(midi)
+        // TODO: for each Element, have a flag if it is reflecting a jmri state
+        //       if the flag is true, don't call updatePush2 here
+        when(type) {
+            SwitchType.Toggle -> {
+                if (value > 0) {
+                    state = !state
+                    updateJmri(state)
+                    updatePush2(midi)
+                }
+            }
+            SwitchType.Momentary -> {
+                val newState = (value > 0)
+                if (newState != state) {
+                    state = newState
+                    updateJmri(state)
+                    // if the flag is true, don't call updatePush2 here
+                    updatePush2(midi)
+                }
+            }
+            SwitchType.Trigger -> {
+                if (value > 0) {
+                    updateJmri(true) // state only defines color, not the behavior
+                }
+            }
         }
     }
 
     override fun setAttributes(mapping: Map<String,Any?>) {
         onColor = colorIndex(mapping["onColor"]) ?: onColor
         offColor = colorIndex(mapping["offColor"]) ?: offColor
-        if (mapping["type"] == "toggle") toggle = true
+        type = when(mapping["type"]) {
+            "toggle" -> SwitchType.Toggle
+            "momentary" -> SwitchType.Momentary
+            "trigger" -> SwitchType.Trigger
+            else -> throw Exception("bad type string")
+        }
     }
 
     override fun updateStateByJmri(value: Any?, midi: Push2MidiDriver) {

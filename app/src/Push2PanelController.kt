@@ -68,15 +68,12 @@ class Push2PanelController(
 
     private fun connectPadToPanelSelector(pad: Pad, panel: Int) {
 //        val onOffColor = panel
-        val onOffColor = if (pager.currentPage() == panel) {
-            panelColorsSelected[panel]
-        } else {
-            panelColorsUnselected[panel]
-        }
+        val onColor = panelColorsSelected[panel]
+        val offColor = panelColorsUnselected[panel]
 
         elements.connect(pad, this,
-                mapOf("onColor" to onOffColor, "offColor" to onOffColor, "type" to "momentary"),
-                false)
+                mapOf("onColor" to onColor, "offColor" to offColor, "type" to "trigger"),
+                pager.currentPage() == panel)
     }
 
     fun connectToElements() {
@@ -93,6 +90,16 @@ class Push2PanelController(
         pads.forEach { rowOfPads ->
             rowOfPads.forEach { pad ->
                 elements.disconnect(pad)
+            }
+        }
+    }
+
+    fun selectedPanelChanged() {
+        repeat(8) { col ->
+            repeat(8) { row ->
+                val pad = pads[row][col] // rank is in range 1..8 by scanning regex
+                val panel = panels[row][col]
+                elements.updateElementStateByJmri(pad, panel == pager.currentPage())
             }
         }
     }

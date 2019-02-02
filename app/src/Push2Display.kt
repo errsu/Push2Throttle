@@ -1,5 +1,7 @@
 package push2throttle
 
+import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.*
 import java.awt.*
 import java.awt.image.BufferedImage
 import java.nio.ByteBuffer
@@ -87,26 +89,28 @@ class Push2Display {
 
     private val viewList = mutableListOf<Push2View>()
 
-    @Synchronized
-    private fun drawFrame(frame: Int) {
-        g.paint = backgroundColor
-        g.fill(Rectangle(0, 0, width, height))
+    val driverStateMutex = Mutex()
 
-        // TODO: make sure drawing is done in Main view
-        val iterator = viewList.iterator()
-        for (view in iterator) {
-            val gView = g.create() as Graphics2D
-            gView.translate(view.rect.x, view.rect.y)
-            view.draw(gView, frame, this)
+    private fun drawFrame(frame: Int) {
+        val display = this
+        runBlocking {
+            display.driverStateMutex.withLock {
+                g.paint = backgroundColor
+                g.fill(Rectangle(0, 0, width, height))
+                val iterator = viewList.iterator()
+                for (view in iterator) {
+                    val gView = g.create() as Graphics2D
+                    gView.translate(view.rect.x, view.rect.y)
+                    view.draw(gView, frame, display)
+                }
+            }
         }
     }
 
-    @Synchronized
     fun addView(view: Push2View) {
         viewList.add(view)
     }
 
-    @Synchronized
     fun removeView(view: Push2View) {
         viewList.remove(view)
     }

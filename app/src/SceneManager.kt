@@ -1,5 +1,7 @@
 package push2throttle
 
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.withLock
 import java.awt.Rectangle
 
 class SceneManager(private val display: Push2Display,
@@ -21,19 +23,29 @@ class SceneManager(private val display: Push2Display,
     }
 
     fun gotoScene(scene: String) {
-        currentScene?.destroy()
-        currentScene = when (scene) {
-            "throttles" -> throttleScene
-            "panel"     -> panelScene
-            else        -> null
+        runBlocking {
+            display.driverStateMutex.withLock {
+                // TODO: have a general destroy/action/build function
+                // that would do the blocking
+                currentScene?.destroy()
+                currentScene = when (scene) {
+                    "throttles" -> throttleScene
+                    "panel" -> panelScene
+                    else -> null
+                }
+                currentScene?.build()
+            }
         }
-        currentScene?.build()
         elements.updateElementStateByJmri(select!!, scene == "panel")
     }
 
     fun sceneContentReassigned() {
-        currentScene?.destroy()
-        currentScene?.build()
+        runBlocking {
+            display.driverStateMutex.withLock {
+                currentScene?.destroy()
+                currentScene?.build()
+            }
+        }
     }
 
     override fun <T : Any> elementStateChanged(element: MidiElement, newValue: T) {
@@ -54,6 +66,7 @@ interface Pager {
 }
 
 abstract class ScenePager (
+        private val display: Push2Display,
         private val elements: Push2Elements,
         private val pageCount: Int) : MidiController, Pager {
 
@@ -93,9 +106,13 @@ abstract class ScenePager (
 
     override fun gotoPage(newPage: Int) {
         if (newPage in (0 until pageCount)) {
-            onBeforePageSwitch()
-            page = newPage
-            onAfterPageSwitch()
+            runBlocking {
+                display.driverStateMutex.withLock {
+                    onBeforePageSwitch()
+                    page = newPage
+                    onAfterPageSwitch()
+                }
+            }
         }
     }
 
@@ -121,7 +138,7 @@ interface SelectionManager {
 class ThrottleScene(private val display: Push2Display,
                     private val elements: Push2Elements,
                     private val throttleManager: ThrottleManager) :
-        Scene, ScenePager(elements, 3), SelectionManager {
+        Scene, ScenePager(display, elements, 3), SelectionManager {
 
     // The throttle controllers have a fixed connection to the throttles,
     // which continously record the loco data (if a loco is assigned).
@@ -233,7 +250,8 @@ class ThrottleScene(private val display: Push2Display,
 
 class PanelScene(private val display: Push2Display,
                  private val elements: Push2Elements,
-                 private val panelManager: PanelManager) : Scene, ScenePager(elements, 14) {
+                 private val panelManager: PanelManager) :
+        Scene, ScenePager(display, elements, 14) {
 
     private val panelViews = listOf(
             PanelView0(Rectangle(0, 0, display.width, display.height)),
@@ -321,6 +339,6 @@ class PanelScene(private val display: Push2Display,
 
     override fun onAfterPageSwitch() {
         buildTurnoutControlPart()
-        build()
+        panelController.selectedPanelChanged()
     }
 }

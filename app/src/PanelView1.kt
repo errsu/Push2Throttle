@@ -4,21 +4,8 @@ import java.awt.*
 
 open class PanelView1(rect: Rectangle): PanelView(rect) {
 
-    // 1:2  branch length stretching
-    // slopes (x/y)
-    val s0 = 3.0 // steep
-    val s1 = 6.0 // easy
-
-    // obendruff
-
-    val y = arrayOf(20.0, 50.0, 95.0, 140.0)
-    val x = arrayOf(80.0, 160.0, 280.0, 540.0, 780.0, 900.0)
-    val d0 = 10.0
-    val d1 = 160.0
-    val d2 = 280.0
-
-    val a = Point("a", x[3], y[3])
-    val z = Point("z", x[0], y[0])
+    private val a = Point("a", x[0], y[1])
+    private val z = Point("z", x[3], y[1])
 
     override val lines = arrayOf(arrayOf(a, z))
 

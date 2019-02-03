@@ -4,47 +4,40 @@ import java.awt.*
 
 open class PanelView3(rect: Rectangle): PanelView(rect) {
 
-    // 1:2  branch length stretching
-    // slopes (x/y)
-    val s0 = 3.0 // steep
-    val s1 = 6.0 // easy
+    // (ehemals obendruff)
 
-    // obendruff
+    // other distances
+    private val d1 = 160.0
+    private val d2 = 280.0
 
-    val y = arrayOf(20.0, 50.0, 95.0, 140.0)
-    val x = arrayOf(80.0, 160.0, 280.0, 540.0, 780.0, 900.0)
-    val d0 = 10.0
-    val d1 = 160.0
-    val d2 = 280.0
+    private val a = Point("a", x[0], y[0])
+    private val b = a.branch("b", "SW", s0, y[0] + d0 * 3.0)
+    private val c = Point("c", 2 * d0, b.y)
+    private val d = Point("d", d0, c.y - d0)
+    private val e = Point("e", d0, a.y + d0)
+    private val f = Point("f", 2 * d0, a.y)
+    private val g = Point("g", ww - d0, y[0])
 
-    val a = Point("a", x[0], y[0])
-    val b = a.branch("b", "SW", s0, y[0] + d0 * 3.0)
-    val c = Point("c", 2 * d0, b.y)
-    val d = Point("d", d0, c.y - d0)
-    val e = Point("e", d0, a.y + d0)
-    val f = Point("f", 2 * d0, a.y)
-    val g = Point("g", ww - d0, y[0])
+    private val h = Point("h", x[1], y[0])
+    private val i = h.branch("i", "SE", s0, y[1])
+    private val j = Point("j", ww - d0, y[1])
 
-    val h = Point("h", x[1], y[0])
-    val i = h.branch("i", "SE", s0, y[1])
-    val j = Point("j", ww - d0, y[1])
+    private val k = Point("k", x[2], y[1])
+    private val l = k.branch("l", "SE", s0, y[2])
+    private val m = Point("m", x[3], y[2])
+    private val n = Point("n", m.x + d1, m.y)
 
-    val k = Point("k", x[2], y[1])
-    val l = k.branch("l", "SE", s0, y[2])
-    val m = Point("m", x[3], y[2])
-    val n = Point("n", m.x + d1, m.y)
+    private val o = m.branch("o", "NE", s1, y[1])
+    private val p = m.branch("p", "SW", s1, y[3])
+    private val q = Point("q", p.x - d2, p.y)
+    private val r = Point("r", p.x + d1, p.y)
 
-    val o = m.branch("o", "NE", s1, y[1])
-    val p = m.branch("p", "SW", s1, y[3])
-    val q = Point("q", p.x - d2, p.y)
-    val r = Point("r", p.x + d1, p.y)
+    private val y01mid = (y[0] + y[1]) / 2
+    private val s = Point("", x[4], y01mid).branch("s", "NW", s0, y[0])
+    private val t = Point("", x[4], y01mid).branch("t", "SE", s0, y[1])
 
-    val y01mid = (y[0] + y[1]) / 2
-    val s = Point("", x[4], y01mid).branch("s", "NW", s0, y[0])
-    val t = Point("", x[4], y01mid).branch("t", "SE", s0, y[1])
-
-    val u = Point("", x[5], y01mid).branch("u", "SW", s0, y[1])
-    val v = Point("", x[5], y01mid).branch("v", "NE", s0, y[0])
+    private val u = Point("", x[5], y01mid).branch("u", "SW", s0, y[1])
+    private val v = Point("", x[5], y01mid).branch("v", "NE", s0, y[0])
 
     init {
         g.preferredColor = 3
@@ -60,17 +53,17 @@ open class PanelView3(rect: Rectangle): PanelView(rect) {
             arrayOf(s, t),
             arrayOf(u, v))
 
-    val A = TurnoutView("W1", 0, a, a.leg("W", s0), a.leg("SW", s0))
-    val H = TurnoutView("W2", 1, h, h.leg("E", s0), h.leg("SE", s0))
-    val K = TurnoutView("W3", 2, k, k.leg("E", s0), k.leg("SE", s0))
-    val M1 = TurnoutView("W5", 12, m, m.leg("W", s1), m.leg("SW", s1))
-    val M2 = TurnoutView("W6", 4, m, m.leg("E", s1), m.leg("NE", s1))
-    val O = TurnoutView("W7", 5, o, o.leg("W", s1), o.leg("SW", s1))
-    val P = TurnoutView("W4", 11, p, p.leg("E", s1), p.leg("NE", s1))
-    val S = TurnoutView("W8", 6, s, s.leg("E", s0), s.leg("SE", s0))
-    val T = TurnoutView("W9", 14, t, t.leg("W", s0), t.leg("NW", s0))
-    val U = TurnoutView("W10", 15, u, u.leg("E", s0), u.leg("NE", s0))
-    val V = TurnoutView("W11", 7, v, v.leg("W", s0), v.leg("SW", s0))
+    private val A = TurnoutView("W1", 0, a, a.leg("W", s0), a.leg("SW", s0))
+    private val H = TurnoutView("W2", 1, h, h.leg("E", s0), h.leg("SE", s0))
+    private val K = TurnoutView("W3", 2, k, k.leg("E", s0), k.leg("SE", s0))
+    private val M1 = TurnoutView("W5", 12, m, m.leg("W", s1), m.leg("SW", s1))
+    private val M2 = TurnoutView("W6", 4, m, m.leg("E", s1), m.leg("NE", s1))
+    private val O = TurnoutView("W7", 5, o, o.leg("W", s1), o.leg("SW", s1))
+    private val P = TurnoutView("W4", 11, p, p.leg("E", s1), p.leg("NE", s1))
+    private val S = TurnoutView("W8", 6, s, s.leg("E", s0), s.leg("SE", s0))
+    private val T = TurnoutView("W9", 14, t, t.leg("W", s0), t.leg("NW", s0))
+    private val U = TurnoutView("W10", 15, u, u.leg("E", s0), u.leg("NE", s0))
+    private val V = TurnoutView("W11", 7, v, v.leg("W", s0), v.leg("SW", s0))
 
     final override val turnoutViews = mutableListOf( // TODO: why mutable?
         A, H, K, M1, M2, O, P, S, T, U, V
@@ -100,8 +93,8 @@ open class PanelView3(rect: Rectangle): PanelView(rect) {
     final override val graphPoints = enumeratePoints(turnoutViews, railViews)
     override val graph = buildGraph(graphPoints)
 
-    override val pTitle = Point("title", 860.0, 130.0)
-    override val title = "Bf Obendruff"
+    override val pTitle = Point("title", 760.0, 130.0)
+    override val title = "Sonnendorf/SBf Am Licht"
 
     init {
         update()

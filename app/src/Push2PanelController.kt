@@ -1,7 +1,6 @@
 package push2throttle
 
-// Manages the interaction between the Push2 display button elements and
-// the turnouts of the currently visible panel, if it is visible.
+// Manages the currently visible turnout panel as selected by pads.
 
 class Push2PanelController(
         private val elements: Push2Elements,
@@ -13,61 +12,48 @@ class Push2PanelController(
     fun String.d2() = elements.darkestColor(this.d0())
 
     private val panelColorsSelected = arrayOf(
-            "dk-white"  .d0(), // 0
-            "rgb-blue"  .d0(), // 1  125   0x0000FF
-            "lt-blue"   .d0(), // 2  16    0x00bbad
-            "yellow"    .d0(), // 3  8     0xe4c200
-            "mint"      .d0(), // 4  13    0x00b955
-            "lt-green"  .d0(), // 5  10    0x00e631
-            "pale-pink" .d0(), // 6  24    0x88425b
-            "lt-rose"   .d0(), // 7  1    0xed5938
-            "lt-yellow" .d0(), // 8  7    0xedda3c
-            "lt-blue"   .d0(), // 9  16   0x00bbad
-            "lt-indigo" .d0(), // 10 23    0xe157e3
-            "hi-blue"   .d0(), // 11 48
-            "lime"      .d0(), // 12 9     0x94ff18
-            "red"       .d0()) // 13 2     0xd1170a
+            "dk-white"  .d0(), //  0
+            "rgb-blue"  .d0(), //  1
+            "mint"      .d0(), //  2
+            "lt-blue"   .d0(), //  3
+            "pale-pink" .d0(), //  4
+            "lt-yellow" .d0(), //  5
+            "lt-rose"   .d0(), //  6
+            "lt-green"  .d0(), //  7
+            "yellow"    .d0(), //  8
+            "hi-blue"   .d0(), //  9
+            "lt-indigo" .d0(), // 10
+            "red"       .d0(), // 11
+            "lt-blue"   .d0(), // 12
+            "lime"      .d0()) // 13
 
     private val panelColorsUnselected = arrayOf(
-            "gray"      .d0(), // 0
-            "dk-blue"   .d1(), // 1
-            "pale-blue" .d0(), // 2
-            "yellow"    .d1(), // 3
-            "mint"      .d1(), // 4
-            "lt-green"  .d1(), // 5
-            "pale-pink" .d1(), // 6
-            "lt-rose"   .d1(), // 7
-            "lt-yellow" .d1(), // 8
-            "pale-blue" .d0(), // 9
+            "gray"      .d0(), //  0
+            "dk-blue"   .d1(), //  1
+            "mint"      .d1(), //  2
+            "pale-blue" .d0(), //  3
+            "pale-pink" .d1(), //  4
+            "lt-yellow" .d1(), //  5
+            "lt-rose"   .d1(), //  6
+            "lt-green"  .d1(), //  7
+            "yellow"    .d1(), //  8
+            "lt-blue"   .d1(), //  9
             "lt-indigo" .d1(), // 10
-            "lt-blue"   .d1(), // 11
-            "lime"      .d1(), // 12
-            "red"       .d1()) // 13
+            "red"       .d1(), // 11
+            "pale-blue" .d0(), // 12
+            "lime"      .d1()) // 13
 
     private val panels = arrayOf(
-            arrayOf( 0, 0, 2, 2, 2, 2, 2, 0),
-            arrayOf( 0, 0, 2, 6, 5, 5, 5, 3),
-            arrayOf( 1, 1, 2, 6, 8, 7, 5, 3),
-            arrayOf( 4, 4, 2, 6, 6, 7, 3, 3),
-            arrayOf( 0, 0, 0, 0, 0, 0, 0, 0),
-            arrayOf(11,11,11,11, 0, 9, 9, 0),
-            arrayOf(13,10,10,10,10, 9, 0, 0),
-            arrayOf(13,13,13,13,13,12,12, 0))
-
-//    private val panels = arrayOf(
-//            arrayOf( 113, 115,   0,   0,   0,   0,   0,   0),
-//            arrayOf(  97,  99, 101, 103, 105, 107, 109, 111),
-//            arrayOf(  81,  83,  85,  87,  89,  91,  93,  95),
-//            arrayOf(  65,  67,  69,  71,  73,  75,  77,  79),
-//            arrayOf(  25,  26,   0,   0,   0,   0,   0,  48),
-//            arrayOf(  17,  18,  19,  20,  21,  22,  23,  24),
-//            arrayOf(   9,  10,  11,  12,  13,  14,  15,  16),
-//            arrayOf(   1,   2,   3,   4,   5,   6,   7,   8))
-
-    var turnouts = arrayOfNulls<Turnout?>(16)
+            arrayOf( 0,  0,  3,  3,  3,  3,  3,  0),
+            arrayOf( 0,  0,  3,  4,  7,  7,  7,  8),
+            arrayOf( 1,  1,  3,  4,  5,  6,  7,  8),
+            arrayOf( 2,  2,  3,  4,  4,  6,  8,  8),
+            arrayOf( 0,  0,  0,  0,  0,  0,  0,  0),
+            arrayOf( 9,  9,  9,  9,  0, 12, 12,  0),
+            arrayOf(11, 10, 10, 10, 10, 12,  0,  0),
+            arrayOf(11, 11, 11, 11, 11, 13, 13,  0))
 
     private fun connectPadToPanelSelector(pad: Pad, panel: Int) {
-//        val onOffColor = panel
         val onColor = panelColorsSelected[panel]
         val offColor = panelColorsUnselected[panel]
 

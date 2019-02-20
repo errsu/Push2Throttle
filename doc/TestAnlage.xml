@@ -165,16 +165,40 @@
       <systemName>NT36</systemName>
       <userName>W36</userName>
     </turnout>
+    <turnout feedback="DIRECT" inverted="false" automate="Off">
+      <systemName>NT37</systemName>
+      <userName>DKW-W</userName>
+    </turnout>
+    <turnout feedback="DIRECT" inverted="false" automate="Off">
+      <systemName>NT38</systemName>
+      <userName>DKW-E</userName>
+    </turnout>
+    <turnout feedback="DIRECT" inverted="false" automate="Off">
+      <systemName>NT39</systemName>
+      <userName>WR</userName>
+    </turnout>
+    <turnout feedback="DIRECT" inverted="false" automate="Off">
+      <systemName>NT40</systemName>
+      <userName>WL</userName>
+    </turnout>
+    <turnout feedback="DIRECT" inverted="false" automate="Off">
+      <systemName>NT41</systemName>
+      <userName>W3R</userName>
+    </turnout>
+    <turnout feedback="DIRECT" inverted="false" automate="Off">
+      <systemName>NT42</systemName>
+      <userName>W3L</userName>
+    </turnout>
   </turnouts>
   <memories class="jmri.managers.configurexml.DefaultMemoryManagerXml">
-    <memory value="5:18 PM">
+    <memory value="11:29 PM">
       <systemName>IMCURRENTTIME</systemName>
     </memory>
     <memory value="1.0">
       <systemName>IMRATEFACTOR</systemName>
     </memory>
     <memory>
-      <systemName>IM </systemName>
+      <systemName>IM</systemName>
     </memory>
     <memory value="2">
       <systemName>IM3WAYSTATE</systemName>
@@ -380,7 +404,7 @@
     <positionablelabel x="40" y="190" level="4" forcecontroloff="false" hidden="no" positionable="true" showtooltip="false" editable="false" text="Unten" size="11" style="0" red="0" green="0" blue="0" hasBackground="no" justification="centre" class="jmri.jmrit.display.configurexml.PositionableLabelXml">
       <tooltip>Text Label</tooltip>
     </positionablelabel>
-    <memoryicon memory="IM3WAYSTATE" x="690" y="90" level="4" forcecontroloff="false" hidden="no" positionable="true" showtooltip="false" editable="false" size="11" style="0" red="0" green="0" blue="0" hasBackground="no" justification="left" selectable="no" class="jmri.jmrit.display.configurexml.MemoryIconXml" defaulticon="program:resources/icons/misc/X-red.gif">
+    <memoryicon memory="IM3WAYSTATE" x="690" y="90" level="4" forcecontroloff="false" hidden="no" positionable="true" showtooltip="false" editable="false" size="11" style="0" red="0" green="0" blue="0" hasBackground="no" justification="left" selectable="no" updateBlockValue="yes" class="jmri.jmrit.display.configurexml.MemoryIconXml" defaulticon="program:resources/icons/misc/X-red.gif">
       <tooltip>IM3WAYSTATE</tooltip>
     </memoryicon>
     <layoutturnout ident="TO3" type="3" hidden="no" disabled="no" disableWhenOccupied="no" continuing="2" xcen="130.0" ycen="130.0" xa="150.0" ya="130.0" xb="110.0" yb="120.0" xc="110.0" yc="140.0" xd="150.0" yd="140.0" ver="1" class="jmri.jmrit.display.layoutEditor.configurexml.LayoutTurnoutXml" turnoutname="W36" connectaname="T17" connectbname="T18" connectcname="T24" />
@@ -593,107 +617,166 @@
     <positionablepoint ident="A5" type="1" x="30.0" y="450.0" connect1name="T20" connect2name="T25" class="jmri.jmrit.display.layoutEditor.configurexml.PositionablePointXml" />
     <positionablepoint ident="A7" type="1" x="20.0" y="460.0" connect1name="T25" connect2name="T26" class="jmri.jmrit.display.layoutEditor.configurexml.PositionablePointXml" />
   </LayoutEditor>
+  <LayoutEditor class="jmri.jmrit.display.layoutEditor.configurexml.LayoutEditorXml" name="Testanlage" x="204" y="289" height="960" width="1900" windowheight="310" windowwidth="641" panelheight="960" panelwidth="1900" sliders="no" scrollable="none" editable="no" positionable="yes" controlling="yes" animating="yes" showhelpbar="no" drawgrid="yes" snaponadd="yes" snaponmove="yes" antialiasing="no" turnoutcircles="no" tooltipsnotedit="no" tooltipsinedit="yes" mainlinetrackwidth="4" xscale="1.0" yscale="1.0" sidetrackwidth="2" defaulttrackcolor="darkGray" defaultoccupiedtrackcolor="red" defaultalternativetrackcolor="white" defaulttextcolor="black" turnoutcirclecolor="black" turnoutcirclesize="4" turnoutdrawunselectedleg="no" turnoutbx="20.0" turnoutcx="20.0" turnoutwid="10.0" xoverlong="30.0" xoverhwid="10.0" xovershort="10.0" autoblkgenerate="no" redBackground="192" greenBackground="192" blueBackground="192" gridSize="10" gridSize2nd="10" openDispatcher="no" useDirectTurnoutControl="no">
+    <layoutTrackDrawingOptions name="Testanlage" class="jmri.jmrit.display.layoutEditor.configurexml.LayoutTrackDrawingOptionsXml">
+      <mainBallastColor>#000000</mainBallastColor>
+      <mainBallastWidth>0</mainBallastWidth>
+      <mainBlockLineDashPercentageX10>0</mainBlockLineDashPercentageX10>
+      <mainBlockLineWidth>4</mainBlockLineWidth>
+      <mainRailColor>#404040</mainRailColor>
+      <mainRailCount>1</mainRailCount>
+      <mainRailGap>0</mainRailGap>
+      <mainRailWidth>3</mainRailWidth>
+      <mainTieColor>#000000</mainTieColor>
+      <mainTieGap>0</mainTieGap>
+      <mainTieLength>0</mainTieLength>
+      <mainTieWidth>0</mainTieWidth>
+      <sideBallastColor>#000000</sideBallastColor>
+      <sideBallastWidth>0</sideBallastWidth>
+      <sideBlockLineDashPercentageX10>0</sideBlockLineDashPercentageX10>
+      <sideBlockLineWidth>2</sideBlockLineWidth>
+      <sideRailColor>#404040</sideRailColor>
+      <sideRailCount>1</sideRailCount>
+      <sideRailGap>0</sideRailGap>
+      <sideRailWidth>3</sideRailWidth>
+      <sideTieColor>#000000</sideTieColor>
+      <sideTieGap>0</sideTieGap>
+      <sideTieLength>0</sideTieLength>
+      <sideTieWidth>0</sideTieWidth>
+    </layoutTrackDrawingOptions>
+    <positionablelabel x="30" y="50" level="4" forcecontroloff="false" hidden="no" positionable="true" showtooltip="false" editable="false" text="Testanlage" size="16" style="0" red="0" green="0" blue="0" hasBackground="no" justification="centre" class="jmri.jmrit.display.configurexml.PositionableLabelXml">
+      <tooltip>Text Label</tooltip>
+    </positionablelabel>
+    <layoutturnout ident="TO1" type="1" hidden="no" disabled="no" disableWhenOccupied="no" continuing="2" xcen="211.0" ycen="140.0" xa="231.0" ya="140.0" xb="191.0" yb="140.0" xc="191.0" yc="130.0" xd="231.0" yd="140.0" ver="1" class="jmri.jmrit.display.layoutEditor.configurexml.LayoutTurnoutXml" turnoutname="DKW-W" connectaname="T1" connectbname="T9" connectcname="T11" />
+    <layoutturnout ident="TO2" type="1" hidden="no" disabled="no" disableWhenOccupied="no" continuing="2" xcen="251.0" ycen="140.0" xa="231.0" ya="140.0" xb="271.0" yb="140.0" xc="271.0" yc="150.0" xd="231.0" yd="140.0" ver="1" class="jmri.jmrit.display.layoutEditor.configurexml.LayoutTurnoutXml" turnoutname="DKW-E" connectaname="T1" connectbname="T5" connectcname="T3" />
+    <layoutturnout ident="TO3" type="1" hidden="no" disabled="no" disableWhenOccupied="no" continuing="2" xcen="331.0" ycen="180.0" xa="351.0" ya="180.0" xb="311.0" yb="180.0" xc="311.0" yc="170.0" xd="351.0" yd="180.0" ver="1" class="jmri.jmrit.display.layoutEditor.configurexml.LayoutTurnoutXml" turnoutname="WR" connectaname="T6" connectbname="T10" connectcname="T3" />
+    <layoutturnout ident="TO4" type="2" hidden="no" disabled="no" disableWhenOccupied="no" continuing="2" xcen="411.0" ycen="180.0" xa="391.0" ya="180.0" xb="431.0" yb="180.0" xc="431.0" yc="170.0" xd="391.0" yd="180.0" ver="1" class="jmri.jmrit.display.layoutEditor.configurexml.LayoutTurnoutXml" turnoutname="WL" connectaname="T6" connectbname="T14" connectcname="T4" />
+    <layoutturnout ident="TO5" type="2" hidden="no" disabled="no" disableWhenOccupied="no" continuing="2" xcen="491.0" ycen="140.0" xa="511.0" ya="140.0" xb="471.0" yb="140.0" xc="471.0" yc="150.0" xd="511.0" yd="140.0" ver="1" class="jmri.jmrit.display.layoutEditor.configurexml.LayoutTurnoutXml" turnoutname="W3L" connectaname="T13" connectbname="T2" connectcname="T4" />
+    <layoutturnout ident="TO6" type="1" hidden="no" disabled="no" disableWhenOccupied="no" continuing="2" xcen="451.0" ycen="140.0" xa="471.0" ya="140.0" xb="431.0" yb="140.0" xc="431.0" yc="130.0" xd="471.0" yd="140.0" ver="1" class="jmri.jmrit.display.layoutEditor.configurexml.LayoutTurnoutXml" turnoutname="W3R" connectaname="T2" connectbname="T5" connectcname="T7" />
+    <tracksegment ident="T1" connect1name="TO2" type1="2" connect2name="TO1" type2="2" dashed="no" mainline="no" hidden="no" class="jmri.jmrit.display.layoutEditor.configurexml.TrackSegmentXml" />
+    <tracksegment ident="T2" connect1name="TO6" type1="2" connect2name="TO5" type2="3" dashed="no" mainline="no" hidden="no" class="jmri.jmrit.display.layoutEditor.configurexml.TrackSegmentXml" />
+    <tracksegment ident="T3" connect1name="TO2" type1="4" connect2name="TO3" type2="4" dashed="no" mainline="yes" hidden="no" class="jmri.jmrit.display.layoutEditor.configurexml.TrackSegmentXml" />
+    <tracksegment ident="T4" connect1name="TO4" type1="4" connect2name="TO5" type2="4" dashed="no" mainline="yes" hidden="no" class="jmri.jmrit.display.layoutEditor.configurexml.TrackSegmentXml" />
+    <tracksegment ident="T5" connect1name="TO6" type1="3" connect2name="TO2" type2="3" dashed="no" mainline="yes" hidden="no" class="jmri.jmrit.display.layoutEditor.configurexml.TrackSegmentXml" />
+    <tracksegment ident="T6" connect1name="TO3" type1="2" connect2name="TO4" type2="2" dashed="no" mainline="yes" hidden="no" class="jmri.jmrit.display.layoutEditor.configurexml.TrackSegmentXml" />
+    <tracksegment ident="T7" connect1name="TO6" type1="4" connect2name="A1" type2="1" dashed="no" mainline="yes" hidden="no" class="jmri.jmrit.display.layoutEditor.configurexml.TrackSegmentXml" />
+    <tracksegment ident="T8" connect1name="A1" type1="1" connect2name="EB1" type2="1" dashed="no" mainline="yes" hidden="no" class="jmri.jmrit.display.layoutEditor.configurexml.TrackSegmentXml" />
+    <tracksegment ident="T9" connect1name="TO1" type1="3" connect2name="EB3" type2="1" dashed="no" mainline="yes" hidden="no" class="jmri.jmrit.display.layoutEditor.configurexml.TrackSegmentXml" />
+    <tracksegment ident="T10" connect1name="TO3" type1="3" connect2name="EB4" type2="1" dashed="no" mainline="yes" hidden="no" class="jmri.jmrit.display.layoutEditor.configurexml.TrackSegmentXml" />
+    <tracksegment ident="T11" connect1name="TO1" type1="4" connect2name="A2" type2="1" dashed="no" mainline="yes" hidden="no" class="jmri.jmrit.display.layoutEditor.configurexml.TrackSegmentXml" />
+    <tracksegment ident="T12" connect1name="A2" type1="1" connect2name="EB2" type2="1" dashed="no" mainline="yes" hidden="no" class="jmri.jmrit.display.layoutEditor.configurexml.TrackSegmentXml" />
+    <tracksegment ident="T13" connect1name="TO5" type1="2" connect2name="EB5" type2="1" dashed="no" mainline="yes" hidden="no" class="jmri.jmrit.display.layoutEditor.configurexml.TrackSegmentXml" />
+    <tracksegment ident="T14" connect1name="TO4" type1="3" connect2name="EB6" type2="1" dashed="no" mainline="yes" hidden="no" class="jmri.jmrit.display.layoutEditor.configurexml.TrackSegmentXml" />
+    <positionablepoint ident="EB1" type="2" x="231.0" y="100.0" connect1name="T8" class="jmri.jmrit.display.layoutEditor.configurexml.PositionablePointXml" />
+    <positionablepoint ident="A1" type="1" x="371.0" y="100.0" connect1name="T7" connect2name="T8" class="jmri.jmrit.display.layoutEditor.configurexml.PositionablePointXml" />
+    <positionablepoint ident="EB2" type="2" x="20.0" y="100.0" connect1name="T12" class="jmri.jmrit.display.layoutEditor.configurexml.PositionablePointXml" />
+    <positionablepoint ident="EB3" type="2" x="20.0" y="140.0" connect1name="T9" class="jmri.jmrit.display.layoutEditor.configurexml.PositionablePointXml" />
+    <positionablepoint ident="EB4" type="2" x="20.0" y="180.0" connect1name="T10" class="jmri.jmrit.display.layoutEditor.configurexml.PositionablePointXml" />
+    <positionablepoint ident="A2" type="1" x="131.0" y="100.0" connect1name="T11" connect2name="T12" class="jmri.jmrit.display.layoutEditor.configurexml.PositionablePointXml" />
+    <positionablepoint ident="EB5" type="2" x="600.0" y="140.0" connect1name="T13" class="jmri.jmrit.display.layoutEditor.configurexml.PositionablePointXml" />
+    <positionablepoint ident="EB6" type="2" x="600.0" y="180.0" connect1name="T14" class="jmri.jmrit.display.layoutEditor.configurexml.PositionablePointXml" />
+  </LayoutEditor>
   <filehistory>
     <operation>
       <type>app</type>
-      <date>Sat Jan 05 12:40:46 CET 2019</date>
+      <date>Wed Feb 20 23:07:56 CET 2019</date>
       <filename>DecoderPro</filename>
     </operation>
     <operation>
       <type>Load OK</type>
-      <date>Sat Jan 05 12:40:50 CET 2019</date>
+      <date>Wed Feb 20 23:08:00 CET 2019</date>
       <filename>/E:/dev/JMRI/ErrsuSimulationsAG/TestAnlage.xml</filename>
       <filehistory>
         <operation>
           <type>app</type>
-          <date>Tue Jan 01 13:30:36 CET 2019</date>
+          <date>Thu Jan 24 22:02:24 CET 2019</date>
           <filename>DecoderPro</filename>
         </operation>
         <operation>
           <type>Load OK</type>
-          <date>Tue Jan 01 13:30:39 CET 2019</date>
+          <date>Thu Jan 24 22:02:27 CET 2019</date>
           <filename>/E:/dev/JMRI/ErrsuSimulationsAG/TestAnlage.xml</filename>
           <filehistory>
             <operation>
               <type>app</type>
-              <date>Tue Jan 01 01:31:37 CET 2019</date>
+              <date>Sat Jan 05 12:40:46 CET 2019</date>
               <filename>DecoderPro</filename>
             </operation>
             <operation>
               <type>Load OK</type>
-              <date>Tue Jan 01 01:31:39 CET 2019</date>
+              <date>Sat Jan 05 12:40:50 CET 2019</date>
               <filename>/E:/dev/JMRI/ErrsuSimulationsAG/TestAnlage.xml</filename>
               <filehistory>
                 <operation>
                   <type>app</type>
-                  <date>Mon Dec 31 18:14:05 CET 2018</date>
+                  <date>Tue Jan 01 13:30:36 CET 2019</date>
                   <filename>DecoderPro</filename>
                 </operation>
                 <operation>
                   <type>Load OK</type>
-                  <date>Mon Dec 31 18:14:08 CET 2018</date>
+                  <date>Tue Jan 01 13:30:39 CET 2019</date>
                   <filename>/E:/dev/JMRI/ErrsuSimulationsAG/TestAnlage.xml</filename>
                   <filehistory>
                     <operation>
                       <type>app</type>
-                      <date>Fri Jun 29 08:50:15 CEST 2018</date>
+                      <date>Tue Jan 01 01:31:37 CET 2019</date>
                       <filename>DecoderPro</filename>
                     </operation>
                     <operation>
                       <type>Load OK</type>
-                      <date>Fri Jun 29 08:50:17 CEST 2018</date>
+                      <date>Tue Jan 01 01:31:39 CET 2019</date>
                       <filename>/E:/dev/JMRI/ErrsuSimulationsAG/TestAnlage.xml</filename>
                       <filehistory>
                         <operation>
                           <type>app</type>
-                          <date>Fri Jun 29 08:45:49 CEST 2018</date>
+                          <date>Mon Dec 31 18:14:05 CET 2018</date>
                           <filename>DecoderPro</filename>
                         </operation>
                         <operation>
                           <type>Load OK</type>
-                          <date>Fri Jun 29 08:45:52 CEST 2018</date>
+                          <date>Mon Dec 31 18:14:08 CET 2018</date>
                           <filename>/E:/dev/JMRI/ErrsuSimulationsAG/TestAnlage.xml</filename>
                         </operation>
                         <operation>
                           <type>Store</type>
-                          <date>Fri Jun 29 08:47:28 CEST 2018</date>
+                          <date>Tue Jan 01 01:30:25 CET 2019</date>
                           <filename />
                         </operation>
                       </filehistory>
                     </operation>
                     <operation>
                       <type>Store</type>
-                      <date>Fri Jun 29 08:54:21 CEST 2018</date>
+                      <date>Tue Jan 01 01:59:17 CET 2019</date>
                       <filename />
                     </operation>
                   </filehistory>
                 </operation>
                 <operation>
                   <type>Store</type>
-                  <date>Tue Jan 01 01:30:25 CET 2019</date>
+                  <date>Tue Jan 01 13:31:40 CET 2019</date>
                   <filename />
                 </operation>
               </filehistory>
             </operation>
             <operation>
               <type>Store</type>
-              <date>Tue Jan 01 01:59:17 CET 2019</date>
+              <date>Sat Jan 05 17:18:11 CET 2019</date>
               <filename />
             </operation>
           </filehistory>
         </operation>
         <operation>
           <type>Store</type>
-          <date>Tue Jan 01 13:31:40 CET 2019</date>
+          <date>Thu Jan 24 22:31:48 CET 2019</date>
           <filename />
         </operation>
       </filehistory>
     </operation>
     <operation>
       <type>Store</type>
-      <date>Sat Jan 05 17:18:11 CET 2019</date>
+      <date>Wed Feb 20 23:29:11 CET 2019</date>
       <filename />
     </operation>
   </filehistory>
-  <!--Written by JMRI version 4.14+Rd060e0b on Sat Jan 05 17:18:11 CET 2019-->
+  <!--Written by JMRI version 4.14+Rd060e0b on Wed Feb 20 23:29:11 CET 2019-->
 </layout-config>

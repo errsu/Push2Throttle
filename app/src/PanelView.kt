@@ -98,10 +98,10 @@ abstract class PanelView(rect: Rectangle): Push2View(rect) {
     val s1 = 6.0 // easy
     // grid
     val y = arrayOf(20.0, 50.0, 95.0, 140.0)
-    // TODO: have 8 positions for 8 buttons
-    val x = arrayOf(80.0, 160.0, 280.0, 540.0, 780.0, 900.0)
-    // distance to border
-    val d0 = 10.0
+    val x = arrayOf(60.0, 180.0, 300.0, 420.0, 540.0, 660.0, 780.0, 900.0)
+
+    val d0 = 10.0 // distance to border
+    val xl = 24.0 // horizontal turnout leg
 
 
     //------------------------------------------------------------------------------------

@@ -7,7 +7,7 @@ open class PanelView5(rect: Rectangle): PanelView(rect) {
     private val a = Point("a", x[2], y[0])
     private val m = Point("m", x[1], y[0])
     private val n = Point("n", x[1], y[3])
-    private val z = Point("z", x[3], y[3])
+    private val z = Point("z", x[4], y[3])
 
     override val lines = arrayOf(arrayOf(a, m, n, z))
 

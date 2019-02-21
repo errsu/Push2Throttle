@@ -10,7 +10,7 @@ open class PanelView3(rect: Rectangle): PanelView(rect) {
     private val d1 = 160.0
     private val d2 = 280.0
 
-    private val a = Point("a", x[0], y[0])
+    private val a = Point("a", x[0] + xl, y[0])
     private val b = a.branch("b", "SW", s0, y[0] + d0 * 3.0)
     private val c = Point("c", 2 * d0, b.y)
     private val d = Point("d", d0, c.y - d0)
@@ -18,13 +18,13 @@ open class PanelView3(rect: Rectangle): PanelView(rect) {
     private val f = Point("f", 2 * d0, a.y)
     private val g = Point("g", ww - d0, y[0])
 
-    private val h = Point("h", x[1], y[0])
+    private val h = Point("h", x[1] - xl, y[0])
     private val i = h.branch("i", "SE", s0, y[1])
     private val j = Point("j", ww - d0, y[1])
 
-    private val k = Point("k", x[2], y[1])
+    private val k = Point("k", x[2] - xl, y[1])
     private val l = k.branch("l", "SE", s0, y[2])
-    private val m = Point("m", x[3], y[2])
+    private val m = Point("m", x[4], y[2])
     private val n = Point("n", m.x + d1, m.y)
 
     private val o = m.branch("o", "NE", s1, y[1])
@@ -33,11 +33,11 @@ open class PanelView3(rect: Rectangle): PanelView(rect) {
     private val r = Point("r", p.x + d1, p.y)
 
     private val y01mid = (y[0] + y[1]) / 2
-    private val s = Point("", x[4], y01mid).branch("s", "NW", s0, y[0])
-    private val t = Point("", x[4], y01mid).branch("t", "SE", s0, y[1])
+    private val s = Point("", x[6], y01mid).branch("s", "NW", s0, y[0])
+    private val t = Point("", x[6], y01mid).branch("t", "SE", s0, y[1])
 
-    private val u = Point("", x[5], y01mid).branch("u", "SW", s0, y[1])
-    private val v = Point("", x[5], y01mid).branch("v", "NE", s0, y[0])
+    private val u = Point("", x[7], y01mid).branch("u", "SW", s0, y[1])
+    private val v = Point("", x[7], y01mid).branch("v", "NE", s0, y[0])
 
     init {
         g.preferredColor = 3

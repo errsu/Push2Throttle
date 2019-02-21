@@ -5,8 +5,8 @@ import java.awt.*
 open class PanelView7(rect: Rectangle): PanelView(rect) {
 
     private val a = Point("a", x[0], y[0])
-    private val n = Point("n", x[3], y[0])
-    private val z = Point("z", x[3], y[1])
+    private val n = Point("n", x[4], y[0])
+    private val z = Point("z", x[4], y[1])
 
     override val lines = arrayOf(arrayOf(a, n, z))
 

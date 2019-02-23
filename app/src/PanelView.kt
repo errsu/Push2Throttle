@@ -88,7 +88,7 @@ abstract class PanelView(rect: Rectangle): Push2View(rect) {
 
         override fun turnoutGroup() : Push2TurnoutController.TurnoutGroup? {
             return if (turnout != null) {
-                Push2TurnoutController.TurnoutGroup.SingleTurnout(turnout!!)
+                Push2TurnoutController.SingleTurnout(turnout!!)
             } else {
                 null
             }
@@ -139,7 +139,7 @@ abstract class PanelView(rect: Rectangle): Push2View(rect) {
 
         override fun turnoutGroup() : Push2TurnoutController.TurnoutGroup? {
             return if (leftTurnout != null && rightTurnout != null) {
-                Push2TurnoutController.TurnoutGroup.ThreeWayTurnout(leftTurnout!!, rightTurnout!!)
+                Push2TurnoutController.ThreeWayTurnout(leftTurnout!!, rightTurnout!!)
             } else {
                 null
             }
@@ -208,7 +208,7 @@ abstract class PanelView(rect: Rectangle): Push2View(rect) {
 
         override fun turnoutGroup() : Push2TurnoutController.TurnoutGroup? {
             return if (westTurnout != null && eastTurnout != null) {
-                Push2TurnoutController.TurnoutGroup.DoubleSlipTurnout(westTurnout!!, eastTurnout!!)
+                Push2TurnoutController.DoubleSlipTurnout(westTurnout!!, eastTurnout!!)
             } else {
                 null
             }

@@ -53,19 +53,19 @@ open class PanelView3(rect: Rectangle): PanelView(rect) {
             arrayOf(s, t),
             arrayOf(u, v))
 
-    private val A = TurnoutView("W1", 0, a, a.leg("W", s0), a.leg("SW", s0))
-    private val H = TurnoutView("W2", 1, h, h.leg("E", s0), h.leg("SE", s0))
-    private val K = TurnoutView("W3", 2, k, k.leg("E", s0), k.leg("SE", s0))
-    private val M1 = TurnoutView("W5", 12, m, m.leg("W", s1), m.leg("SW", s1))
-    private val M2 = TurnoutView("W6", 4, m, m.leg("E", s1), m.leg("NE", s1))
-    private val O = TurnoutView("W7", 5, o, o.leg("W", s1), o.leg("SW", s1))
-    private val P = TurnoutView("W4", 11, p, p.leg("E", s1), p.leg("NE", s1))
-    private val S = TurnoutView("W8", 6, s, s.leg("E", s0), s.leg("SE", s0))
-    private val T = TurnoutView("W9", 14, t, t.leg("W", s0), t.leg("NW", s0))
-    private val U = TurnoutView("W10", 15, u, u.leg("E", s0), u.leg("NE", s0))
-    private val V = TurnoutView("W11", 7, v, v.leg("W", s0), v.leg("SW", s0))
+    private val A = SwitchView("W1", 0, a, a.leg("W", s0), a.leg("SW", s0))
+    private val H = SwitchView("W2", 1, h, h.leg("E", s0), h.leg("SE", s0))
+    private val K = SwitchView("W3", 2, k, k.leg("E", s0), k.leg("SE", s0))
+    private val M1 = SwitchView("W5", 12, m, m.leg("W", s1), m.leg("SW", s1))
+    private val M2 = SwitchView("W6", 4, m, m.leg("E", s1), m.leg("NE", s1))
+    private val O = SwitchView("W7", 5, o, o.leg("W", s1), o.leg("SW", s1))
+    private val P = SwitchView("W4", 11, p, p.leg("E", s1), p.leg("NE", s1))
+    private val S = SwitchView("W8", 6, s, s.leg("E", s0), s.leg("SE", s0))
+    private val T = SwitchView("W9", 14, t, t.leg("W", s0), t.leg("NW", s0))
+    private val U = SwitchView("W10", 15, u, u.leg("E", s0), u.leg("NE", s0))
+    private val V = SwitchView("W11", 7, v, v.leg("W", s0), v.leg("SW", s0))
 
-    final override val turnoutViews = mutableListOf( // TODO: why mutable?
+    final override val switchViews = mutableListOf( // TODO: why mutable?
         A, H, K, M1, M2, O, P, S, T, U, V
     )
 
@@ -90,7 +90,7 @@ open class PanelView3(rect: Rectangle): PanelView(rect) {
         RailView(arrayOf(P.pClosed, r))
     )
 
-    final override val graphPoints = enumeratePoints(turnoutViews, railViews)
+    final override val graphPoints = enumeratePoints(switchViews, railViews)
     override val graph = buildGraph(graphPoints)
 
     override val pTitle = Point("title", 760.0, 130.0)

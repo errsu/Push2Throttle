@@ -16,7 +16,7 @@ class Push2TurnoutController(
         fun setTurnoutStates(position: String, setState: (Turnout, Int) -> Unit)
     }
 
-    class SingleTurnout(private val turnout: Turnout) : TurnoutGroup {
+    class SingleSwitch(private val turnout: Turnout) : TurnoutGroup {
         override fun containsTurnout(turnout: Turnout) : Boolean {
             return this.turnout == turnout
         }
@@ -41,7 +41,7 @@ class Push2TurnoutController(
         }
     }
 
-    class ThreeWayTurnout(private val leftTurnout: Turnout, private val rightTurnout: Turnout) : TurnoutGroup {
+    class ThreeWaySwitch(private val leftTurnout: Turnout, private val rightTurnout: Turnout) : TurnoutGroup {
         override fun containsTurnout(turnout: Turnout) : Boolean {
             return leftTurnout == turnout || rightTurnout == turnout
         }
@@ -74,7 +74,7 @@ class Push2TurnoutController(
         }
     }
 
-    class DoubleSlipTurnout(private val westTurnout: Turnout, private val eastTurnout: Turnout) : TurnoutGroup {
+    class DoubleSlipSwitch(private val westTurnout: Turnout, private val eastTurnout: Turnout) : TurnoutGroup {
         override fun containsTurnout(turnout: Turnout) : Boolean {
             return eastTurnout == turnout || westTurnout == turnout
         }

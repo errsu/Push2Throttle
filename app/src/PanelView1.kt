@@ -30,12 +30,12 @@ open class PanelView1(rect: Rectangle): PanelView(rect) {
             arrayOf(c, m),
             arrayOf(g, h, j, k))
 
-    private val E = DoubleSlipTurnoutView("DKW-W", "DKW-E", 2, e, e.leg("NW", s1), e.leg("W", s1), e.leg("E", s1), e.leg("SE", s1))
-    private val F  = TurnoutView("WR", 11, f, f.leg("W", s1), f.leg("NW", s1))
+    private val E = DoubleSlipSwitchView("DKW-W", "DKW-E", 2, e, e.leg("NW", s1), e.leg("W", s1), e.leg("E", s1), e.leg("SE", s1))
+    private val F = SwitchView("WR", 11, f, f.leg("W", s1), f.leg("NW", s1))
     private val J = ThreeWaySwitchView("W3L", "W3R", 6, j, j.leg("SW", s1), j.leg("W", s1), j.leg("NW", s1))
-    private val K  = TurnoutView("WL", 13, k, k.leg("E", s1), k.leg("NE", s1))
+    private val K = SwitchView("WL", 13, k, k.leg("E", s1), k.leg("NE", s1))
 
-    final override val turnoutViews = listOf(E, F, J, K)
+    final override val switchViews = listOf(E, F, J, K)
 
     final override val railViews = listOf(
             RailView(arrayOf(a, d, E.pWestThrown)),
@@ -49,7 +49,7 @@ open class PanelView1(rect: Rectangle): PanelView(rect) {
             RailView(arrayOf(J.pCenter, l)),
             RailView(arrayOf(K.pClosed, m)))
 
-    final override val graphPoints = enumeratePoints(turnoutViews, railViews)
+    final override val graphPoints = enumeratePoints(switchViews, railViews)
     override val graph = buildGraph(graphPoints)
 
     override val pTitle = Point("title", 860.0, 130.0)

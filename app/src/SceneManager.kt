@@ -288,8 +288,7 @@ class PanelScene(private val display: Push2Display,
     private fun buildTurnoutControlPart() {
         val panelView = panelViews[page]
         panelManager.turnoutTable.controller = turnoutController
-        panelView.turnoutViews.forEach { turnoutView ->
-            // TODO: prepare for 3 way switch
+        panelView.switchViews.forEach { turnoutView ->
             turnoutView.connectTurnouts(panelManager.turnoutTable::turnoutWithUserName)
             turnoutController.connectPositionToTurnouts(turnoutView.elementIndex, turnoutView.turnoutGroup()!!)
         }
@@ -312,7 +311,7 @@ class PanelScene(private val display: Push2Display,
     private fun destroyTurnoutControlPart() {
         val panelView = panelViews[page]
         panelManager.turnoutTable.controller = null
-        panelView.turnoutViews.forEach { turnoutView ->
+        panelView.switchViews.forEach { turnoutView ->
             turnoutView.disconnectTurnouts()
         }
         turnoutController.disconnectFromTurnouts()

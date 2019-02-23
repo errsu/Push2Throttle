@@ -10,7 +10,7 @@ abstract class PanelView(rect: Rectangle): Push2View(rect) {
 
     data class Point(val name: String, val x: Double, val y: Double) {
         var n = 0
-        var turnoutViewName: String? = null
+        var switchViewName: String? = null
         var preferredColor = -1
 
         override fun toString() : String {
@@ -46,9 +46,9 @@ abstract class PanelView(rect: Rectangle): Push2View(rect) {
         }
     }
 
-    // TODO: renaming: turnouts is what we have in JMRI, switches is what we see on Push2
+    // Turnouts is what we have in JMRI, switches is what we see on Push2 surface.
 
-    interface TurnoutViewInterface {
+    interface SwitchViewInterface {
         fun connectTurnouts(turnoutGetter: (String) -> Turnout?)
         fun disconnectTurnouts()
         fun addPointsToSet(set: MutableSet<Point>)
@@ -72,23 +72,23 @@ abstract class PanelView(rect: Rectangle): Push2View(rect) {
     //          ====*======*====
     //  closed point
 
-    class TurnoutView(private val turnoutName: String,
-                      override val elementIndex: Int,
-                      val pCenter: Point,
-                      val pClosed: Point,
-                      val pThrown: Point) : TurnoutViewInterface {
+    class SwitchView(private val turnoutName: String,
+                     override val elementIndex: Int,
+                     val pCenter: Point,
+                     val pClosed: Point,
+                     val pThrown: Point) : SwitchViewInterface {
 
         private var turnout: Turnout? = null
 
         init {
-            pCenter.turnoutViewName = turnoutName
-            pClosed.turnoutViewName = turnoutName
-            pThrown.turnoutViewName = turnoutName
+            pCenter.switchViewName = turnoutName
+            pClosed.switchViewName = turnoutName
+            pThrown.switchViewName = turnoutName
         }
 
         override fun turnoutGroup() : Push2TurnoutController.TurnoutGroup? {
             return if (turnout != null) {
-                Push2TurnoutController.SingleTurnout(turnout!!)
+                Push2TurnoutController.SingleSwitch(turnout!!)
             } else {
                 null
             }
@@ -132,14 +132,14 @@ abstract class PanelView(rect: Rectangle): Push2View(rect) {
                              val pCenter: Point,
                              val pLeft: Point,
                              val pMid: Point,
-                             val pRight: Point) : TurnoutViewInterface {
+                             val pRight: Point) : SwitchViewInterface {
 
         private var leftTurnout: Turnout? = null
         private var rightTurnout: Turnout? = null
 
         override fun turnoutGroup() : Push2TurnoutController.TurnoutGroup? {
             return if (leftTurnout != null && rightTurnout != null) {
-                Push2TurnoutController.ThreeWayTurnout(leftTurnout!!, rightTurnout!!)
+                Push2TurnoutController.ThreeWaySwitch(leftTurnout!!, rightTurnout!!)
             } else {
                 null
             }
@@ -147,10 +147,10 @@ abstract class PanelView(rect: Rectangle): Push2View(rect) {
 
         init {
             val combinedName = "$leftTurnoutName##$rightTurnoutName"
-            pCenter.turnoutViewName = combinedName
-            pLeft.turnoutViewName = combinedName
-            pMid.turnoutViewName = combinedName
-            pRight.turnoutViewName = combinedName
+            pCenter.switchViewName = combinedName
+            pLeft.switchViewName = combinedName
+            pMid.switchViewName = combinedName
+            pRight.switchViewName = combinedName
         }
 
         override fun connectTurnouts(turnoutGetter: (String) -> Turnout?) {
@@ -194,21 +194,21 @@ abstract class PanelView(rect: Rectangle): Push2View(rect) {
     //  west closed point          ====*====
     //                                  east thrown point
 
-    class DoubleSlipTurnoutView(private val westTurnoutName: String,
-                                private val eastTurnoutName: String,
-                                override val elementIndex: Int,
-                                val pCenter: Point,
-                                val pWestThrown: Point,
-                                val pWestClosed: Point,
-                                val pEastClosed: Point,
-                                val pEastThrown: Point) : TurnoutViewInterface {
+    class DoubleSlipSwitchView(private val westTurnoutName: String,
+                               private val eastTurnoutName: String,
+                               override val elementIndex: Int,
+                               val pCenter: Point,
+                               val pWestThrown: Point,
+                               val pWestClosed: Point,
+                               val pEastClosed: Point,
+                               val pEastThrown: Point) : SwitchViewInterface {
 
         private var westTurnout: Turnout? = null
         private var eastTurnout: Turnout? = null
 
         override fun turnoutGroup() : Push2TurnoutController.TurnoutGroup? {
             return if (westTurnout != null && eastTurnout != null) {
-                Push2TurnoutController.DoubleSlipTurnout(westTurnout!!, eastTurnout!!)
+                Push2TurnoutController.DoubleSlipSwitch(westTurnout!!, eastTurnout!!)
             } else {
                 null
             }
@@ -216,11 +216,11 @@ abstract class PanelView(rect: Rectangle): Push2View(rect) {
 
         init {
             val combinedName = "$westTurnoutName##$eastTurnoutName"
-            pCenter.turnoutViewName = combinedName
-            pWestThrown.turnoutViewName = combinedName
-            pWestClosed.turnoutViewName = combinedName
-            pEastClosed.turnoutViewName = combinedName
-            pEastThrown.turnoutViewName = combinedName
+            pCenter.switchViewName = combinedName
+            pWestThrown.switchViewName = combinedName
+            pWestClosed.switchViewName = combinedName
+            pEastClosed.switchViewName = combinedName
+            pEastThrown.switchViewName = combinedName
         }
 
         override fun connectTurnouts(turnoutGetter: (String) -> Turnout?) {
@@ -291,9 +291,9 @@ abstract class PanelView(rect: Rectangle): Push2View(rect) {
         return graph
     }
 
-    fun updateGraph(graph: ConnectedTurnoutsGraph, turnoutViews: List<TurnoutViewInterface>, railViews: List<RailView>) {
+    private fun updateGraph(graph: ConnectedTurnoutsGraph, switchViews: List<SwitchViewInterface>, railViews: List<RailView>) {
         graph.resetEdges()
-        turnoutViews.forEach {
+        switchViews.forEach {
             it.addEdgeToGraph(graph)
         }
         railViews.forEach {
@@ -301,10 +301,10 @@ abstract class PanelView(rect: Rectangle): Push2View(rect) {
         }
     }
 
-    fun enumeratePoints(turnoutViews: List<TurnoutViewInterface>, railViews: List<RailView>): Array<Point> {
+    fun enumeratePoints(switchViews: List<SwitchViewInterface>, railViews: List<RailView>): Array<Point> {
         val pointSet = mutableSetOf<Point>()
 
-        turnoutViews.forEach {
+        switchViews.forEach {
             it.addPointsToSet(pointSet)
         }
         railViews.forEach {
@@ -342,7 +342,7 @@ abstract class PanelView(rect: Rectangle): Push2View(rect) {
         for (i in 0 until path.lastIndex) {
             val p0 = points[path[i]]
             val p1 = points[path[i+1]]
-            if (p0.turnoutViewName != null && p0.turnoutViewName == p1.turnoutViewName) {
+            if (p0.switchViewName != null && p0.switchViewName == p1.switchViewName) {
                 crossingTurnoutCount++
             }
         }
@@ -391,18 +391,18 @@ abstract class PanelView(rect: Rectangle): Push2View(rect) {
     abstract val pTitle: Point
     abstract val title: String
 
-    abstract val turnoutViews: List<TurnoutViewInterface>
+    abstract val switchViews: List<SwitchViewInterface>
     abstract val railViews: List<RailView>
 
     abstract val graphPoints: Array<Point>
     abstract val graph: ConnectedTurnoutsGraph
 
-    var components: List<List<Int>> = listOf()
-    var colors: List<Int> = listOf()
+    private var components: List<List<Int>> = listOf()
+    private var colors: List<Int> = listOf()
     abstract val lines: Array<Array<Point>>
 
     fun update() {
-        updateGraph(graph, turnoutViews, railViews)
+        updateGraph(graph, switchViews, railViews)
         components = graph.findComponents()
         colors = components.map { determineColor(it, graphPoints)}
     }

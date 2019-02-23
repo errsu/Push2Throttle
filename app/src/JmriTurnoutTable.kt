@@ -69,12 +69,12 @@ class JmriTurnoutTable(
 
     private fun addOrUpdateTurnoutFromData(data: Map<*,*>) : Change {
         var change = Change.NO_CHANGE
-        val turnoutName = data["name"]
-        if (turnoutName is String && turnoutName.length > 0) {
-            var turnout = turnouts[turnoutName]
+        val name = data["name"]
+        if (name is String && name.length > 0) {
+            var turnout = turnouts[name]
             if (turnout == null) {
-                turnout = Turnout(turnoutName)
-                turnouts[turnoutName] = turnout
+                turnout = Turnout(name)
+                turnouts[name] = turnout
                 change = change.raiseTo(Change.TABLE_CHANGED)
             }
             change = change.raiseTo(updateTurnoutFromData(turnout, data))
@@ -102,9 +102,9 @@ class JmriTurnoutTable(
                 }
                 // Deletion is sent as updated list only, so we have to
                 // remove all entries that are missing from the updated list:
-                for (turnoutName in turnouts.keys.iterator()) {
-                    if (turnoutName !in  newNames) {
-                        turnouts.keys.remove(turnoutName)
+                for (name in turnouts.keys.iterator()) {
+                    if (name !in  newNames) {
+                        turnouts.keys.remove(name)
                     }
                 }
             }

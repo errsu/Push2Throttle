@@ -10,7 +10,7 @@ abstract class PanelView(rect: Rectangle): Push2View(rect) {
 
     data class Point(val name: String, val x: Double, val y: Double) {
         var n = 0
-        var turnoutName: String? = null
+        var turnoutViewName: String? = null
         var preferredColor = -1
 
         override fun toString() : String {
@@ -46,33 +46,117 @@ abstract class PanelView(rect: Rectangle): Push2View(rect) {
         }
     }
 
+    interface TurnoutViewInterface {
+        fun connectTurnouts(turnoutGetter: (String) -> Turnout?)
+        fun disconnectTurnouts()
+        fun addPointsToSet(set: MutableSet<Point>)
+        fun addEdgeToGraph(graph: ConnectedTurnoutsGraph)
+        fun turnoutGroup() : Push2TurnoutController.TurnoutGroup?
+        val elementIndex: Int
+    }
+
     class TurnoutView(val name: String,
-                      val elementIndex: Int,
+                      override val elementIndex: Int,
                       val pCenter: Point,
                       val pClosed: Point,
-                      val pThrown: Point) {
+                      val pThrown: Point) : TurnoutViewInterface {
         // var state: Int = TurnoutState.UNKNOWN
-        var turnout: Turnout? = null
+        private var turnout: Turnout? = null
 
         init {
-            pCenter.turnoutName = name
-            pClosed.turnoutName = name
-            pThrown.turnoutName = name
+            pCenter.turnoutViewName = name
+            pClosed.turnoutViewName = name
+            pThrown.turnoutViewName = name
         }
 
-        fun addPointsToSet(set: MutableSet<Point>) {
+        override fun turnoutGroup() : Push2TurnoutController.TurnoutGroup? {
+            return if (turnout != null) {
+                Push2TurnoutController.TurnoutGroup.SingleTurnout(turnout!!)
+            } else {
+                null
+            }
+        }
+
+        override fun connectTurnouts(turnoutGetter: (String) -> Turnout?) {
+            turnout = turnoutGetter(name)
+        }
+
+        override fun disconnectTurnouts() {
+            turnout = null
+        }
+
+        override fun addPointsToSet(set: MutableSet<Point>) {
             set.add(pCenter)
             set.add(pClosed)
             set.add(pThrown)
         }
 
-        fun addEdgeToGraph(graph: ConnectedTurnoutsGraph) {
+        override fun addEdgeToGraph(graph: ConnectedTurnoutsGraph) {
             val state = turnout?.state?.value ?: TurnoutState.UNKNOWN
             when (state) {
                 TurnoutState.UNKNOWN -> {}
                 TurnoutState.CLOSED -> graph.addEdge(pCenter.n, pClosed.n)
                 TurnoutState.THROWN -> graph.addEdge(pCenter.n, pThrown.n)
                 TurnoutState.INCONSISTENT -> {}
+            }
+        }
+    }
+
+    class ThreeWaySwitchView(val nameLeft: String,
+                             val nameRight: String,
+                             override val elementIndex: Int,
+                             val pCenter: Point,
+                             val pLeft: Point,
+                             val pMid: Point,
+                             val pRight: Point) : TurnoutViewInterface {
+        // var state: Int = TurnoutState.UNKNOWN
+        private var leftTurnout: Turnout? = null
+        private var rightTurnout: Turnout? = null
+
+        override fun turnoutGroup() : Push2TurnoutController.TurnoutGroup? {
+            return if (leftTurnout != null && rightTurnout != null) {
+                Push2TurnoutController.TurnoutGroup.ThreeWayTurnout(leftTurnout!!, rightTurnout!!)
+            } else {
+                null
+            }
+        }
+
+        init {
+            val combinedName = "$nameLeft##$nameRight"
+            pCenter.turnoutViewName = combinedName
+            pLeft.turnoutViewName = combinedName
+            pMid.turnoutViewName = combinedName
+            pRight.turnoutViewName = combinedName
+        }
+
+        override fun connectTurnouts(turnoutGetter: (String) -> Turnout?) {
+            leftTurnout = turnoutGetter(nameLeft)
+            rightTurnout = turnoutGetter(nameRight)
+        }
+
+        override fun disconnectTurnouts() {
+            leftTurnout = null
+            rightTurnout = null
+        }
+
+        override fun addPointsToSet(set: MutableSet<Point>) {
+            set.add(pCenter)
+            set.add(pLeft)
+            set.add(pMid)
+            set.add(pRight)
+        }
+
+        override fun addEdgeToGraph(graph: ConnectedTurnoutsGraph) {
+            val stateLeft = leftTurnout?.state?.value ?: TurnoutState.UNKNOWN
+            val stateRight = rightTurnout?.state?.value ?: TurnoutState.UNKNOWN
+            when {
+                // Note: There are some unclear states, for example if both sub-switches are thrown.
+                // Their effect would depend on the order of them on the track, which is dangerous.
+                // Therefore these states should be avoided.
+                stateLeft == TurnoutState.CLOSED && stateRight == TurnoutState.CLOSED -> graph.addEdge(pCenter.n, pMid.n)
+                stateLeft == TurnoutState.THROWN && stateRight == TurnoutState.CLOSED -> graph.addEdge(pCenter.n, pLeft.n)
+                stateLeft == TurnoutState.CLOSED && stateRight == TurnoutState.THROWN -> graph.addEdge(pCenter.n, pRight.n)
+                else -> {}
             }
         }
     }
@@ -115,7 +199,7 @@ abstract class PanelView(rect: Rectangle): Push2View(rect) {
         return graph
     }
 
-    fun updateGraph(graph: ConnectedTurnoutsGraph, turnoutViews: List<TurnoutView>, railViews: List<RailView>) {
+    fun updateGraph(graph: ConnectedTurnoutsGraph, turnoutViews: List<TurnoutViewInterface>, railViews: List<RailView>) {
         graph.resetEdges()
         turnoutViews.forEach {
             it.addEdgeToGraph(graph)
@@ -125,7 +209,7 @@ abstract class PanelView(rect: Rectangle): Push2View(rect) {
         }
     }
 
-    fun enumeratePoints(turnoutViews: List<TurnoutView>, railViews: List<RailView>): Array<Point> {
+    fun enumeratePoints(turnoutViews: List<TurnoutViewInterface>, railViews: List<RailView>): Array<Point> {
         val pointSet = mutableSetOf<Point>()
 
         turnoutViews.forEach {
@@ -166,7 +250,7 @@ abstract class PanelView(rect: Rectangle): Push2View(rect) {
         for (i in 0 until path.lastIndex) {
             val p0 = points[path[i]]
             val p1 = points[path[i+1]]
-            if (p0.turnoutName != null && p0.turnoutName == p1.turnoutName) {
+            if (p0.turnoutViewName != null && p0.turnoutViewName == p1.turnoutViewName) {
                 crossingTurnoutCount++
             }
         }
@@ -215,7 +299,7 @@ abstract class PanelView(rect: Rectangle): Push2View(rect) {
     abstract val pTitle: Point
     abstract val title: String
 
-    abstract val turnoutViews: List<TurnoutView>
+    abstract val turnoutViews: List<TurnoutViewInterface>
     abstract val railViews: List<RailView>
 
     abstract val graphPoints: Array<Point>

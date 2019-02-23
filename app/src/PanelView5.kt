@@ -11,7 +11,7 @@ open class PanelView5(rect: Rectangle): PanelView(rect) {
 
     override val lines = arrayOf(arrayOf(a, m, n, z))
 
-    final override val turnoutViews = listOf<TurnoutView>()
+    final override val turnoutViews = listOf<TurnoutViewInterface>()
     final override val railViews = listOf(RailView(arrayOf(a, m, n, z)))
     final override val graphPoints = enumeratePoints(turnoutViews, railViews)
     override val graph = buildGraph(graphPoints)

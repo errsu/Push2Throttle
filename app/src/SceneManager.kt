@@ -289,8 +289,9 @@ class PanelScene(private val display: Push2Display,
         val panelView = panelViews[page]
         panelManager.turnoutTable.controller = turnoutController
         panelView.turnoutViews.forEach { turnoutView ->
-            turnoutView.turnout = panelManager.turnoutTable.turnoutWithUserName(turnoutView.name)
-            turnoutController.turnouts[turnoutView.elementIndex] = turnoutView.turnout
+            // TODO: prepare for 3 way switch
+            turnoutView.connectTurnouts(panelManager.turnoutTable::turnoutWithUserName)
+            turnoutController.connectPositionToTurnouts(turnoutView.elementIndex, turnoutView.turnoutGroup()!!)
         }
         turnoutController.connectToElements()
         panelManager.turnoutsMoved = panelView::update
@@ -312,11 +313,9 @@ class PanelScene(private val display: Push2Display,
         val panelView = panelViews[page]
         panelManager.turnoutTable.controller = null
         panelView.turnoutViews.forEach { turnoutView ->
-            turnoutView.turnout = null
+            turnoutView.disconnectTurnouts()
         }
-        for (index in turnoutController.turnouts.indices) {
-            turnoutController.turnouts[index] = null
-        }
+        turnoutController.disconnectFromTurnouts()
         turnoutController.disconnectFromElements()
         panelManager.turnoutsMoved = {}
         display.removeView(panelView)

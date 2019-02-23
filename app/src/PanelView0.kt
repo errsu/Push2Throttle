@@ -8,7 +8,7 @@ import javax.imageio.ImageIO
 open class PanelView0(rect: Rectangle): PanelView(rect) {
 
     override val lines = arrayOf(arrayOf<Point>())
-    final override val turnoutViews = listOf<TurnoutView>()
+    final override val turnoutViews = listOf<TurnoutViewInterface>()
     final override val railViews = listOf<RailView>()
     final override val graphPoints = enumeratePoints(turnoutViews, railViews)
     override val graph = buildGraph(graphPoints)

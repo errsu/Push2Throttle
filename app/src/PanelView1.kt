@@ -30,24 +30,23 @@ open class PanelView1(rect: Rectangle): PanelView(rect) {
             arrayOf(c, m),
             arrayOf(g, h, j, k))
 
-    private val EW = TurnoutView("DKW-W", 2, e, e.leg("W", s1), e.leg("NW", s1))
-    private val EE = TurnoutView("DKW-E", 10, e, e.leg("E", s1), e.leg("SE", s1))
+    private val E = DoubleSlipTurnoutView("DKW-W", "DKW-E", 2, e, e.leg("NW", s1), e.leg("W", s1), e.leg("E", s1), e.leg("SE", s1))
     private val F  = TurnoutView("WR", 11, f, f.leg("W", s1), f.leg("NW", s1))
-    private val IJ = ThreeWaySwitchView("W3L", "W3R", 6, j, j.leg("SW", s1), j.leg("W", s1), j.leg("NW", s1))
+    private val J = ThreeWaySwitchView("W3L", "W3R", 6, j, j.leg("SW", s1), j.leg("W", s1), j.leg("NW", s1))
     private val K  = TurnoutView("WL", 13, k, k.leg("E", s1), k.leg("NE", s1))
 
-    final override val turnoutViews = listOf(EW, EE, F, IJ, K)
+    final override val turnoutViews = listOf(E, F, J, K)
 
     final override val railViews = listOf(
-            RailView(arrayOf(a, d, EW.pThrown)),
-            RailView(arrayOf(b, EW.pClosed)),
+            RailView(arrayOf(a, d, E.pWestThrown)),
+            RailView(arrayOf(b, E.pWestClosed)),
             RailView(arrayOf(c, F.pClosed)),
-            RailView(arrayOf(EE.pClosed, IJ.pMid)),
-            RailView(arrayOf(EE.pThrown, F.pThrown)),
+            RailView(arrayOf(E.pEastClosed, J.pMid)),
+            RailView(arrayOf(E.pEastThrown, F.pThrown)),
             RailView(arrayOf(F.pCenter, K.pCenter)),
-            RailView(arrayOf(g, h, IJ.pRight)),
-            RailView(arrayOf(K.pThrown, IJ.pLeft)),
-            RailView(arrayOf(IJ.pCenter, l)),
+            RailView(arrayOf(g, h, J.pRight)),
+            RailView(arrayOf(K.pThrown, J.pLeft)),
+            RailView(arrayOf(J.pCenter, l)),
             RailView(arrayOf(K.pClosed, m)))
 
     final override val graphPoints = enumeratePoints(turnoutViews, railViews)

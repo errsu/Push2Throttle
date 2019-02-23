@@ -146,7 +146,7 @@ abstract class Switch(val isRgb: Boolean) : MidiElement() {
             "toggle" -> SwitchType.Toggle
             "momentary" -> SwitchType.Momentary
             "trigger" -> SwitchType.Trigger
-            else -> throw Exception("bad type string")
+            else -> type
         }
     }
 

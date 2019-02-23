@@ -46,6 +46,8 @@ abstract class PanelView(rect: Rectangle): Push2View(rect) {
         }
     }
 
+    // TODO: renaming: turnouts is what we have in JMRI, switches is what we see on Push2
+
     interface TurnoutViewInterface {
         fun connectTurnouts(turnoutGetter: (String) -> Turnout?)
         fun disconnectTurnouts()
@@ -55,18 +57,33 @@ abstract class PanelView(rect: Rectangle): Push2View(rect) {
         val elementIndex: Int
     }
 
-    class TurnoutView(val name: String,
+    // in case of left switch
+    //                     --- center point
+    //                     |
+    //  closed point       V
+    //          ====*======*====
+    //          ====*====
+    //  thrown point
+    //
+    // in case of right switch
+    //                     --- center point
+    //  thrown point       |
+    //          ====*====  V
+    //          ====*======*====
+    //  closed point
+
+    class TurnoutView(private val turnoutName: String,
                       override val elementIndex: Int,
                       val pCenter: Point,
                       val pClosed: Point,
                       val pThrown: Point) : TurnoutViewInterface {
-        // var state: Int = TurnoutState.UNKNOWN
+
         private var turnout: Turnout? = null
 
         init {
-            pCenter.turnoutViewName = name
-            pClosed.turnoutViewName = name
-            pThrown.turnoutViewName = name
+            pCenter.turnoutViewName = turnoutName
+            pClosed.turnoutViewName = turnoutName
+            pThrown.turnoutViewName = turnoutName
         }
 
         override fun turnoutGroup() : Push2TurnoutController.TurnoutGroup? {
@@ -78,7 +95,7 @@ abstract class PanelView(rect: Rectangle): Push2View(rect) {
         }
 
         override fun connectTurnouts(turnoutGetter: (String) -> Turnout?) {
-            turnout = turnoutGetter(name)
+            turnout = turnoutGetter(turnoutName)
         }
 
         override fun disconnectTurnouts() {
@@ -102,14 +119,21 @@ abstract class PanelView(rect: Rectangle): Push2View(rect) {
         }
     }
 
-    class ThreeWaySwitchView(val nameLeft: String,
-                             val nameRight: String,
+    //                           --- center point
+    //         right point       |
+    //  right turnout ====*====  V
+    //  mid point     ====*======*====
+    //  left turnout  ====*====
+    //          left point
+
+    class ThreeWaySwitchView(private val leftTurnoutName: String,
+                             private val rightTurnoutName: String,
                              override val elementIndex: Int,
                              val pCenter: Point,
                              val pLeft: Point,
                              val pMid: Point,
                              val pRight: Point) : TurnoutViewInterface {
-        // var state: Int = TurnoutState.UNKNOWN
+
         private var leftTurnout: Turnout? = null
         private var rightTurnout: Turnout? = null
 
@@ -122,7 +146,7 @@ abstract class PanelView(rect: Rectangle): Push2View(rect) {
         }
 
         init {
-            val combinedName = "$nameLeft##$nameRight"
+            val combinedName = "$leftTurnoutName##$rightTurnoutName"
             pCenter.turnoutViewName = combinedName
             pLeft.turnoutViewName = combinedName
             pMid.turnoutViewName = combinedName
@@ -130,8 +154,8 @@ abstract class PanelView(rect: Rectangle): Push2View(rect) {
         }
 
         override fun connectTurnouts(turnoutGetter: (String) -> Turnout?) {
-            leftTurnout = turnoutGetter(nameLeft)
-            rightTurnout = turnoutGetter(nameRight)
+            leftTurnout = turnoutGetter(leftTurnoutName)
+            rightTurnout = turnoutGetter(rightTurnoutName)
         }
 
         override fun disconnectTurnouts() {
@@ -157,6 +181,74 @@ abstract class PanelView(rect: Rectangle): Push2View(rect) {
                 stateLeft == TurnoutState.THROWN && stateRight == TurnoutState.CLOSED -> graph.addEdge(pCenter.n, pLeft.n)
                 stateLeft == TurnoutState.CLOSED && stateRight == TurnoutState.THROWN -> graph.addEdge(pCenter.n, pRight.n)
                 else -> {}
+            }
+        }
+    }
+
+    // Assuming the double-slip turnout consists of two right turnouts
+    //                          ---- center point
+    //                          |
+    //  west thrown point       |
+    //               ====*====  V       east closed point
+    //  west turnout ====*======*======*==== east turnout
+    //  west closed point          ====*====
+    //                                  east thrown point
+
+    class DoubleSlipTurnoutView(private val westTurnoutName: String,
+                                private val eastTurnoutName: String,
+                                override val elementIndex: Int,
+                                val pCenter: Point,
+                                val pWestThrown: Point,
+                                val pWestClosed: Point,
+                                val pEastClosed: Point,
+                                val pEastThrown: Point) : TurnoutViewInterface {
+
+        private var westTurnout: Turnout? = null
+        private var eastTurnout: Turnout? = null
+
+        override fun turnoutGroup() : Push2TurnoutController.TurnoutGroup? {
+            return if (westTurnout != null && eastTurnout != null) {
+                Push2TurnoutController.TurnoutGroup.DoubleSlipTurnout(westTurnout!!, eastTurnout!!)
+            } else {
+                null
+            }
+        }
+
+        init {
+            val combinedName = "$westTurnoutName##$eastTurnoutName"
+            pCenter.turnoutViewName = combinedName
+            pWestThrown.turnoutViewName = combinedName
+            pWestClosed.turnoutViewName = combinedName
+            pEastClosed.turnoutViewName = combinedName
+            pEastThrown.turnoutViewName = combinedName
+        }
+
+        override fun connectTurnouts(turnoutGetter: (String) -> Turnout?) {
+            westTurnout = turnoutGetter(westTurnoutName)
+            eastTurnout = turnoutGetter(eastTurnoutName)
+        }
+
+        override fun disconnectTurnouts() {
+            westTurnout = null
+            eastTurnout = null
+        }
+
+        override fun addPointsToSet(set: MutableSet<Point>) {
+            set.add(pCenter)
+            set.add(pWestThrown)
+            set.add(pWestClosed)
+            set.add(pEastClosed)
+            set.add(pEastThrown)
+        }
+
+        override fun addEdgeToGraph(graph: ConnectedTurnoutsGraph) {
+            when (westTurnout?.state?.value ?: TurnoutState.UNKNOWN) {
+                TurnoutState.CLOSED -> graph.addEdge(pCenter.n, pWestClosed.n)
+                TurnoutState.THROWN -> graph.addEdge(pCenter.n, pWestThrown.n)
+            }
+            when (eastTurnout?.state?.value ?: TurnoutState.UNKNOWN) {
+                TurnoutState.CLOSED -> graph.addEdge(pCenter.n, pEastClosed.n)
+                TurnoutState.THROWN -> graph.addEdge(pCenter.n, pEastThrown.n)
             }
         }
     }

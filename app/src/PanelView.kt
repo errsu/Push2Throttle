@@ -202,7 +202,7 @@ abstract class PanelView(rect: Rectangle): Push2View(rect) {
     @Suppress("UNUSED_PARAMETER")
     override fun draw(g2: Graphics2D, frame: Int, display: Push2Display) {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
-        g2.color = display.push2Colors[20]
+        g2.color = Push2Colors.num2Display[Push2Colors.nameToNumber["pale-blue"]]
         g2.fillRect(0, 0, rect.width, rect.height)
 
         for (l in lines) {
@@ -211,7 +211,7 @@ abstract class PanelView(rect: Rectangle): Push2View(rect) {
 
         components.forEachIndexed { index, path ->
             fillPath(g2,
-                display.push2Colors[colors[index]],
+                Push2Colors.num2Display[colors[index]],
                 makePath(path.map{graphPoints[it]}.toTypedArray())
             )
         }

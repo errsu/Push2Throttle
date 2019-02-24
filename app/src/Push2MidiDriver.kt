@@ -110,4 +110,19 @@ class Push2MidiDriver : Receiver {
         val timeStamp: Long = -1
         outgoingPortReceiver?.send(msg, timeStamp)
     }
+
+    fun setColorPaletteEntry(n: Int, r: Int, g: Int, b: Int, w: Int) {
+        val data = arrayOf(
+                0xF0, // start of sysex
+                0x00, 0x21, 0x1D, 0x01, 0x01, // header
+                0x03, // cmd
+                n,
+                r.and(0x7F), r.and(0x80).shr(7),
+                g.and(0x7F), g.and(0x80).shr(7),
+                b.and(0x7F), b.and(0x80).shr(7),
+                w.and(0x7F), w.and(0x80).shr(7),
+                0xF7 // end of sysex
+        )
+        sendSysex(data.map{it.toByte()}.toByteArray())
+    }
 }

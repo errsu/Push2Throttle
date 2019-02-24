@@ -20,11 +20,11 @@ class ThrottleView(rect: Rectangle, val selectionManager: SelectionManager): Pus
             return
         }
         val trackColorIndex = loco.color.value
-        val trackColor = display.push2Colors.getOrDefault(trackColorIndex, Color.GRAY)
+        val trackColor = Push2Colors.num2Display.getOrDefault(trackColorIndex, Color.GRAY)
         g2.paint = trackColor
         g2.fill(Rectangle(0, 0, rect.width, rect.height))
         if (selectionManager.getSelectedColumn() == selectionManager.getThrottleColumn(throttle!!)) {
-            g2.paint = display.invertedColor(trackColor)
+            g2.paint = Push2Colors.invertedDisplayColor(trackColor)
             g2.fill(Rectangle(0, 0, rect.width, 26))
         }
 
@@ -35,7 +35,7 @@ class ThrottleView(rect: Rectangle, val selectionManager: SelectionManager): Pus
         g2.drawString(locoName, (rect.width - wName) / 2, 20)
 
         val sliderRect = Rectangle(6, 30, 10, rect.height - 38)
-        g2.paint = display.invertedColor(trackColor)
+        g2.paint = Push2Colors.invertedDisplayColor(trackColor)
         g2.fill(sliderRect)
         g2.paint = Color.BLACK
         g2.draw(sliderRect)

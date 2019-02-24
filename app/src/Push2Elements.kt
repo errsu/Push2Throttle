@@ -10,7 +10,7 @@ interface MidiController {
 abstract class MidiElement {
     var name: String = "noname"
     var controller: MidiController? = null
-    open fun setAttributes(mapping: Map<String,Any?>) {}
+    open fun setAttributes(attributes: Map<String,Any?>) {}
     abstract fun reset()
     abstract fun registerForMidi(midi: Push2MidiDriver)
     abstract fun updatePush2(midi: Push2MidiDriver)
@@ -39,8 +39,8 @@ class Erp(private val turnCcNumber: Int, private val touchNnNumber: Int) : MidiE
         resetTimerTask = null
     }
 
-    override fun setAttributes(mapping: Map<String,Any?>) {
-        val newDelta = mapping["delta"]
+    override fun setAttributes(attributes: Map<String,Any?>) {
+        val newDelta = attributes["delta"]
         if (newDelta is Float && newDelta != 0.0f) {
             delta = newDelta
         }
@@ -87,29 +87,32 @@ abstract class Switch(val isRgb: Boolean) : MidiElement() {
     private var type = SwitchType.Momentary
     var state = false
 
-    protected var onColor = if (isRgb) 122 else 127
-    protected var offColor = if (isRgb) 0 else 0
+    protected var onColor = colorIndex("white")
+    protected var offColor = colorIndex("black")
 
     override fun reset() {
         type = SwitchType.Momentary
         state = false
-        onColor = if (isRgb) 122 else 127
-        offColor = if (isRgb) 0 else 0
+        onColor = colorIndex("white")
+        offColor = colorIndex("black")
     }
 
-    // TODO: Use Push2Elements tables (refactor them out)
-    private fun colorIndex(color: Any?) : Int? {
-        return when (color) {
-            null -> null
-            "red" -> if (isRgb) 127 else null
-            "green" -> if (isRgb) 126 else null
-            "blue" -> if (isRgb) 125 else null
-            "yellow" -> if (isRgb) 7 else null
-            "white" -> if (isRgb) 122 else 127
-            "black" -> if (isRgb) 0 else 0
-            is Int -> color
-            else -> null
-        }}
+    private fun colorIndex(color: Any?) : Int {
+        return if (isRgb) {
+            when (color) {
+                is String -> Push2Colors.nameToNumber.getOrDefault(color, 0)
+                is Int -> color
+                else -> 0
+            }
+        } else {
+            when (color) {
+                "white" -> 127
+                "black" -> 0
+                is Int -> color
+                else -> 0
+            }
+        }
+    }
 
     fun onMidi(midi: Push2MidiDriver, value: Int) {
         // TODO: for each Element, have a flag if it is reflecting a jmri state
@@ -139,14 +142,20 @@ abstract class Switch(val isRgb: Boolean) : MidiElement() {
         }
     }
 
-    override fun setAttributes(mapping: Map<String,Any?>) {
-        onColor = colorIndex(mapping["onColor"]) ?: onColor
-        offColor = colorIndex(mapping["offColor"]) ?: offColor
-        type = when(mapping["type"]) {
-            "toggle" -> SwitchType.Toggle
-            "momentary" -> SwitchType.Momentary
-            "trigger" -> SwitchType.Trigger
-            else -> type
+    override fun setAttributes(attributes: Map<String,Any?>) {
+        if (attributes.containsKey("onColor")) {
+            onColor = colorIndex(attributes["onColor"])
+        }
+        if (attributes.containsKey("offColor")) {
+            offColor = colorIndex(attributes["offColor"])
+        }
+        if (attributes.containsKey("type")) {
+            type = when(attributes["type"]) {
+                "toggle" -> SwitchType.Toggle
+                "momentary" -> SwitchType.Momentary
+                "trigger" -> SwitchType.Trigger
+                else -> throw Exception("unexpected element type ${attributes["type"]}")
+            }
         }
     }
 
@@ -193,54 +202,6 @@ class ButtonRgb(private val number: Int) : Switch(true) {
 
 class Push2Elements(val midi: Push2MidiDriver) {
     // TODO: use members (see Loco)
-
-    val color2number = mapOf(
-            "lt-rose"  to   1, "red"       to   2, "orange"    to   3, "dk-orange" to   4,
-            "lt-brown" to   5, "dk-brown"  to   6, "lt-yellow" to   7, "yellow"    to   8,
-            "lime"     to   9, "lt-green"  to  10, "green"     to  11, "dk-lime"   to  12,
-            "mint"     to  13, "pale-cyan" to  14, "cyan"      to  15, "lt-blue"   to  16,
-            "blue"     to  17, "dk-blue"   to  18, "navy"      to  19, "pale-blue" to  20,
-            "lt-navy"  to  21, "indigo"    to  22, "lt-indigo" to  23, "pale-pink" to  24,
-            "rose"     to  25, "pink"      to  26,
-            "white"    to 120, "dk-white"  to 122, "lt-gray"   to 121, "gray"      to 123,
-            "dk-gray"  to 124, "lt-black"  to 119, "black"     to   0,
-            "rgb-blue" to 125, "rgb-green" to 126, "rgb-red"   to 127,
-            "hi-blue"  to 48)
-
-    val number2color = Array(128) {"unknown"}.apply {
-        color2number.forEach { name, number ->
-            set(number, name)
-        }
-    }
-
-    fun darkerColor(colorNumber: Int): Int {
-        return if (colorNumber in 1..26) 63 + colorNumber * 2
-               else throw Exception("not a standard color: $colorNumber")
-    }
-
-    fun darkestColor(colorNumber: Int): Int {
-        return if (colorNumber in 1..26) 64 + colorNumber * 2
-               else throw Exception("not a standard color: $colorNumber")
-    }
-
-    private fun setColorPaletteEntry(n: Int, r: Int, g: Int, b: Int, w: Int) {
-        val data = arrayOf(
-                0xF0, // start of sysex
-                0x00, 0x21, 0x1D, 0x01, 0x01, // header
-                0x03, // cmd
-                n,
-                r.and(0x7F), r.and(0x80).shr(7),
-                g.and(0x7F), g.and(0x80).shr(7),
-                b.and(0x7F), b.and(0x80).shr(7),
-                w.and(0x7F), w.and(0x80).shr(7),
-                0xF7 // end of sysex
-        )
-        midi.sendSysex(data.map{it.toByte()}.toByteArray())
-    }
-
-    private fun initPalette() {
-        setColorPaletteEntry(119, 8, 8, 8, 123) // make light black really dark (was 0x1A, 0x1A, 0x1A, 123)
-    }
 
     private val elements: Map<String, MidiElement> = mapOf(
             "Pad S8 T1" to Pad(36), "Pad S8 T2" to Pad(37), "Pad S8 T3" to Pad(38), "Pad S8 T4" to Pad(39),
@@ -342,7 +303,7 @@ class Push2Elements(val midi: Push2MidiDriver) {
             "Select"       to ButtonWhite(48))
 
     fun register() {
-        initPalette()
+        Push2Colors.initRgbPalette(midi)
         for ((key, element) in elements.entries) {
             element.name = key
             element.updatePush2(midi)

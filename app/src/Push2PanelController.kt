@@ -7,9 +7,9 @@ class Push2PanelController(
         private val pads: Array<Array<Pad>>, // pads[row][col]
         private val pager: Pager) : MidiController {
 
-    fun String.d0() = elements.color2number[this] ?: 0
-    fun String.d1() = elements.darkerColor(this.d0())
-    fun String.d2() = elements.darkestColor(this.d0())
+    fun String.d0() = Push2Colors.nameToNumber[this] ?: 0
+    fun String.d1() = Push2Colors.darkerLEDColor(this.d0())
+    fun String.d2() = Push2Colors.darkestLEDColor(this.d0())
 
     private val panelColorsSelected = arrayOf(
             "dk-white"  .d0(), //  0

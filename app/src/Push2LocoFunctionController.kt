@@ -1,7 +1,5 @@
 package push2throttle
 
-import tornadofx.mapEach
-
 // The Push2 loco function controller uses the Push2 Pads to control
 // the F0...F32 functions of locos (via throttle). The controlled functions/locos
 // depend on the selection. Selection is a property of the throttle controller.
@@ -27,7 +25,7 @@ class Push2LocoFunctionController(
             arrayOf("green", "orange", "lt-rose", "lt-yellow", "pale-cyan", "rose", "lt-yellow", "lt-rose"),
             arrayOf("lt-blue", "indigo", "mint", "pale-pink", "dk-orange", "indigo", "cyan", "pale-pink"),
             arrayOf("rose", "yellow", "dk-blue", "cyan", "blue", "yellow", "dk-blue", "dk-lime"))
-        .map{ it.map{ color -> elements.color2number[color] ?: 0 }}
+        .map{ it.map{ color -> Push2Colors.nameToNumber[color] ?: 0 }}
 
     init {
         repeat(throttleManager.slotCount) { slot ->
@@ -43,11 +41,11 @@ class Push2LocoFunctionController(
         val onColor : Any? = when (locoFunc.behavior) {
             FuncBehavior.M -> color
             FuncBehavior.T -> color
-            FuncBehavior.I -> elements.darkestColor(color)
+            FuncBehavior.I -> Push2Colors.darkestLEDColor(color)
         }
         val offColor = when (locoFunc.behavior) {
-            FuncBehavior.M -> elements.darkerColor(color)
-            FuncBehavior.T -> elements.darkestColor(color)
+            FuncBehavior.M -> Push2Colors.darkerLEDColor(color)
+            FuncBehavior.T -> Push2Colors.darkestLEDColor(color)
             FuncBehavior.I -> color
         }
         val padType = when (locoFunc.behavior) {
@@ -65,8 +63,8 @@ class Push2LocoFunctionController(
         repeat(8) { row ->
             repeat(8) {col ->
                 elements.connect(pads[row][col], null,
-                    mapOf("onColor" to elements.color2number["lt-gray"],
-                        "offColor" to elements.color2number["lt-black"],
+                    mapOf("onColor" to Push2Colors.nameToNumber["lt-gray"],
+                        "offColor" to Push2Colors.nameToNumber["lt-black"],
                         "type" to "momentary"), false)
             }
         }

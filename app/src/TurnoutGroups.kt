@@ -15,7 +15,7 @@ class SingleSwitch(private val turnout: Turnout) : TurnoutGroup {
     override fun color(position: String) = when (position) {
         "closed" -> "green"
         "thrown" -> "red"
-        "invalid" -> "orange" // TODO: solve color table todo in Push2Elements
+        "invalid" -> "orange"
         else -> "black"
     }
     override fun currentPosition() = when(turnout.state.value) {
@@ -40,7 +40,7 @@ class ThreeWaySwitch(private val leftTurnout: Turnout, private val rightTurnout:
     override fun color(position: String) = when (position) {
         "left" -> "red"
         "mid" -> "green"
-        "right" -> "blue"
+        "right" -> "dk-blue"
         "invalid" -> "orange"
         else -> "black"
     }
@@ -74,7 +74,7 @@ class DoubleSlipSwitch(private val westTurnout: Turnout, private val eastTurnout
         "straight" -> "green"
         "cross"    -> "yellow"
         "turnWest" -> "red"
-        "turnEast" -> "blue"
+        "turnEast" -> "dk-blue"
         "invalid"  -> "orange"
         else -> "black"
     }

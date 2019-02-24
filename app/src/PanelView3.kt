@@ -62,11 +62,11 @@ open class PanelView3(rect: Rectangle): PanelView(rect) {
     private val ST = CrossoverSwitchView("W8", "W9", 6, s, s.leg("E", s0), s.leg("SE", s0), t, t.leg("W", s0), t.leg("NW", s0))
     private val UV = CrossoverSwitchView("W10", "W11", 7, u, u.leg("E", s0), u.leg("NE", s0), v, v.leg("W", s0), v.leg("SW", s0))
 
-    final override val switchViews = mutableListOf( // TODO: why mutable?
+    final override val switchViews = listOf(
         A, H, K, M, O, P, ST, UV
     )
 
-    final override val railViews = mutableListOf(  // TODO: why mutable?
+    final override val railViews = listOf(
         RailView(arrayOf(A.pThrown, b, c, d, e, f, A.pClosed)),
         RailView(arrayOf(A.pCenter, H.pCenter)),
         RailView(arrayOf(H.pClosed, ST.pWestCenter)),

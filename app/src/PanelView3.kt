@@ -56,36 +56,33 @@ open class PanelView3(rect: Rectangle): PanelView(rect) {
     private val A = SwitchView("W1", 0, a, a.leg("W", s0), a.leg("SW", s0))
     private val H = SwitchView("W2", 1, h, h.leg("E", s0), h.leg("SE", s0))
     private val K = SwitchView("W3", 2, k, k.leg("E", s0), k.leg("SE", s0))
-    private val M1 = SwitchView("W5", 12, m, m.leg("W", s1), m.leg("SW", s1))
-    private val M2 = SwitchView("W6", 4, m, m.leg("E", s1), m.leg("NE", s1))
+    private val M = DoubleSlipSwitchView("W5", "W6", 12, m, m.leg("SW", s1), m.leg("W", s1), m.leg("E", s1), m.leg("NE", s1))
     private val O = SwitchView("W7", 5, o, o.leg("W", s1), o.leg("SW", s1))
     private val P = SwitchView("W4", 11, p, p.leg("E", s1), p.leg("NE", s1))
-    private val S = SwitchView("W8", 6, s, s.leg("E", s0), s.leg("SE", s0))
-    private val T = SwitchView("W9", 14, t, t.leg("W", s0), t.leg("NW", s0))
-    private val U = SwitchView("W10", 15, u, u.leg("E", s0), u.leg("NE", s0))
-    private val V = SwitchView("W11", 7, v, v.leg("W", s0), v.leg("SW", s0))
+    private val ST = CrossoverSwitchView("W8", "W9", 6, s, s.leg("E", s0), s.leg("SE", s0), t, t.leg("W", s0), t.leg("NW", s0))
+    private val UV = CrossoverSwitchView("W10", "W11", 7, u, u.leg("E", s0), u.leg("NE", s0), v, v.leg("W", s0), v.leg("SW", s0))
 
     final override val switchViews = mutableListOf( // TODO: why mutable?
-        A, H, K, M1, M2, O, P, S, T, U, V
+        A, H, K, M, O, P, ST, UV
     )
 
     final override val railViews = mutableListOf(  // TODO: why mutable?
         RailView(arrayOf(A.pThrown, b, c, d, e, f, A.pClosed)),
         RailView(arrayOf(A.pCenter, H.pCenter)),
-        RailView(arrayOf(H.pClosed, S.pCenter)),
-        RailView(arrayOf(S.pClosed, V.pClosed)),
-        RailView(arrayOf(V.pCenter, g)),
+        RailView(arrayOf(H.pClosed, ST.pWestCenter)),
+        RailView(arrayOf(ST.pWestClosed, UV.pEastClosed)),
+        RailView(arrayOf(UV.pEastCenter, g)),
         RailView(arrayOf(H.pThrown, i, K.pCenter)),
         RailView(arrayOf(K.pClosed, O.pClosed)),
-        RailView(arrayOf(O.pCenter, T.pClosed)),
-        RailView(arrayOf(S.pThrown, T.pThrown)),
-        RailView(arrayOf(U.pThrown, V.pThrown)),
-        RailView(arrayOf(T.pCenter, U.pCenter)),
-        RailView(arrayOf(U.pClosed, j)),
-        RailView(arrayOf(K.pThrown, l, M1.pClosed)),
-        RailView(arrayOf(M2.pThrown, O.pThrown)),
-        RailView(arrayOf(M2.pClosed, n)),
-        RailView(arrayOf(P.pThrown, M1.pThrown)),
+        RailView(arrayOf(O.pCenter, ST.pEastClosed)),
+        RailView(arrayOf(ST.pWestThrown, ST.pEastThrown)),
+        RailView(arrayOf(UV.pWestThrown, UV.pEastThrown)),
+        RailView(arrayOf(ST.pEastCenter, UV.pWestCenter)),
+        RailView(arrayOf(UV.pWestClosed, j)),
+        RailView(arrayOf(K.pThrown, l, M.pWestClosed)),
+        RailView(arrayOf(M.pEastThrown, O.pThrown)),
+        RailView(arrayOf(M.pEastClosed, n)),
+        RailView(arrayOf(P.pThrown, M.pWestThrown)),
         RailView(arrayOf(q, P.pCenter)),
         RailView(arrayOf(P.pClosed, r))
     )

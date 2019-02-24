@@ -1,6 +1,7 @@
 package push2throttle
 
 // Turnouts is what we have in JMRI, switches is what we see on Push2 surface.
+// See doc/SwitchTypes.pdf for details.
 
 interface SwitchViewInterface {
     fun connectTurnouts(turnoutGetter: (String) -> Turnout?)
@@ -11,26 +12,11 @@ interface SwitchViewInterface {
     val elementIndex: Int
 }
 
-// in case of left switch
-//                     --- center point
-//                     |
-//  closed point       V
-//          ====*======*====
-//          ====*====
-//  thrown point
-//
-// in case of right switch
-//                     --- center point
-//  thrown point       |
-//          ====*====  V
-//          ====*======*====
-//  closed point
-
-class SwitchView(private val turnoutName: String,
-                 override val elementIndex: Int,
-                 val pCenter: Point,
-                 val pClosed: Point,
-                 val pThrown: Point) : SwitchViewInterface {
+class SingleSwitchView(private val turnoutName: String,
+                       override val elementIndex: Int,
+                       val pCenter: Point,
+                       val pClosed: Point,
+                       val pThrown: Point) : SwitchViewInterface {
 
     private var turnout: Turnout? = null
 
@@ -72,13 +58,6 @@ class SwitchView(private val turnoutName: String,
         }
     }
 }
-
-//                           --- center point
-//         right point       |
-//  right turnout ====*====  V
-//  mid point     ====*======*====
-//  left turnout  ====*====
-//          left point
 
 class ThreeWaySwitchView(private val leftTurnoutName: String,
                          private val rightTurnoutName: String,
@@ -139,24 +118,6 @@ class ThreeWaySwitchView(private val leftTurnoutName: String,
     }
 }
 
-// Double-slip turnout consisting of two right turnouts
-//                          ---- center point
-//                          |
-//  west thrown point       |
-//               ====*====  V       east closed point
-//  west turnout ====*======*======*==== east turnout
-//  west closed point          ====*====
-//                                  east thrown point
-//
-// two left turnouts
-//                          ---- center point
-//                          |
-//                          |       east thrown point
-//  west closed point       V  ====*====
-//  west turnout ====*======*======*==== east turnout
-//               ====*====          east closed point
-//  west thrown point
-
 class DoubleSlipSwitchView(private val westTurnoutName: String,
                            private val eastTurnoutName: String,
                            override val elementIndex: Int,
@@ -215,26 +176,6 @@ class DoubleSlipSwitchView(private val westTurnoutName: String,
         }
     }
 }
-
-// Two positionally independent turnouts with linked states.
-//
-// In case of left turnouts:
-//              east closed point      east center point
-// =============================*======*==================
-//                           ===*====
-//    west thrown point   ===   east thrown point
-//                ====*===
-// ============*======*===================================
-//   west center      west closed point
-//
-// In case of right turnouts:
-//   west center      west closed point
-// ============*======*===================================
-//                ====*===
-//    west thrown point   ===   east thrown point
-//                           ===*====
-// =============================*======*==================
-//              east closed point      east center point
 
 class CrossoverSwitchView(private val westTurnoutName: String,
                           private val eastTurnoutName: String,

@@ -53,12 +53,12 @@ open class PanelView3(rect: Rectangle): PanelView(rect) {
             arrayOf(s, t),
             arrayOf(u, v))
 
-    private val A = SwitchView("W1", 0, a, a.leg("W", s0), a.leg("SW", s0))
-    private val H = SwitchView("W2", 1, h, h.leg("E", s0), h.leg("SE", s0))
-    private val K = SwitchView("W3", 2, k, k.leg("E", s0), k.leg("SE", s0))
+    private val A = SingleSwitchView("W1", 0, a, a.leg("W", s0), a.leg("SW", s0))
+    private val H = SingleSwitchView("W2", 1, h, h.leg("E", s0), h.leg("SE", s0))
+    private val K = SingleSwitchView("W3", 2, k, k.leg("E", s0), k.leg("SE", s0))
     private val M = DoubleSlipSwitchView("W5", "W6", 12, m, m.leg("SW", s1), m.leg("W", s1), m.leg("E", s1), m.leg("NE", s1))
-    private val O = SwitchView("W7", 5, o, o.leg("W", s1), o.leg("SW", s1))
-    private val P = SwitchView("W4", 11, p, p.leg("E", s1), p.leg("NE", s1))
+    private val O = SingleSwitchView("W7", 5, o, o.leg("W", s1), o.leg("SW", s1))
+    private val P = SingleSwitchView("W4", 11, p, p.leg("E", s1), p.leg("NE", s1))
     private val ST = CrossoverSwitchView("W8", "W9", 6, s, s.leg("E", s0), s.leg("SE", s0), t, t.leg("W", s0), t.leg("NW", s0))
     private val UV = CrossoverSwitchView("W10", "W11", 7, u, u.leg("E", s0), u.leg("NE", s0), v, v.leg("W", s0), v.leg("SW", s0))
 

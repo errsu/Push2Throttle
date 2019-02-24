@@ -1,5 +1,7 @@
 package push2throttle
 
+// see doc/SwitchTypes.pdf
+
 interface TurnoutGroup{
     fun containsTurnout(turnout: Turnout) : Boolean
     fun color(position: String) : String
@@ -73,8 +75,8 @@ class DoubleSlipSwitch(private val westTurnout: Turnout, private val eastTurnout
     override fun color(position: String) = when (position) {
         "straight" -> "green"
         "cross"    -> "yellow"
-        "turnWest" -> "red"
-        "turnEast" -> "dk-blue"
+        "turnNorth" -> "red"
+        "turnSouth" -> "dk-blue"
         "invalid"  -> "orange"
         else -> "black"
     }
@@ -84,25 +86,25 @@ class DoubleSlipSwitch(private val westTurnout: Turnout, private val eastTurnout
         return when {
             stateWest == TurnoutState.CLOSED && stateEast == TurnoutState.CLOSED -> "straight"
             stateWest == TurnoutState.THROWN && stateEast == TurnoutState.THROWN -> "cross"
-            stateWest == TurnoutState.THROWN && stateEast == TurnoutState.CLOSED -> "turnWest"
-            stateWest == TurnoutState.CLOSED && stateEast == TurnoutState.THROWN -> "turnEast"
+            stateWest == TurnoutState.THROWN && stateEast == TurnoutState.CLOSED -> "turnNorth"
+            stateWest == TurnoutState.CLOSED && stateEast == TurnoutState.THROWN -> "turnSouth"
             else -> "invalid"
         }
     }
     override fun nextPosition(position: String) = when (position) {
         "straight" -> "cross"
-        "cross" -> "turnWest"
-        "turnWest" -> "turnEast"
-        "turnEast" -> "straight"
+        "cross" -> "turnNorth"
+        "turnNorth" -> "turnSouth"
+        "turnSouth" -> "straight"
         else -> "straight"
     }
     override fun setTurnoutStates(position: String, setState: (Turnout, Int) -> Unit) {
         setState(westTurnout, when (position) {
-            "cross", "turnWest" -> TurnoutState.THROWN
+            "cross", "turnNorth" -> TurnoutState.THROWN
             else -> TurnoutState.CLOSED
         })
         setState(eastTurnout, when (position) {
-            "cross", "turnEast" -> TurnoutState.THROWN
+            "cross", "turnSouth" -> TurnoutState.THROWN
             else -> TurnoutState.CLOSED
         })
     }

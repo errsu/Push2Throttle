@@ -313,8 +313,13 @@ class Push2Elements(val midi: Push2MidiDriver) {
     fun getElement(name: String) : MidiElement? {
         return elements[name]
     }
+
     fun updateElementStateByJmri(element: MidiElement, value: Any?) {
         element.updateStateByJmri(value, midi)
+    }
+
+    fun updatePush2(element: MidiElement) {
+        element.updatePush2(midi)
     }
 
     fun connect(element: MidiElement,

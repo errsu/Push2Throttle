@@ -50,6 +50,7 @@ class Push2TurnoutController(
                 buttons[index].setAttributes(
                         mapOf("offColor" to color(position),
                               "onColor" to color(nextPosition)))
+                elements.updatePush2(buttons[index])
             }
         }
     }

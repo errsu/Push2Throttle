@@ -116,6 +116,36 @@ class Push2TurnoutController(
         }
     }
 
+    class CrossoverSwitch(private val westTurnout: Turnout, private val eastTurnout: Turnout) : TurnoutGroup {
+        override fun containsTurnout(turnout: Turnout) : Boolean {
+            return eastTurnout == turnout || westTurnout == turnout
+        }
+        override fun color(position: String) = when (position) {
+            "straight" -> "green"
+            "cross"    -> "red"
+            "invalid"  -> "orange"
+            else -> "black"
+        }
+        override fun currentPosition() : String {
+            val stateWest = westTurnout.state.value
+            val stateEast = eastTurnout.state.value
+            return when {
+                stateWest == TurnoutState.CLOSED && stateEast == TurnoutState.CLOSED -> "straight"
+                stateWest == TurnoutState.THROWN && stateEast == TurnoutState.THROWN -> "cross"
+                else -> "invalid"
+            }
+        }
+        override fun nextPosition(position: String) = when (position) {
+            "straight" -> "cross"
+            "cross" -> "straight"
+            else -> "straight"
+        }
+        override fun setTurnoutStates(position: String, setState: (Turnout, Int) -> Unit) {
+            setState(westTurnout, if (position == "cross") TurnoutState.THROWN else TurnoutState.CLOSED)
+            setState(eastTurnout, if (position == "cross") TurnoutState.THROWN else TurnoutState.CLOSED)
+        }
+    }
+
     private var turnoutGroups = arrayOfNulls<TurnoutGroup?>(16)
 
     fun connectPositionToTurnouts(index: Int, turnoutGroup: TurnoutGroup) {

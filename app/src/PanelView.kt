@@ -185,7 +185,7 @@ abstract class PanelView(rect: Rectangle): Push2View(rect) {
         }
     }
 
-    // Assuming the double-slip turnout consists of two right turnouts
+    // Double-slip turnout consisting of two right turnouts
     //                          ---- center point
     //                          |
     //  west thrown point       |
@@ -193,6 +193,15 @@ abstract class PanelView(rect: Rectangle): Push2View(rect) {
     //  west turnout ====*======*======*==== east turnout
     //  west closed point          ====*====
     //                                  east thrown point
+    //
+    // two left turnouts
+    //                          ---- center point
+    //                          |
+    //                          |       east thrown point
+    //  west closed point       V  ====*====
+    //  west turnout ====*======*======*==== east turnout
+    //               ====*====          east closed point
+    //  west thrown point
 
     class DoubleSlipSwitchView(private val westTurnoutName: String,
                                private val eastTurnoutName: String,
@@ -249,6 +258,87 @@ abstract class PanelView(rect: Rectangle): Push2View(rect) {
             when (eastTurnout?.state?.value ?: TurnoutState.UNKNOWN) {
                 TurnoutState.CLOSED -> graph.addEdge(pCenter.n, pEastClosed.n)
                 TurnoutState.THROWN -> graph.addEdge(pCenter.n, pEastThrown.n)
+            }
+        }
+    }
+
+    // Two positionally independent turnouts with linked states.
+    //
+    // In case of left turnouts:
+    //              east closed point      east center point
+    // =============================*======*==================
+    //                           ===*====
+    //    west thrown point   ===   east thrown point
+    //                ====*===
+    // ============*======*===================================
+    //   west center      west closed point
+    //
+    // In case of right turnouts:
+    //   west center      west closed point
+    // ============*======*===================================
+    //                ====*===
+    //    west thrown point   ===   east thrown point
+    //                           ===*====
+    // =============================*======*==================
+    //              east closed point      east center point
+
+    class CrossoverSwitchView(private val westTurnoutName: String,
+                              private val eastTurnoutName: String,
+                              override val elementIndex: Int,
+                              val pWestCenter: Point,
+                              val pWestClosed: Point,
+                              val pWestThrown: Point,
+                              val pEastCenter: Point,
+                              val pEastClosed: Point,
+                              val pEastThrown: Point) : SwitchViewInterface {
+
+        private var westTurnout: Turnout? = null
+        private var eastTurnout: Turnout? = null
+
+        override fun turnoutGroup() : Push2TurnoutController.TurnoutGroup? {
+            return if (westTurnout != null && eastTurnout != null) {
+                Push2TurnoutController.CrossoverSwitch(westTurnout!!, eastTurnout!!)
+            } else {
+                null
+            }
+        }
+
+        init {
+            pWestCenter.switchViewName = westTurnoutName
+            pWestThrown.switchViewName = westTurnoutName
+            pWestClosed.switchViewName = westTurnoutName
+            pEastCenter.switchViewName = eastTurnoutName
+            pEastClosed.switchViewName = eastTurnoutName
+            pEastThrown.switchViewName = eastTurnoutName
+        }
+
+        override fun connectTurnouts(turnoutGetter: (String) -> Turnout?) {
+            westTurnout = turnoutGetter(westTurnoutName)
+            eastTurnout = turnoutGetter(eastTurnoutName)
+        }
+
+        override fun disconnectTurnouts() {
+            westTurnout = null
+            eastTurnout = null
+        }
+
+        override fun addPointsToSet(set: MutableSet<Point>) {
+            set.add(pWestCenter)
+            set.add(pWestThrown)
+            set.add(pWestClosed)
+            set.add(pEastCenter)
+            set.add(pEastClosed)
+            set.add(pEastThrown)
+        }
+
+        override fun addEdgeToGraph(graph: ConnectedTurnoutsGraph) {
+            when (westTurnout?.state?.value ?: TurnoutState.UNKNOWN) {
+                TurnoutState.CLOSED -> graph.addEdge(pWestCenter.n, pWestClosed.n)
+                TurnoutState.THROWN -> graph.addEdge(pWestCenter.n, pWestThrown.n)
+            }
+            when (eastTurnout?.state?.value ?: TurnoutState.UNKNOWN) {
+                TurnoutState.CLOSED -> graph.addEdge(pEastCenter.n, pEastClosed.n)
+                TurnoutState.THROWN -> graph.addEdge(pEastCenter.n, pEastThrown.n)
             }
         }
     }

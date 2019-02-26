@@ -41,15 +41,15 @@ class Push2TurnoutController(
         }
     }
 
+    @Suppress("UNUSED_PARAMETER")
     fun turnoutAttrChanged(turnout: Turnout, attrName: String, newValue: Any?) {
         if (attrName == "state") {
             val index = turnoutGroups.indexOfFirst { it != null && it.containsTurnout(turnout) }
             turnoutGroups.getOrNull(index)?.apply {
                 val position = currentPosition()
-                val nextPosition = nextPosition(position) // is this correct? what about newValue??
                 buttons[index].setAttributes(
                         mapOf("offColor" to color(position),
-                              "onColor" to color(nextPosition)))
+                              "onColor" to color(position)))
                 elements.updatePush2(buttons[index])
             }
         }
@@ -58,8 +58,7 @@ class Push2TurnoutController(
     override fun <T: Any> elementStateChanged(element: MidiElement, newValue: T) {
         if (element is ButtonRgb && newValue == true) {
             turnoutGroups.getOrNull(buttons.indexOf(element))?.apply{
-                val position = currentPosition()
-                val nextPosition = nextPosition(position)
+                val nextPosition = nextPosition(currentPosition())
                 setTurnoutStates(nextPosition) { turnout, state ->
                     turnoutTable.messageToJmri(turnout, "state", state)
                 }

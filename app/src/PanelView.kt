@@ -24,8 +24,7 @@ data class Point(val name: String, val x: Double, val y: Double) {
         }
     }
 
-    fun leg(direction: String, slope: Double) : Point {
-        val len = 24.0
+    fun leg(direction: String, slope: Double, len : Double = 24.0) : Point {
         val realSlope = slope / 2.0 // slope is same as in branch
         val shrink = 1.0 / Math.sqrt(1.0 + realSlope * realSlope)
         val deltaY = shrink * len

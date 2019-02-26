@@ -192,14 +192,26 @@ abstract class PanelView(rect: Rectangle): Push2View(rect) {
     private var colors: List<Int> = listOf()
     abstract val lines: Array<Array<Point>>
 
+    private var inDraw = false
+
     fun update() {
         updateGraph(graph, switchViews, railViews)
+        if (inDraw) println("update in draw1?")
         components = graph.findComponents()
+        if (inDraw) println("update in draw2?")
         colors = components.map { determineColor(it, graphPoints)}
+        if (inDraw) println("update in draw3?")
+        if (components.size != colors.size) {
+            println("how does map work?")
+            println("$components")
+            println("$colors")
+        }
+        if (inDraw) println("update in draw4?")
     }
 
     @Suppress("UNUSED_PARAMETER")
     override fun draw(g2: Graphics2D, frame: Int, display: Push2Display) {
+        inDraw = true
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
         g2.color = Push2Colors.num2Display[Push2Colors.nameToNumber["pale-blue"]]
         g2.fillRect(0, 0, rect.width, rect.height)
@@ -208,13 +220,28 @@ abstract class PanelView(rect: Rectangle): Push2View(rect) {
             strokePath(g2, makePath(l))
         }
 
-        components.forEachIndexed { index, path ->
+        val copyOfComponents = components
+        val copyOfColors = colors
+
+        if (copyOfComponents.size != copyOfColors.size) {
+            println("how does map work, again?")
+            println("comps $copyOfComponents")
+            println("colors $copyOfColors")
+        }
+
+        copyOfComponents.forEachIndexed { index, path ->
+            if (index >= copyOfColors.size) {
+                println("$index $copyOfColors")
+                println("$path")
+                println("${path.map{graphPoints[it]}}")
+            }
             fillPath(g2,
-                Push2Colors.num2Display[colors[index]],
+                Push2Colors.num2Display[copyOfColors[index]],
                 makePath(path.map{graphPoints[it]}.toTypedArray())
             )
         }
 
         drawTitle(g2, title, null, pTitle)
+        inDraw = false
     }
 }

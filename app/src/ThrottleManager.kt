@@ -1,6 +1,9 @@
 package push2throttle
 
-class ThrottleManager {
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.withLock
+
+class ThrottleManager (private val display: Push2Display) {
     val slotCount = 24
     val locoData = LocoDatabase()
     val roster = JmriRoster(locoData, this::rosterChangedCallback)
@@ -44,6 +47,10 @@ class ThrottleManager {
         if (locosToPlace.isNotEmpty()) {
             println("Warning: too many locos (only ${throttles.size} allowed)")
         }
-        throttlesReassigned()
+        runBlocking {
+            display.driverStateMutex.withLock {
+                throttlesReassigned()
+            }
+        }
     }
 }

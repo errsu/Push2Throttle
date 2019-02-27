@@ -6,8 +6,8 @@ import java.awt.Rectangle
 
 class SceneManager(private val display: Push2Display,
                    private val elements: Push2Elements,
-                   private val throttleManager: ThrottleManager,
-                   private val panelManager: PanelManager) : MidiController {
+                   throttleManager: ThrottleManager,
+                   panelManager: PanelManager) : MidiController {
 
     private val throttleScene = ThrottleScene(display, elements, throttleManager)
     private val panelScene = PanelScene(display, elements, panelManager)
@@ -39,13 +39,9 @@ class SceneManager(private val display: Push2Display,
         elements.updateElementStateByJmri(select!!, scene == "panel")
     }
 
-    fun sceneContentReassigned() {
-        runBlocking {
-            display.driverStateMutex.withLock {
-                currentScene?.destroy()
-                currentScene?.build()
-            }
-        }
+    private fun sceneContentReassigned() {
+        currentScene?.destroy()
+        currentScene?.build()
     }
 
     override fun <T : Any> elementStateChanged(element: MidiElement, newValue: T) {

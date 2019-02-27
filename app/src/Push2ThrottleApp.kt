@@ -13,8 +13,8 @@ class Push2ThrottleMainView: View() {
     private val display = Push2Display()
     private val displayDriver = Push2DisplayDriver(libUsbHelper, display)
     private val elements = Push2Elements(midi)
-    private val throttleManager = ThrottleManager()
-    private val panelManager = PanelManager()
+    private val throttleManager = ThrottleManager(display)
+    private val panelManager = PanelManager(display)
     private val sceneManager = SceneManager(display, elements, throttleManager, panelManager)
 
     init {

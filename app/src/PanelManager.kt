@@ -1,6 +1,9 @@
 package push2throttle
 
-class PanelManager {
+import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.withLock
+
+class PanelManager(private val display: Push2Display) {
     // - plays same role as ThrottleManager
     // - has information about panel geometries
     // - has relation between buttons and turnouts
@@ -8,15 +11,20 @@ class PanelManager {
     val turnoutTable = JmriTurnoutTable(this::turnoutTableChangedCallback, this::turnoutStateChangedCallback)
     var turnoutsReassigned : () -> Unit = {} // callback used by scene manager
     var turnoutsMoved : () -> Unit = {} // callback used by scene manager
-    var activePanel: PanelView? = null
-
-    // TODO add function returning turnout for panel/button combination
 
     private fun turnoutTableChangedCallback() {
-        turnoutsReassigned()
+        runBlocking {
+            display.driverStateMutex.withLock {
+                turnoutsReassigned()
+            }
+        }
     }
 
     private fun turnoutStateChangedCallback() {
-        turnoutsMoved()
+        runBlocking {
+            display.driverStateMutex.withLock {
+                turnoutsMoved()
+            }
+        }
     }
 }

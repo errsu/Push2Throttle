@@ -37,6 +37,8 @@ class Push2MidiDriver : Receiver {
                 }
                 else -> println("unhandled midi ${msg.message.asList()}")
             }
+        } else if (data.size == 1 && data[0] == 0xFE.toByte()) {
+            // active sensing
         } else {
             println("unhandled midi ${msg.message.asList()}")
         }

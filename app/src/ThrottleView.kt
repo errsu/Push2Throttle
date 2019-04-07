@@ -10,6 +10,7 @@ class ThrottleView(rect: Rectangle, val selectionManager: SelectionManager): Pus
     // TODO: centralize fonts and color names
     private val font18  = Font("SansSerif", Font.PLAIN, 18)
     private val font18b = Font("SansSerif", Font.BOLD,  18)
+    private val font16b = Font("SansSerif", Font.BOLD,  16)
     private val font24  = Font("SansSerif", Font.PLAIN, 24)
     private val font48  = Font("SansSerif", Font.PLAIN, 48)
 
@@ -87,7 +88,7 @@ class ThrottleView(rect: Rectangle, val selectionManager: SelectionManager): Pus
             g2.fill(reverseRect)
             g2.paint = Color.BLACK
             g2.draw(reverseRect)
-            g2.font = font18b
+            g2.font = font16b
             g2.paint = Color.RED
             g2.drawString("reverse", 42, rect.height - 19)
         }
